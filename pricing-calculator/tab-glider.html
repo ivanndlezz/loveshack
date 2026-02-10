@@ -1,0 +1,783 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UI Components - Pure CSS Variables</title>
+    <style>
+      /* ==================== RESET Y BASE ==================== */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* ==================== RECURSIVE CSS FLAGS ==================== */
+
+      /* Layout Flags */
+      [style*="--flex:"] {
+        display: flex;
+      }
+      [style*="--inline-flex:"] {
+        display: inline-flex;
+      }
+      [style*="--grid:"] {
+        display: grid;
+      }
+
+      /* Sizing Flags */
+      [style*="--fill:"] {
+        width: -webkit-fill-available;
+        width: -moz-available;
+        width: stretch;
+      }
+      [style*="--w:"] {
+        width: var(--w);
+      }
+      [style*="--h:"] {
+        height: var(--h);
+      }
+      [style*="--wh:"] {
+        width: var(--wh);
+        height: var(--wh);
+      }
+      [style*="--max-w:"] {
+        max-width: var(--max-w);
+      }
+      [style*="--max-h:"] {
+        max-height: var(--max-h);
+      }
+      [style*="--min-w:"] {
+        min-width: var(--min-w);
+      }
+      [style*="--min-h:"] {
+        min-height: var(--min-h);
+      }
+
+      /* Spacing Flags */
+      [style*="--gap:"] {
+        gap: var(--gap);
+      }
+      [style*="--p:"] {
+        padding: var(--p);
+      }
+      [style*="--px:"] {
+        padding-left: var(--px);
+        padding-right: var(--px);
+      }
+      [style*="--py:"] {
+        padding-top: var(--py);
+        padding-bottom: var(--py);
+      }
+      [style*="--m:"] {
+        margin: var(--m);
+      }
+      [style*="--mx:"] {
+        margin-left: var(--mx);
+        margin-right: var(--mx);
+      }
+      [style*="--my:"] {
+        margin-top: var(--my);
+        margin-bottom: var(--my);
+      }
+
+      /* Visual Effects Flags */
+      [style*="--blur:"] {
+        backdrop-filter: blur(var(--blur));
+        -webkit-backdrop-filter: blur(var(--blur));
+      }
+      [style*="--shadow:"] {
+        box-shadow: var(--shadow);
+      }
+      [style*="--radius:"] {
+        border-radius: var(--radius);
+      }
+
+      /* Color Flags */
+      [style*="--bg:"] {
+        background-color: var(--bg);
+      }
+      [style*="--color:"] {
+        color: var(--color);
+      }
+      [style*="--border-color:"] {
+        border-color: var(--border-color);
+      }
+
+      /* Position Flags */
+      [style*="--absolute:"] {
+        position: absolute;
+      }
+      [style*="--relative:"] {
+        position: relative;
+      }
+      [style*="--fixed:"] {
+        position: fixed;
+      }
+      [style*="--sticky:"] {
+        position: sticky;
+      }
+
+      /* Transform Flags */
+      [style*="--translate:"] {
+        transform: var(--translate);
+      }
+      [style*="--scale:"] {
+        transform: scale(var(--scale));
+      }
+
+      /* Transition Flags */
+      [style*="--transition:"] {
+        transition: var(--transition);
+      }
+
+      /* Overflow Flags */
+      [style*="--overflow:"] {
+        overflow: var(--overflow);
+      }
+      [style*="--overflow-y:"] {
+        overflow-y: var(--overflow-y);
+      }
+      [style*="--overflow-x:"] {
+        overflow-x: var(--overflow-x);
+      }
+
+      /* ==================== DESIGN SYSTEM VARIABLES ==================== */
+      :root {
+        /* Colors */
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f2937;
+        --gray-900: #111827;
+        --black: #000000;
+        --white: #ffffff;
+
+        /* Spacing Scale */
+        --space-1: 0.25rem;
+        --space-2: 0.5rem;
+        --space-3: 0.75rem;
+        --space-4: 1rem;
+        --space-6: 1.5rem;
+        --space-8: 2rem;
+        --space-10: 2.5rem;
+        --space-12: 3rem;
+        --space-16: 4rem;
+
+        /* Border Radius */
+        --radius-sm: 8px;
+        --radius-md: 12px;
+        --radius-lg: 16px;
+        --radius-xl: 20px;
+        --radius-full: 9999px;
+
+        /* Shadows */
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+        --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+
+        /* Transitions */
+        --transition-fast: all 0.15s ease;
+        --transition-base: all 0.2s ease;
+        --transition-slow: all 0.3s ease;
+      }
+
+      /* ==================== UTILITY CLASSES ==================== */
+
+      .page {
+        background-color: var(--gray-50);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 3rem;
+        gap: 4rem;
+      }
+
+      .section {
+        width: 100%;
+        max-width: 28rem;
+      }
+
+      .section-title {
+        font-size: 0.75rem;
+        font-weight: 900;
+        color: var(--gray-400);
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        text-align: center;
+      }
+
+      /* Squircle Radius */
+      .squircle {
+        border-radius: var(--radius-lg);
+      }
+
+      /* ==================== TAB COMPONENTS ==================== */
+
+      .tab-group {
+        display: flex;
+        padding: 0.25rem;
+        border-radius: var(--radius-lg);
+      }
+
+      .tab-group.style-minimal {
+        background-color: var(--gray-200);
+        box-shadow: var(--shadow-inner);
+      }
+
+      .tab-group.style-contrast {
+        border: 2px solid var(--gray-300);
+      }
+
+      .tab {
+        flex: 1;
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-lg);
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        font-size: 0.875rem;
+        outline: none;
+      }
+
+      /* Tab Style: Minimal */
+      .tab-group.style-minimal .tab {
+        color: var(--gray-500);
+        font-weight: 700;
+        box-shadow: 0 1px 2px 0 transparent;
+        transition:
+          background-color 0.2s ease,
+          color 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+
+      .tab-group.style-minimal .tab.active {
+        background-color: var(--white);
+        color: var(--gray-900);
+        box-shadow: var(--shadow-sm);
+      }
+
+      /* Tab Style: Contrast */
+      .tab-group.style-contrast .tab {
+        color: var(--gray-400);
+        font-weight: 900;
+        transition:
+          background-color 0.2s ease,
+          color 0.2s ease;
+      }
+
+      .tab-group.style-contrast .tab.active {
+        background-color: var(--black);
+        color: var(--white);
+      }
+
+      /* ==================== CHECKBOX & TOGGLE ==================== */
+
+      .control-card {
+        background-color: var(--white);
+        padding: 1.5rem;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--gray-100);
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .control-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        cursor: pointer;
+      }
+
+      .control-item.toggle {
+        justify-content: space-between;
+      }
+
+      .control-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--gray-700);
+      }
+
+      /* Checkbox */
+      .checkbox-wrapper {
+        position: relative;
+      }
+
+      .checkbox-input {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .checkbox-box {
+        width: 1.5rem;
+        height: 1.5rem;
+        border: 2px solid var(--gray-300);
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition-base);
+      }
+
+      .checkbox-input:checked + .checkbox-box {
+        background-color: var(--black);
+        border-color: var(--black);
+      }
+
+      .checkbox-icon {
+        width: 1rem;
+        height: 1rem;
+        color: var(--white);
+        opacity: 0;
+        transition: var(--transition-fast);
+      }
+
+      .checkbox-input:checked + .checkbox-box .checkbox-icon {
+        opacity: 1;
+      }
+
+      /* Toggle Switch */
+      .toggle-wrapper {
+        position: relative;
+      }
+
+      .toggle-input {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .toggle-track {
+        width: 3rem;
+        height: 1.75rem;
+        background-color: var(--gray-300);
+        border-radius: var(--radius-full);
+        padding: 0.25rem;
+        transition: var(--transition-slow);
+      }
+
+      .toggle-thumb {
+        width: 1.25rem;
+        height: 1.25rem;
+        background-color: var(--white);
+        border-radius: var(--radius-full);
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition-slow);
+      }
+
+      .toggle-input:checked ~ .toggle-track {
+        background-color: var(--gray-900);
+      }
+
+      .toggle-input:checked ~ .toggle-track .toggle-thumb {
+        transform: translateX(1.25rem);
+      }
+
+      /* ==================== CUSTOM SELECT ==================== */
+
+      .select-container {
+        position: relative;
+      }
+
+      .select-trigger {
+        width: 100%;
+        background-color: var(--white);
+        border: 1px solid var(--gray-200);
+        padding: 1rem;
+        border-radius: var(--radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: var(--shadow-sm);
+        cursor: pointer;
+        outline: none;
+        transition: var(--transition-base);
+        padding-right: 1.5rem;
+      }
+
+      .select-trigger:focus {
+        box-shadow: 0 0 0 2px var(--black);
+      }
+
+      .select-content {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        overflow: hidden;
+      }
+
+      .select-icon {
+        color: var(--gray-400);
+        flex-shrink: 0;
+      }
+
+      .select-value {
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .select-chevron {
+        color: var(--gray-400);
+        flex-shrink: 0;
+      }
+
+      .clear-btn {
+        position: absolute;
+        right: 2.5rem;
+        top: 50%;
+        transform: translate(15px, -50%);
+        width: 1.5rem;
+        height: 1.5rem;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        color: var(--gray-300);
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        transition: var(--transition-fast);
+        z-index: 10;
+        border-radius: 100px;
+      }
+
+      .clear-btn:hover {
+        color: var(--gray-600);
+      }
+
+      .select-container.has-selection .clear-btn {
+        display: flex;
+        background-color: #808080;
+      }
+
+      .select-dropdown {
+        position: absolute;
+        width: 100%;
+        margin-top: 0.5rem;
+        background-color: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        z-index: 50;
+        overflow: hidden;
+        display: none;
+        animation: slideUp 0.2s ease-out;
+      }
+
+      .select-dropdown.active {
+        display: block;
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .select-search-wrapper {
+        padding: 0.5rem;
+        border-bottom: 1px solid var(--gray-100);
+      }
+
+      .select-search {
+        width: 100%;
+        padding: 0.5rem;
+        font-size: 0.875rem;
+        background-color: var(--gray-50);
+        border: 1px solid transparent;
+        border-radius: var(--radius-lg);
+        outline: none;
+        transition: var(--transition-fast);
+      }
+
+      .select-search:focus {
+        border-color: var(--gray-200);
+      }
+
+      .select-options {
+        max-height: 15rem;
+        overflow-y: auto;
+        padding: 0.25rem;
+      }
+
+      .select-option {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        font-size: 0.875rem;
+        color: var(--gray-600);
+        border-radius: var(--radius-lg);
+        cursor: pointer;
+        transition: var(--transition-fast);
+      }
+
+      .select-option:hover {
+        background-color: var(--gray-100);
+      }
+
+      .option-icon {
+        width: 1rem;
+        height: 1rem;
+      }
+
+      /* ==================== ICONS (SVG INLINE) ==================== */
+
+      svg {
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+    </style>
+  </head>
+  <body class="page">
+    <!-- SECCIÓN: TABS (GLIDERS) -->
+    <div class="section" style="--flex: 1; --gap: 2.5rem">
+      <!-- Gris Minimalista -->
+      <div>
+        <p class="section-title">Gris Minimalista</p>
+        <div class="tab-group style-minimal" id="group-1">
+          <button class="tab active" onclick="setActive(this, 'group-1')">
+            Mañana
+          </button>
+          <button class="tab" onclick="setActive(this, 'group-1')">
+            Tarde
+          </button>
+          <button class="tab" onclick="setActive(this, 'group-1')">
+            Noche
+          </button>
+        </div>
+      </div>
+
+      <!-- Contraste Puro -->
+      <div>
+        <p class="section-title">Contraste Puro</p>
+        <div class="tab-group style-contrast" id="group-2">
+          <button class="tab active" onclick="setActive(this, 'group-2')">
+            UNO
+          </button>
+          <button class="tab" onclick="setActive(this, 'group-2')">DOS</button>
+          <button class="tab" onclick="setActive(this, 'group-2')">TRES</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN: INPUTS (CHECKBOX & TOGGLE) -->
+    <div class="section" style="--flex: 1; --gap: 1.5rem">
+      <p class="section-title">Controles de Estado</p>
+
+      <div class="control-card">
+        <!-- Checkbox Normal -->
+        <label class="control-item">
+          <div class="checkbox-wrapper">
+            <input type="checkbox" class="checkbox-input" />
+            <div class="checkbox-box">
+              <svg class="checkbox-icon" viewBox="0 0 24 24">
+                <path d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+          </div>
+          <span class="control-label">Checkbox Estándar</span>
+        </label>
+
+        <!-- Toggle Switch -->
+        <label class="control-item toggle">
+          <span class="control-label">Toggle Switch</span>
+          <div class="toggle-wrapper">
+            <input type="checkbox" class="toggle-input" />
+            <div class="toggle-track">
+              <div class="toggle-thumb"></div>
+            </div>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- SECCIÓN: SELECT CON BUSCADOR Y CLEAR -->
+    <div class="section">
+      <p class="section-title">Select con Buscador</p>
+      <div class="select-container" id="custom-select" style="--relative: 1">
+        <!-- Trigger -->
+        <div style="--relative: 1">
+          <button
+            class="select-trigger"
+            onclick="toggleSelect()"
+            id="select-trigger"
+          >
+            <div class="select-content">
+              <span class="select-icon" id="select-icon">
+                <svg style="--wh: 1.25rem" viewBox="0 0 24 24">
+                  <path
+                    d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+                  ></path>
+                </svg>
+              </span>
+              <span class="select-value" id="selected-value"
+                >Seleccionar Carpeta</span
+              >
+            </div>
+            <svg class="select-chevron" style="--wh: 1rem" viewBox="0 0 24 24">
+              <path d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+
+          <!-- Botón de vaciado (X Circled) -->
+          <button class="clear-btn" onclick="clearSelection(event)">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Dropdown -->
+        <div class="select-dropdown" id="select-dropdown">
+          <div class="select-search-wrapper">
+            <input
+              type="text"
+              class="select-search"
+              id="select-search"
+              oninput="filterOptions()"
+              placeholder="Buscar..."
+            />
+          </div>
+          <ul class="select-options" id="options-list">
+            <li
+              class="select-option"
+              onclick="selectOption('Proyectos', 'folder')"
+            >
+              <svg class="option-icon" viewBox="0 0 24 24">
+                <path
+                  d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+                ></path>
+              </svg>
+              Proyectos
+            </li>
+            <li
+              class="select-option"
+              onclick="selectOption('Documentos', 'file')"
+            >
+              <svg class="option-icon" viewBox="0 0 24 24">
+                <path
+                  d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                ></path>
+              </svg>
+              Documentos
+            </li>
+            <li
+              class="select-option"
+              onclick="selectOption('Multimedia', 'image')"
+            >
+              <svg class="option-icon" viewBox="0 0 24 24">
+                <path
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                ></path>
+              </svg>
+              Multimedia
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ==================== TAB LOGIC ====================
+      function setActive(element, groupId) {
+        const container = document.getElementById(groupId);
+        const buttons = container.querySelectorAll(".tab");
+        buttons.forEach((btn) => btn.classList.remove("active"));
+        element.classList.add("active");
+      }
+
+      // ==================== SELECT LOGIC ====================
+      const SELECT_CONFIG = {
+        placeholder: "Seleccionar Carpeta",
+        defaultIcon: `<svg style="--wh:1.25rem;" viewBox="0 0 24 24"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>`,
+      };
+
+      function toggleSelect() {
+        document.getElementById("select-dropdown").classList.toggle("active");
+      }
+
+      function filterOptions() {
+        const term = document
+          .getElementById("select-search")
+          .value.toLowerCase();
+        const items = document.querySelectorAll(".select-option");
+        items.forEach((item) => {
+          const text = item.innerText.toLowerCase();
+          item.style.display = text.includes(term) ? "flex" : "none";
+        });
+      }
+
+      function selectOption(name, iconType) {
+        document.getElementById("selected-value").innerText = name;
+        document.getElementById("custom-select").classList.add("has-selection");
+        document.getElementById("select-dropdown").classList.remove("active");
+      }
+
+      function clearSelection(event) {
+        event.stopPropagation();
+
+        document.getElementById("selected-value").innerText =
+          SELECT_CONFIG.placeholder;
+        document.getElementById("select-icon").innerHTML =
+          SELECT_CONFIG.defaultIcon;
+        document
+          .getElementById("custom-select")
+          .classList.remove("has-selection");
+        document.getElementById("select-dropdown").classList.remove("active");
+        document.getElementById("select-search").value = "";
+        filterOptions();
+      }
+
+      // Cerrar dropdown al hacer click fuera
+      window.addEventListener("click", (e) => {
+        const selectContainer = document.getElementById("custom-select");
+        if (!selectContainer.contains(e.target)) {
+          document.getElementById("select-dropdown").classList.remove("active");
+        }
+      });
+    </script>
+  </body>
+</html>

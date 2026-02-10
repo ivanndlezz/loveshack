@@ -1,0 +1,158 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-02-09",
+  "constants": {
+    "baseHourlyRate": 600,
+    "minDuration": 2,
+    "maxDuration": 8,
+    "maxPassengers": 50,
+    "includedPassengers": 14,
+    "extraPassengerRate": 100,
+    "fishingLicenseRate": 22
+  },
+  "sources": [
+    {
+      "id": "direct",
+      "name": "📞 Direct - Call",
+      "hourlyRate": 600,
+      "hasFee": false,
+      "feePercentage": 0,
+      "feeNote": null
+    },
+    {
+      "id": "get-my-boat",
+      "name": "Get My Boat",
+      "hourlyRate": 500,
+      "hasFee": true,
+      "feePercentage": 0.115,
+      "feeNote": "11.5% fee"
+    },
+    {
+      "id": "viator",
+      "name": "Viator",
+      "hourlyRate": 600,
+      "hasFee": true,
+      "feePercentage": 0.15,
+      "feeNote": "15% fee"
+    },
+    {
+      "id": "fareharbor",
+      "name": "🚦 Fareharbor",
+      "hourlyRate": 600,
+      "hasFee": true,
+      "feePercentage": 0.12,
+      "feeNote": "12% fee"
+    },
+    {
+      "id": "travel-cabo-tours",
+      "name": "Travel Cabo Tours",
+      "hourlyRate": 600,
+      "hasFee": true,
+      "feePercentage": 0.10,
+      "feeNote": "10% fee"
+    },
+    {
+      "id": "anchor-rides",
+      "name": "Anchor Rides",
+      "hourlyRate": 600,
+      "hasFee": false,
+      "feePercentage": 0,
+      "feeNote": null
+    },
+    {
+      "id": "andres-lopez",
+      "name": "Andres Lopez",
+      "hourlyRate": 600,
+      "hasFee": false,
+      "feePercentage": 0,
+      "feeNote": null
+    },
+    {
+      "id": "mauricio-bojorquez",
+      "name": "Mauricio Bojorquez",
+      "hourlyRate": 600,
+      "hasFee": false,
+      "feePercentage": 0,
+      "feeNote": null
+    },
+    {
+      "id": "jose-ferron",
+      "name": "Jose Ferron",
+      "hourlyRate": 600,
+      "hasFee": false,
+      "feePercentage": 0,
+      "feeNote": null
+    },
+    {
+      "id": "ramiro-munguia",
+      "name": "Ramiro Munguia",
+      "hourlyRate": 600,
+      "hasFee": false,
+      "feePercentage": 0,
+      "feeNote": null
+    },
+    {
+      "id": "adriana-transcabo",
+      "name": "Adriana Transcabo",
+      "hourlyRate": 600,
+      "hasFee": false,
+      "feePercentage": 0,
+      "feeNote": null
+    },
+    {
+      "id": "grand-solmar",
+      "name": "Grand Solmar - Luis Roberts",
+      "hourlyRate": 600,
+      "hasFee": false,
+      "feePercentage": 0,
+      "feeNote": null
+    },
+    {
+      "id": "eduardo-araujo",
+      "name": "Eduardo Araujo",
+      "hourlyRate": 600,
+      "hasFee": false,
+      "feePercentage": 0,
+      "feeNote": null
+    }
+  ],
+  "tourTypes": [
+    "Bay Trip",
+    "Whale Watching",
+    "Snorkeling Tour",
+    "Sunset Cruise",
+    "Fishing"
+  ],
+  "repriceTypes": [
+    {
+      "code": "",
+      "name": "None",
+      "description": "No discount applied",
+      "prefix": ""
+    },
+    {
+      "code": "%",
+      "name": "Percentage",
+      "description": "Percentage discount",
+      "prefix": "%"
+    },
+    {
+      "code": "#",
+      "name": "Fixed Amount",
+      "description": "Fixed amount discount",
+      "prefix": "$"
+    },
+    {
+      "code": "$",
+      "name": "Fixed Price",
+      "description": "Override to fixed final price",
+      "prefix": "$"
+    },
+    {
+      "code": "coupon",
+      "name": "Coupon",
+      "description": "Coupon price override",
+      "prefix": "$"
+    }
+  ]
+}
