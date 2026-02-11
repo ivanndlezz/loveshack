@@ -21,7 +21,16 @@
   --radius-lg: 16px;
   --transition: all 0.2s ease;
   /**/
-  --fill: --webkit-fill-available;
+  --fill: -webkit-fill-available;
+}
+
+[style*="--flex"] {
+  display: flex;
+}
+
+[style*="--wh"] {
+  width: var(--wh);
+  height: var(--wh);
 }
 
 /* Reset */
@@ -486,7 +495,7 @@
 
 .tab-option {
   flex: 1;
-  min-width: 70px;
+
   padding: 10px 8px;
   border: none;
   background: transparent;
@@ -534,7 +543,7 @@
 }
 
 .sticky-field-slider {
-  width: -webkit-fill-available;
+  width: var(--fill);
 }
 
 /* Summary Card */
@@ -710,6 +719,49 @@
   opacity: 1;
 }
 
+/* Accordion Styles */
+.accordion-section {
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.accordion-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 8px 0;
+  user-select: none;
+}
+
+.accordion-header:hover .section-title {
+  color: var(--primary-color);
+}
+
+.accordion-chevron {
+  transition: transform 0.3s ease;
+  color: var(--text-secondary);
+}
+
+.accordion-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.accordion-section.open .accordion-content {
+  max-height: 500px; /* Arbitrary large number, will be set by JS */
+}
+
+.accordion-section.open .accordion-chevron {
+  transform: rotate(180deg);
+}
+
+/* Hide accordion content when closed */
+.accordion-section:not(.open) .accordion-content > * {
+  display: none;
+}
+
 /* Animations */
 @keyframes fadeIn {
   from {
@@ -753,6 +805,10 @@
   padding: 12px 20px;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
   z-index: 1000;
+  max-width: 900px;
+  margin: 0 auto;
+  --rad: 20px;
+  border-radius: var(--rad) var(--rad) 0px 0px;
 }
 
 .sticky-bottom-item {
@@ -796,6 +852,10 @@
 
 /* Responsive */
 @media (max-width: 480px) {
+  #extrasAmount {
+    width: var(--fill);
+  }
+
   .form-grid {
     grid-template-columns: 1fr;
   }
@@ -804,10 +864,29 @@
     grid-column: span 1;
   }
 
+  /* Mobile: Swap sticky positions */
+  /* .sticky-bottom-bar goes to TOP for always-visible data */
+  .sticky-bottom-bar {
+    top: 0;
+    bottom: auto;
+    border-top: none;
+    border-bottom: 1px solid var(--border-color);
+    border-radius: 0px 0px var(--rad) var(--rad);
+  }
+
+  /* .sticky-quick-fields goes to BOTTOM (thumb zone) */
   .sticky-quick-fields {
-    flex-direction: column;
-    gap: 12px;
-    padding: 12px;
+    position: fixed;
+    bottom: 0;
+    top: auto;
+    margin-bottom: 0;
+    border-radius: var(--rad) var(--rad) 0px 0px;
+    padding-bottom: 30px;
+    padding-top: 20px;
+    flex-direction: row;
+    justify-content: space-around;
+    width: var(--fill);
+    left: 0px;
   }
 
   .sticky-field .form-input {
@@ -816,12 +895,14 @@
   }
 
   .calculator-container {
-    padding: 20px 16px;
+    padding: 16px 16px 120px 16px;
+    margin: 90px 0px;
   }
 
   .form-card,
   .summary-card {
     padding: 20px;
+    margin-bottom: 80px;
   }
 
   .calculator-header h1 {
@@ -830,6 +911,11 @@
 
   .summary-row.total {
     font-size: 18px;
+  }
+
+  /* Accordion header styling on mobile */
+  .accordion-header {
+    padding: 12px 0;
   }
 }
 

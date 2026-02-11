@@ -21,7 +21,7 @@
     },
     {
       "id": "get-my-boat",
-      "name": "Get My Boat",
+      "name": "🐬 Get My Boat",
       "hourlyRate": 500,
       "hasFee": true,
       "feePercentage": 0.115,
@@ -29,7 +29,7 @@
     },
     {
       "id": "viator",
-      "name": "Viator",
+      "name": "✈️ Viator",
       "hourlyRate": 600,
       "hasFee": true,
       "feePercentage": 0.15,
@@ -45,7 +45,7 @@
     },
     {
       "id": "travel-cabo-tours",
-      "name": "Travel Cabo Tours",
+      "name": "🌴 Travel Cabo Tours",
       "hourlyRate": 600,
       "hasFee": true,
       "feePercentage": 0.10,
@@ -53,7 +53,7 @@
     },
     {
       "id": "anchor-rides",
-      "name": "Anchor Rides",
+      "name": "⚓ Anchor Rides",
       "hourlyRate": 600,
       "hasFee": false,
       "feePercentage": 0,
@@ -61,7 +61,7 @@
     },
     {
       "id": "andres-lopez",
-      "name": "Andres Lopez",
+      "name": "👤 Andres Lopez",
       "hourlyRate": 600,
       "hasFee": false,
       "feePercentage": 0,
@@ -69,7 +69,7 @@
     },
     {
       "id": "mauricio-bojorquez",
-      "name": "Mauricio Bojorquez",
+      "name": "👤 Mauricio Bojorquez",
       "hourlyRate": 600,
       "hasFee": false,
       "feePercentage": 0,
@@ -77,7 +77,7 @@
     },
     {
       "id": "jose-ferron",
-      "name": "Jose Ferron",
+      "name": "👤 Jose Ferron",
       "hourlyRate": 600,
       "hasFee": false,
       "feePercentage": 0,
@@ -85,7 +85,7 @@
     },
     {
       "id": "ramiro-munguia",
-      "name": "Ramiro Munguia",
+      "name": "👤 Ramiro Munguia",
       "hourlyRate": 600,
       "hasFee": false,
       "feePercentage": 0,
@@ -93,7 +93,7 @@
     },
     {
       "id": "adriana-transcabo",
-      "name": "Adriana Transcabo",
+      "name": "👩 Adriana Transcabo",
       "hourlyRate": 600,
       "hasFee": false,
       "feePercentage": 0,
@@ -101,7 +101,7 @@
     },
     {
       "id": "grand-solmar",
-      "name": "Grand Solmar - Luis Roberts",
+      "name": "🏨 Grand Solmar - Luis Roberts",
       "hourlyRate": 600,
       "hasFee": false,
       "feePercentage": 0,
@@ -109,7 +109,7 @@
     },
     {
       "id": "eduardo-araujo",
-      "name": "Eduardo Araujo",
+      "name": "👤 Eduardo Araujo",
       "hourlyRate": 600,
       "hasFee": false,
       "feePercentage": 0,

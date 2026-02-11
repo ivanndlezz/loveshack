@@ -1,4 +1,5 @@
 <!doctype html>
+<!-- Test -->
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -203,101 +204,135 @@
           </div>
         </section>
 
-        <!-- Extras Section -->
-        <section class="form-section">
-          <h2 class="section-title">
-            <span class="icon">✨</span>
-            Extra Services
-          </h2>
-
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="fishingLicenses">Fishing Licenses</label>
-              <input
-                type="number"
-                id="fishingLicenses"
-                data-field="fishingLicenses"
-                min="0"
-                value="0"
-                class="form-input"
-              />
-              <span class="form-hint">$22 each (Fishing tours only)</span>
-            </div>
-
-            <div class="form-group full-width">
-              <label for="extrasAmount">Other Extras Amount</label>
-              <div class="input-with-prefix">
-                <span class="prefix">$</span>
+        <!-- Extras Section - Accordion -->
+        <section class="form-section accordion-section" id="extrasAccordion">
+          <div
+            class="accordion-header"
+            onclick="toggleAccordion('extrasAccordion')"
+          >
+            <h2 class="section-title">
+              <span class="icon">✨</span>
+              Extra Services
+            </h2>
+            <svg
+              class="accordion-chevron"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+          <div class="accordion-content">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="fishingLicenses">Fishing Licenses</label>
                 <input
                   type="number"
-                  id="extrasAmount"
-                  data-field="extrasAmount"
+                  id="fishingLicenses"
+                  data-field="fishingLicenses"
                   min="0"
-                  step="0.01"
                   value="0"
                   class="form-input"
                 />
+                <span class="form-hint">$22 each (Fishing tours only)</span>
+              </div>
+
+              <div class="form-group full-width">
+                <label for="extrasAmount">Other Extras Amount</label>
+                <div class="input-with-prefix">
+                  <span class="prefix">$</span>
+                  <input
+                    type="number"
+                    id="extrasAmount"
+                    data-field="extrasAmount"
+                    min="0"
+                    step="0.01"
+                    value="0"
+                    class="form-input"
+                  />
+                </div>
               </div>
             </div>
           </div>
         </section>
 
-        <!-- Reprice Section -->
-        <section class="form-section">
-          <h2 class="section-title">
-            <span class="icon">🏷️</span>
-            Reprice / Discount
-          </h2>
-
-          <div class="form-grid">
-            <!-- Reprice Type Tab Group -->
-            <div class="form-group">
-              <label>Discount Type</label>
-              <div class="tab-group" id="repriceTypeTab">
-                <button
-                  class="tab-option active"
-                  data-value=""
-                  onclick="selectRepriceType('', this)"
-                >
-                  None
-                </button>
-                <button
-                  class="tab-option"
-                  data-value="%"
-                  onclick="selectRepriceType('%', this)"
-                >
-                  %
-                </button>
-                <button
-                  class="tab-option"
-                  data-value="$"
-                  onclick="selectRepriceType('$', this)"
-                >
-                  $
-                </button>
-              </div>
-              <input
-                type="hidden"
-                id="repriceType"
-                data-field="repriceType"
-                value=""
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="repriceDiscount">Discount Value</label>
-              <div class="input-with-prefix">
-                <span class="prefix" id="discountPrefix">$</span>
+        <!-- Reprice Section - Accordion -->
+        <section class="form-section accordion-section" id="repriceAccordion">
+          <div
+            class="accordion-header"
+            onclick="toggleAccordion('repriceAccordion')"
+          >
+            <h2 class="section-title">
+              <span class="icon">🏷️</span>
+              Reprice / Discount
+            </h2>
+            <svg
+              class="accordion-chevron"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+          <div class="accordion-content">
+            <div class="form-grid">
+              <!-- Reprice Type Tab Group -->
+              <div class="form-group">
+                <label>Discount Type</label>
+                <div class="tab-group" id="repriceTypeTab">
+                  <button
+                    class="tab-option active"
+                    data-value=""
+                    onclick="selectRepriceType('', this)"
+                  >
+                    None
+                  </button>
+                  <button
+                    class="tab-option"
+                    data-value="%"
+                    onclick="selectRepriceType('%', this)"
+                  >
+                    %
+                  </button>
+                  <button
+                    class="tab-option"
+                    data-value="dollar"
+                    onclick="selectRepriceType('dollar', this)"
+                  >
+                    $
+                  </button>
+                </div>
                 <input
-                  type="number"
-                  id="repriceDiscount"
-                  data-field="repriceDiscount"
-                  min="0"
-                  step="0.01"
+                  type="hidden"
+                  id="repriceType"
+                  data-field="repriceType"
                   value=""
-                  class="form-input"
-                  placeholder="0"
                 />
+              </div>
+
+              <div class="form-group">
+                <label for="repriceDiscount">Discount Value</label>
+                <div class="input-with-prefix">
+                  <span class="prefix" id="discountPrefix">$</span>
+                  <input
+                    type="number"
+                    id="repriceDiscount"
+                    data-field="repriceDiscount"
+                    min="0"
+                    step="0.01"
+                    value=""
+                    class="form-input"
+                    placeholder="0"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -376,15 +411,52 @@
       <!-- Sticky Bottom Bar -->
       <div class="sticky-bottom-bar">
         <div class="sticky-bottom-item">
-          <span class="sticky-bottom-icon">👥</span>
-          <span id="stickyPassengers">14</span>
-          <span class="sticky-bottom-label">passengers</span>
+          <div style="--flex: 1; align-items: center; gap: 3px">
+            <div class="sticky-bottom-icon">
+              <svg
+                style="--wh: 15px"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+            </div>
+            <span id="stickyPassengers" style="font-size: 22px">14</span>
+          </div>
+
+          <span class="sticky-bottom-label"><small>PPL</small></span>
         </div>
         <div class="sticky-bottom-divider"></div>
         <div class="sticky-bottom-item">
-          <span class="sticky-bottom-icon">⏱️</span>
-          <span id="stickyDuration">3</span>
-          <span class="sticky-bottom-label">hours</span>
+          <div style="--flex: 1; align-items: center; gap: 3px">
+            <div class="sticky-bottom-icon">
+              <svg
+                style="--wh: 15px"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </div>
+            <span id="stickyDuration" style="font-size: 22px">3</span>
+          </div>
+          <span class="sticky-bottom-label"><small>HRS</small></span>
         </div>
         <div class="sticky-bottom-divider"></div>
         <div class="sticky-bottom-item sticky-bottom-total">
@@ -454,7 +526,7 @@
         if (value === "%") {
           discountPrefix.textContent = "%";
           document.getElementById("repriceDiscount").placeholder = "10";
-        } else if (value === "$") {
+        } else if (value === "dollar") {
           discountPrefix.textContent = "$";
           document.getElementById("repriceDiscount").placeholder = "0";
         } else {
@@ -465,6 +537,47 @@
         // Trigger change event
         hiddenInput.dispatchEvent(new Event("change", { bubbles: true }));
       }
+
+      // Accordion Toggle Function
+      function toggleAccordion(accordionId) {
+        const accordion = document.getElementById(accordionId);
+        const content = accordion.querySelector(".accordion-content");
+        const chevron = accordion.querySelector(".accordion-chevron");
+
+        if (accordion.classList.contains("open")) {
+          accordion.classList.remove("open");
+          content.style.maxHeight = "0";
+          chevron.style.transform = "rotate(0deg)";
+        } else {
+          accordion.classList.add("open");
+          content.style.maxHeight = content.scrollHeight + "px";
+          chevron.style.transform = "rotate(180deg)";
+        }
+      }
+
+      // Close dropdown when clicking outside
+      document.addEventListener("click", function (e) {
+        if (!e.target.closest(".custom-select")) {
+          document.querySelectorAll(".custom-select.open").forEach((select) => {
+            select.classList.remove("open");
+            select
+              .querySelector(".custom-select-dropdown")
+              .classList.remove("open");
+          });
+        }
+      });
+
+      // Close dropdown with Escape key
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") {
+          document.querySelectorAll(".custom-select.open").forEach((select) => {
+            select.classList.remove("open");
+            select
+              .querySelector(".custom-select-dropdown")
+              .classList.remove("open");
+          });
+        }
+      });
 
       // Custom Select Functions
       function toggleSelect(selectId) {
@@ -513,31 +626,23 @@
       function selectOptionValue(fieldType, value, displayText) {
         const hiddenInput = document.getElementById(fieldType);
         const inputField = document.getElementById(fieldType + "Input");
+        const selectId = fieldType + "Select";
+        const select = document.getElementById(selectId);
 
         hiddenInput.value = value;
         inputField.value = displayText;
 
+        // Close dropdown
+        if (select) {
+          select.classList.remove("open");
+          select
+            .querySelector(".custom-select-dropdown")
+            .classList.remove("open");
+        }
+
         // Trigger change event
         hiddenInput.dispatchEvent(new Event("change", { bubbles: true }));
-
-        // Close all dropdowns
-        document.querySelectorAll(".custom-select").forEach((s) => {
-          s.classList.remove("open");
-          s.querySelector(".custom-select-dropdown").classList.remove("open");
-        });
       }
-
-      // Close dropdowns when clicking outside
-      document.addEventListener("click", (e) => {
-        if (!e.target.closest(".custom-select")) {
-          document.querySelectorAll(".custom-select").forEach((select) => {
-            select.classList.remove("open");
-            select
-              .querySelector(".custom-select-dropdown")
-              .classList.remove("open");
-          });
-        }
-      });
     </script>
   </body>
 </html>
