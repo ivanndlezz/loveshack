@@ -1,0 +1,857 @@
+<!doctype html>
+<!-- Test -->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reservation Pricing Calculator</title>
+    <link rel="stylesheet" href="../pricing-calculator/css/styles.css" />
+    <link
+      rel="icon"
+      href="https://www.loveshackcruises.com/wp-content/uploads/2020/06/Recurso-5.png"
+      sizes="192x192"
+    />
+    <link
+      rel="apple-touch-icon"
+      href="https://www.loveshackcruises.com/wp-content/uploads/2020/06/Recurso-5.png"
+    />
+    <meta
+      name="msapplication-TileImage"
+      content="https://www.loveshackcruises.com/wp-content/uploads/2020/06/Recurso-5.png"
+    />
+  </head>
+  <body>
+    <div class="calculator-container">
+      <!-- Toolbar -->
+      <div class="calculator-toolbar">
+        <button
+          class="toolbar-btn"
+          onclick="saveCurrentQuote()"
+          title="Save Quote"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"
+            />
+            <polyline points="17 21 17 13 7 13 7 21" />
+            <polyline points="7 3 7 8 15 8" />
+          </svg>
+          <span>Save Quote</span>
+        </button>
+        <button
+          class="toolbar-btn"
+          onclick="toggleInquiryPanel()"
+          title="View Quotes"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+            />
+            <polyline points="14 2 14 8 20 8" />
+          </svg>
+          <span>Quotes</span>
+          <span class="toolbar-badge" id="inquiryCountBadge">0</span>
+        </button>
+        <button
+          class="toolbar-btn toolbar-btn-secondary"
+          onclick="exportAllInquiries()"
+          title="Export All"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          <span>Export</span>
+        </button>
+        <button
+          class="toolbar-btn toolbar-btn-secondary"
+          onclick="importInquiries()"
+          title="Import"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
+          </svg>
+          <span>Import</span>
+        </button>
+      </div>
+
+      <!-- Header -->
+      <header class="calculator-header">
+        <!--<h1>Reservation Pricing</h1>
+        <p class="subtitle">
+          Calculate final prices with sources and discounts
+        </p>-->
+      </header>
+
+      <!-- Form Card -->
+      <div class="form-card">
+        <!-- Sticky Quick Fields -->
+        <div class="sticky-quick-fields">
+          <div class="sticky-field sticky-field-slider">
+            <label for="duration"
+              >Duration: <span id="durationValue">3</span>h</label
+            >
+            <div class="slider-container">
+              <input
+                type="range"
+                id="duration"
+                data-field="duration"
+                min="2"
+                max="8"
+                step="1"
+                value="3"
+                class="form-slider"
+                list="durationOptions"
+              />
+              <datalist id="durationOptions">
+                <option value="2" label="2h"></option>
+                <option value="3" label="3h"></option>
+                <option value="4" label="4h"></option>
+                <option value="5" label="5h"></option>
+                <option value="6" label="6h"></option>
+                <option value="7" label="7h"></option>
+                <option value="8" label="8h"></option>
+              </datalist>
+            </div>
+          </div>
+          <div class="sticky-field">
+            <label for="passengers">Passengers</label>
+            <input
+              type="number"
+              id="passengers"
+              data-field="passengers"
+              min="1"
+              max="50"
+              value="14"
+              class="form-input"
+            />
+          </div>
+        </div>
+
+        <!-- Customer Info Section -->
+        <section class="form-section accordion-section" id="customerAccordion">
+          <div
+            class="accordion-header"
+            onclick="toggleAccordion('customerAccordion')"
+          >
+            <h2 class="section-title">
+              <span class="icon">👤</span>
+              Customer Info
+            </h2>
+            <svg
+              class="accordion-chevron"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+          <div class="accordion-content">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="customerName">Customer Name</label>
+                <input
+                  type="text"
+                  id="customerName"
+                  data-field="customerName"
+                  value=""
+                  class="form-input"
+                  placeholder="John Doe"
+                />
+              </div>
+              <div class="form-group">
+                <label for="customerEmail">Email</label>
+                <input
+                  type="email"
+                  id="customerEmail"
+                  data-field="customerEmail"
+                  value=""
+                  class="form-input"
+                  placeholder="john@example.com"
+                />
+              </div>
+              <div class="form-group">
+                <label for="customerPhone">Phone</label>
+                <input
+                  type="tel"
+                  id="customerPhone"
+                  data-field="customerPhone"
+                  value=""
+                  class="form-input"
+                  placeholder="+1 (555) 000-0000"
+                />
+              </div>
+              <div class="form-group">
+                <label for="tripDate">Trip Date</label>
+                <input
+                  type="date"
+                  id="tripDate"
+                  data-field="tripDate"
+                  value=""
+                  class="form-input"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Trip Details Section -->
+        <section class="form-section">
+          <h2 class="section-title">
+            <span class="icon">🚢</span>
+            Trip Details
+          </h2>
+
+          <div class="form-grid">
+            <!-- Tour Type Tab Group -->
+            <div class="form-group full-width">
+              <label>Tour Type</label>
+              <div class="tab-group" id="tourTypeTab">
+                <button
+                  class="tab-option"
+                  data-value="Bay Trip"
+                  onclick="selectTourType('Bay Trip', this)"
+                >
+                  Bay
+                </button>
+                <button
+                  class="tab-option"
+                  data-value="Whale Watching"
+                  onclick="selectTourType('Whale Watching', this)"
+                >
+                  Whale
+                </button>
+                <button
+                  class="tab-option"
+                  data-value="Snorkeling Tour"
+                  onclick="selectTourType('Snorkeling Tour', this)"
+                >
+                  Snorkel
+                </button>
+                <button
+                  class="tab-option"
+                  data-value="Sunset Cruise"
+                  onclick="selectTourType('Sunset Cruise', this)"
+                >
+                  Sunset
+                </button>
+                <button
+                  class="tab-option"
+                  data-value="Fishing"
+                  onclick="selectTourType('Fishing', this)"
+                >
+                  Fishing
+                </button>
+              </div>
+              <input
+                type="hidden"
+                id="tourType"
+                data-field="tourType"
+                value=""
+              />
+            </div>
+
+            <!-- Pricing Type Tab Group -->
+            <div class="form-group">
+              <label>Pricing Type</label>
+              <div class="tab-group" id="pricingTypeTab">
+                <button
+                  class="tab-option active"
+                  data-value="regular"
+                  onclick="selectPricingType('regular', this)"
+                >
+                  Regular<br /><small>$600/hr</small>
+                </button>
+                <button
+                  class="tab-option"
+                  data-value="snack"
+                  onclick="selectPricingType('snack', this)"
+                >
+                  Snack<br /><small>$450/hr</small>
+                </button>
+              </div>
+              <input
+                type="hidden"
+                id="pricingType"
+                data-field="pricingType"
+                value="regular"
+              />
+            </div>
+
+            <!-- Source Custom Select with Inline Search -->
+            <div class="form-group">
+              <label>Booking Source</label>
+              <div
+                class="custom-select custom-select-searchable"
+                id="sourceSelect"
+              >
+                <input
+                  type="hidden"
+                  id="source"
+                  data-field="source"
+                  value="direct"
+                />
+                <div class="custom-select-trigger">
+                  <input
+                    type="text"
+                    class="custom-select-input"
+                    id="sourceInput"
+                    placeholder="Search sources..."
+                    oninput="handleSelectSearch('source', this.value)"
+                    onfocus="openSelectDropdown('sourceSelect')"
+                  />
+                  <button
+                    class="custom-select-toggle"
+                    onclick="toggleSelect('sourceSelect')"
+                  >
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                </div>
+                <div class="custom-select-dropdown">
+                  <div class="custom-select-options" id="sourceOptions"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Extras Section - Accordion -->
+        <section class="form-section accordion-section" id="extrasAccordion">
+          <div
+            class="accordion-header"
+            onclick="toggleAccordion('extrasAccordion')"
+          >
+            <h2 class="section-title">
+              <span class="icon">✨</span>
+              Extra Services
+            </h2>
+            <svg
+              class="accordion-chevron"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+          <div class="accordion-content">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="fishingLicenses">Fishing Licenses</label>
+                <input
+                  type="number"
+                  id="fishingLicenses"
+                  data-field="fishingLicenses"
+                  min="0"
+                  value="0"
+                  class="form-input"
+                />
+                <span class="form-hint">$22 each (Fishing tours only)</span>
+              </div>
+
+              <div class="form-group full-width">
+                <label for="extrasAmount">Other Extras Amount</label>
+                <div class="input-with-prefix">
+                  <span class="prefix">$</span>
+                  <input
+                    type="number"
+                    id="extrasAmount"
+                    data-field="extrasAmount"
+                    min="0"
+                    step="0.01"
+                    value="0"
+                    class="form-input"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Reprice Section - Accordion -->
+        <section class="form-section accordion-section" id="repriceAccordion">
+          <div
+            class="accordion-header"
+            onclick="toggleAccordion('repriceAccordion')"
+          >
+            <h2 class="section-title">
+              <span class="icon">🏷️</span>
+              Reprice / Discount
+            </h2>
+            <svg
+              class="accordion-chevron"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+          <div class="accordion-content">
+            <div class="form-grid">
+              <!-- Reprice Type Tab Group -->
+              <div class="form-group">
+                <label>Discount Type</label>
+                <div class="tab-group" id="repriceTypeTab">
+                  <button
+                    class="tab-option active"
+                    data-value=""
+                    onclick="selectRepriceType('', this)"
+                  >
+                    None
+                  </button>
+                  <button
+                    class="tab-option"
+                    data-value="%"
+                    onclick="selectRepriceType('%', this)"
+                  >
+                    %
+                  </button>
+                  <button
+                    class="tab-option"
+                    data-value="dollar"
+                    onclick="selectRepriceType('dollar', this)"
+                  >
+                    $
+                  </button>
+                </div>
+                <input
+                  type="hidden"
+                  id="repriceType"
+                  data-field="repriceType"
+                  value=""
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="repriceDiscount">Discount Value</label>
+                <div class="input-with-prefix">
+                  <span class="prefix" id="discountPrefix">$</span>
+                  <input
+                    type="number"
+                    id="repriceDiscount"
+                    data-field="repriceDiscount"
+                    min="0"
+                    step="0.01"
+                    value=""
+                    class="form-input"
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Pricing Summary Card -->
+      <div class="summary-card">
+        <h2 class="summary-title">Pricing Summary</h2>
+
+        <div class="summary-breakdown">
+          <div class="summary-row">
+            <span>Total Passengers</span>
+            <span id="totalPassengers">14</span>
+          </div>
+
+          <div class="summary-row">
+            <span
+              >Base Trip (<span id="summaryDuration">3</span>h ×
+              <span id="summaryRate">$600</span>)</span
+            >
+            <span id="baseTripPrice">$1,800</span>
+          </div>
+
+          <div class="summary-row" id="extraPassengersRow">
+            <span>Extra Passengers (<span id="extraCount">0</span>)</span>
+            <span id="extraPassengerPrice">$0</span>
+          </div>
+
+          <div class="summary-row" id="extrasRow">
+            <span>Extra Services</span>
+            <span id="extrasPrice">$0</span>
+          </div>
+
+          <div class="summary-divider"></div>
+
+          <div class="summary-row subtotal">
+            <span>Subtotal</span>
+            <span id="subtotalPrice">$1,800</span>
+          </div>
+
+          <div
+            class="summary-row discount"
+            id="discountRow"
+            style="display: none"
+          >
+            <span>Discount (<span id="discountType">%</span>)</span>
+            <span id="discountAmount">-$0</span>
+          </div>
+
+          <div class="summary-divider"></div>
+
+          <div class="summary-row final">
+            <span>Business Receives</span>
+            <span id="businessPrice">$1,800.00</span>
+          </div>
+
+          <div class="summary-row fee" id="feeRow" style="display: none">
+            <span><span id="feeSource">Source</span> Fee</span>
+            <span id="feeAmount">$0</span>
+          </div>
+
+          <div class="summary-row total">
+            <span>Customer Pays</span>
+            <span id="customerPrice">$1,800.00</span>
+          </div>
+        </div>
+
+        <!-- Fee Notice for Sources with Fees -->
+        <div class="fee-notice" id="feeNotice" style="display: none">
+          <span class="notice-icon">ℹ️</span>
+          <span id="feeNoticeText">Get My Boat charges 11.5% fee</span>
+        </div>
+      </div>
+
+      <!-- Sticky Bottom Bar -->
+      <div class="sticky-bottom-bar">
+        <div class="sticky-bottom-item">
+          <div style="--flex: 1; align-items: center; gap: 3px">
+            <div class="sticky-bottom-icon">
+              <svg
+                style="--wh: 15px"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+            </div>
+            <span id="stickyPassengers" style="font-size: 22px">14</span>
+          </div>
+
+          <span class="sticky-bottom-label"><small>PPL</small></span>
+        </div>
+        <div class="sticky-bottom-divider"></div>
+        <div class="sticky-bottom-item">
+          <div style="--flex: 1; align-items: center; gap: 3px">
+            <div class="sticky-bottom-icon">
+              <svg
+                style="--wh: 15px"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </div>
+            <span id="stickyDuration" style="font-size: 22px">3</span>
+          </div>
+          <span class="sticky-bottom-label"><small>HRS</small></span>
+        </div>
+        <div class="sticky-bottom-divider"></div>
+        <div class="sticky-bottom-item sticky-bottom-total">
+          <span id="stickyBusinessPrice">$1,800.00</span>
+          <span class="sticky-bottom-label">business</span>
+        </div>
+        <div class="sticky-bottom-divider"></div>
+        <div class="sticky-bottom-item sticky-bottom-total">
+          <span id="stickyCustomerPrice">$1,800.00</span>
+          <span class="sticky-bottom-label">customer</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inquiry Panel -->
+    <div class="inquiry-panel" id="inquiryPanel">
+      <!-- Mobile Handler (visible only on mobile) -->
+      <div class="inquiry-panel-handler">
+        <span class="handler-bar"></span>
+      </div>
+      <div class="inquiry-panel-header">
+        <h3>Saved Quotes</h3>
+        <button class="inquiry-panel-close" onclick="closeInquiryPanel()">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+      <div class="inquiry-panel-body" id="inquiryListContainer">
+        <!-- Inquiry cards rendered here -->
+      </div>
+      <div class="inquiry-panel-footer">
+        <button
+          class="toolbar-btn toolbar-btn-danger"
+          onclick="
+            if (inquiryManager) inquiryManager.clearAll();
+            renderInquiryList();
+            updateInquiryCountBadge();
+          "
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <polyline points="3 6 5 6 21 6" />
+            <path
+              d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+            />
+          </svg>
+          <span>Clear All</span>
+        </button>
+        <span class="inquiry-storage-info" id="storageInfo"></span>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../pricing-calculator/js/pricing-rules.js"></script>
+    <script src="../pricing-calculator/js/pricing-calculator.js"></script>
+    <script src="../pricing-calculator/js/inquiry-manager.js"></script>
+    <script src="../pricing-calculator/js/app.js"></script>
+
+    <!-- Custom Select Component Script -->
+    <script>
+      // Tab Selection Functions
+      function selectTourType(value, button) {
+        const hiddenInput = document.getElementById("tourType");
+        hiddenInput.value = value;
+
+        // Update active state
+        document.querySelectorAll("#tourTypeTab .tab-option").forEach((btn) => {
+          btn.classList.remove("active");
+        });
+        button.classList.add("active");
+
+        // Trigger change event
+        hiddenInput.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+
+      function selectPricingType(value, button) {
+        const hiddenInput = document.getElementById("pricingType");
+        hiddenInput.value = value;
+
+        // Update active state
+        document
+          .querySelectorAll("#pricingTypeTab .tab-option")
+          .forEach((btn) => {
+            btn.classList.remove("active");
+          });
+        button.classList.add("active");
+
+        // Trigger change event
+        hiddenInput.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+
+      function selectRepriceType(value, button) {
+        const hiddenInput = document.getElementById("repriceType");
+        hiddenInput.value = value;
+
+        // Update active state
+        document
+          .querySelectorAll("#repriceTypeTab .tab-option")
+          .forEach((btn) => {
+            btn.classList.remove("active");
+          });
+        button.classList.add("active");
+
+        // Update prefix
+        const discountPrefix = document.getElementById("discountPrefix");
+        if (value === "%") {
+          discountPrefix.textContent = "%";
+          document.getElementById("repriceDiscount").placeholder = "10";
+        } else if (value === "dollar") {
+          discountPrefix.textContent = "$";
+          document.getElementById("repriceDiscount").placeholder = "0";
+        } else {
+          discountPrefix.textContent = "$";
+          document.getElementById("repriceDiscount").placeholder = "0";
+        }
+
+        // Trigger change event
+        hiddenInput.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+
+      // Accordion Toggle Function
+      function toggleAccordion(accordionId) {
+        const accordion = document.getElementById(accordionId);
+        const content = accordion.querySelector(".accordion-content");
+        const chevron = accordion.querySelector(".accordion-chevron");
+
+        if (accordion.classList.contains("open")) {
+          accordion.classList.remove("open");
+          content.style.maxHeight = "0";
+          chevron.style.transform = "rotate(0deg)";
+        } else {
+          accordion.classList.add("open");
+          content.style.maxHeight = content.scrollHeight + "px";
+          chevron.style.transform = "rotate(180deg)";
+        }
+      }
+
+      // Close dropdown when clicking outside
+      document.addEventListener("click", function (e) {
+        if (!e.target.closest(".custom-select")) {
+          document.querySelectorAll(".custom-select.open").forEach((select) => {
+            select.classList.remove("open");
+            select
+              .querySelector(".custom-select-dropdown")
+              .classList.remove("open");
+          });
+        }
+      });
+
+      // Close dropdown with Escape key
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") {
+          document.querySelectorAll(".custom-select.open").forEach((select) => {
+            select.classList.remove("open");
+            select
+              .querySelector(".custom-select-dropdown")
+              .classList.remove("open");
+          });
+        }
+      });
+
+      // Custom Select Functions
+      function toggleSelect(selectId) {
+        const select = document.getElementById(selectId);
+        const isOpen = select.classList.contains("open");
+
+        // Close all selects
+        document.querySelectorAll(".custom-select").forEach((s) => {
+          s.classList.remove("open");
+          s.querySelector(".custom-select-dropdown").classList.remove("open");
+        });
+
+        if (!isOpen) {
+          select.classList.add("open");
+          select.querySelector(".custom-select-dropdown").classList.add("open");
+        }
+      }
+
+      function openSelectDropdown(selectId) {
+        const select = document.getElementById(selectId);
+        if (!select.classList.contains("open")) {
+          select.classList.add("open");
+          select.querySelector(".custom-select-dropdown").classList.add("open");
+        }
+      }
+
+      function handleSelectSearch(fieldType, searchTerm) {
+        const term = searchTerm.toLowerCase().trim();
+        const optionsId = fieldType + "Options";
+        const options = document.getElementById(optionsId);
+
+        if (!options) return;
+
+        const items = options.querySelectorAll(".custom-select-option");
+
+        items.forEach((item) => {
+          const text = item.textContent.toLowerCase();
+          if (text.includes(term) || term === "") {
+            item.style.display = "flex";
+          } else {
+            item.style.display = "none";
+          }
+        });
+      }
+
+      function selectOptionValue(fieldType, value, displayText) {
+        const hiddenInput = document.getElementById(fieldType);
+        const inputField = document.getElementById(fieldType + "Input");
+        const selectId = fieldType + "Select";
+        const select = document.getElementById(selectId);
+
+        hiddenInput.value = value;
+        inputField.value = displayText;
+
+        // Close dropdown
+        if (select) {
+          select.classList.remove("open");
+          select
+            .querySelector(".custom-select-dropdown")
+            .classList.remove("open");
+        }
+
+        // Trigger change event
+        hiddenInput.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    </script>
+  </body>
+</html>

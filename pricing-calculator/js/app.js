@@ -62,6 +62,7 @@
     bindEventListeners();
     updateDurationSlider(); // Initialize slider display
     calculate(); // Initial calculation
+    initInquiryManager(); // Initialize inquiry manager
   }
 
   /**
@@ -107,11 +108,18 @@
       elements.extrasAmount,
       elements.repriceType,
       elements.repriceDiscount,
+      // Customer fields
+      document.getElementById("customerName"),
+      document.getElementById("customerEmail"),
+      document.getElementById("customerPhone"),
+      document.getElementById("tripDate"),
     ];
 
     inputs.forEach((input) => {
-      input.addEventListener("input", handleInputChange);
-      input.addEventListener("change", handleInputChange);
+      if (input) {
+        input.addEventListener("input", handleInputChange);
+        input.addEventListener("change", handleInputChange);
+      }
     });
 
     // Keyboard shortcuts for desktop
@@ -226,6 +234,12 @@
         tourType: elements.tourType.value,
         duration: parseInt(elements.duration.value) || 2,
         adults: parseInt(elements.passengers.value) || 1,
+        date: document.getElementById("tripDate")?.value || "",
+      },
+      customer: {
+        name: document.getElementById("customerName")?.value || "",
+        email: document.getElementById("customerEmail")?.value || "",
+        phone: document.getElementById("customerPhone")?.value || "",
       },
       pricingType: elements.pricingType.value,
       source: elements.source.value,
@@ -380,6 +394,12 @@
     elements.repriceType.value = "";
     elements.repriceDiscount.value = "";
 
+    // Reset customer fields
+    document.getElementById("customerName").value = "";
+    document.getElementById("customerEmail").value = "";
+    document.getElementById("customerPhone").value = "";
+    document.getElementById("tripDate").value = "";
+
     // Reset Tour Type tab
     document.querySelectorAll("#tourTypeTab .tab-option").forEach((btn) => {
       btn.classList.remove("active");
@@ -410,6 +430,9 @@
 
     // Update slider display
     updateDurationSlider();
+
+    // Clear editing state
+    clearEditingInquiry();
 
     // Recalculate
     calculate();
@@ -513,6 +536,545 @@
     }, 2000);
   }
 
+  // ============================================
+  // INQUIRY MANAGEMENT FUNCTIONS
+  // ============================================
+
+  /**
+   * Inquiry Manager Instance
+   */
+  let inquiryManager = null;
+
+  /**
+   * Initialize Inquiry Manager
+   */
+  function initInquiryManager() {
+    if (typeof window.InquiryManager !== "undefined") {
+      inquiryManager = new window.InquiryManager();
+
+      // Set up callbacks
+      inquiryManager.onChange(updateInquiryCountBadge);
+      inquiryManager.onAutoSave((data) => {
+        console.log("Auto-saved at", data.timestamp);
+      });
+
+      // Restore auto-saved data if exists
+      restoreAutoSave();
+
+      // Update count badge
+      updateInquiryCountBadge();
+    }
+  }
+
+  /**
+   * Update inquiry count badge
+   */
+  function updateInquiryCountBadge() {
+    const badge = document.getElementById("inquiryCountBadge");
+    if (badge && inquiryManager) {
+      const count = inquiryManager.getInquiries().length;
+      badge.textContent = count;
+      badge.style.display = count > 0 ? "flex" : "none";
+    }
+  }
+
+  /**
+   * Save current form as inquiry/quote
+   */
+  function saveCurrentQuote() {
+    if (!inquiryManager) return;
+
+    const data = getFormData();
+    const result = calculator.calculate(data);
+
+    // Prompt for customer name
+    const customerName = prompt("Customer name:", data.customer?.name || "");
+    if (customerName === null) return; // Cancelled
+
+    const inquiryData = {
+      customer: {
+        name: customerName,
+        email: data.customer?.email || "",
+        phone: data.customer?.phone || "",
+        language: data.customer?.language || "en",
+      },
+    };
+
+    // Check if editing existing
+    const editingId = document.getElementById("currentInquiryId")?.value;
+    if (editingId) {
+      inquiryData.id = editingId;
+    }
+
+    const id = inquiryManager.saveInquiry(inquiryData, data, result);
+    showToast(`Quote saved: ${customerName}`);
+
+    // Update editing state
+    setEditingInquiry(id, customerName);
+
+    // Stop auto-save for this quote
+    inquiryManager.stopAutoSave();
+  }
+
+  /**
+   * Load inquiry into form
+   */
+  function loadInquiry(id) {
+    if (!inquiryManager) return;
+
+    const inquiry = inquiryManager.getInquiry(id);
+    if (!inquiry) {
+      showToast("Quote not found");
+      return;
+    }
+
+    // Load customer data first
+    if (inquiry.customer) {
+      if (inquiry.customer.name) {
+        document.getElementById("customerName").value = inquiry.customer.name;
+      }
+      if (inquiry.customer.email) {
+        document.getElementById("customerEmail").value = inquiry.customer.email;
+      }
+      if (inquiry.customer.phone) {
+        document.getElementById("customerPhone").value = inquiry.customer.phone;
+      }
+    }
+
+    // Load trip data
+    if (inquiry.trip) {
+      if (inquiry.trip.tourType) {
+        setTourType(inquiry.trip.tourType);
+      }
+      if (inquiry.trip.duration) {
+        elements.duration.value = inquiry.trip.duration;
+        updateDurationSlider();
+      }
+      if (inquiry.trip.passengers) {
+        elements.passengers.value = inquiry.trip.passengers;
+      }
+      if (inquiry.trip.date) {
+        document.getElementById("tripDate").value = inquiry.trip.date;
+      }
+    }
+
+    // Load pricing data
+    if (inquiry.pricing) {
+      if (inquiry.pricing.pricingType) {
+        setPricingType(inquiry.pricing.pricingType);
+      }
+      if (inquiry.pricing.source) {
+        setSource(inquiry.pricing.source);
+      }
+      if (inquiry.pricing.extras) {
+        if (inquiry.pricing.extras.fishingLicenses) {
+          elements.fishingLicenses.value =
+            inquiry.pricing.extras.fishingLicenses;
+        }
+        if (inquiry.pricing.extras.amount !== undefined) {
+          elements.extrasAmount.value = inquiry.pricing.extras.amount;
+        }
+      }
+      if (inquiry.pricing.reprice) {
+        if (inquiry.pricing.reprice.type) {
+          setRepriceType(inquiry.pricing.reprice.type);
+        }
+        if (inquiry.pricing.reprice.discount) {
+          elements.repriceDiscount.value = inquiry.pricing.reprice.discount;
+        }
+      }
+    }
+
+    // Recalculate
+    calculate();
+
+    // Set editing state
+    setEditingInquiry(inquiry.id, inquiry.customer.name);
+
+    // Close panel if open
+    closeInquiryPanel();
+
+    // Start auto-save
+    inquiryManager.startAutoSave(getFormData, calculator);
+
+    showToast(`Loaded: ${inquiry.customer.name}`);
+  }
+
+  /**
+   * Set editing inquiry indicator
+   */
+  function setEditingInquiry(id, customerName) {
+    let indicator = document.getElementById("editingIndicator");
+    if (!indicator) {
+      indicator = document.createElement("div");
+      indicator.id = "editingIndicator";
+      indicator.className = "editing-indicator";
+      indicator.innerHTML = `<span>Editing: ${customerName}</span><button onclick=\"clearEditingInquiry()\">×</button>`;
+      document.querySelector(".calculator-container").prepend(indicator);
+    }
+    indicator.innerHTML = `<span>Editing: ${customerName}</span><button onclick=\"clearEditingInquiry()\" title=\"Clear editing state\">×</button>`;
+    indicator.style.display = "flex";
+
+    // Store current ID
+    if (!document.getElementById("currentInquiryId")) {
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.id = "currentInquiryId";
+      input.value = id;
+      document.body.appendChild(input);
+    } else {
+      document.getElementById("currentInquiryId").value = id;
+    }
+  }
+
+  /**
+   * Clear editing state
+   */
+  function clearEditingInquiry() {
+    const indicator = document.getElementById("editingIndicator");
+    if (indicator) {
+      indicator.style.display = "none";
+    }
+
+    const hiddenInput = document.getElementById("currentInquiryId");
+    if (hiddenInput) {
+      hiddenInput.remove();
+    }
+
+    // Stop auto-save
+    if (inquiryManager) {
+      inquiryManager.stopAutoSave();
+    }
+  }
+
+  /**
+   * Open inquiry panel
+   */
+  function openInquiryPanel() {
+    const panel = document.getElementById("inquiryPanel");
+    if (panel) {
+      panel.classList.add("open");
+      renderInquiryList();
+    }
+  }
+
+  /**
+   * Close inquiry panel
+   */
+  function closeInquiryPanel() {
+    const panel = document.getElementById("inquiryPanel");
+    if (panel) {
+      panel.classList.remove("open");
+    }
+  }
+
+  /**
+   * Toggle inquiry panel
+   */
+  function toggleInquiryPanel() {
+    const panel = document.getElementById("inquiryPanel");
+    if (panel && panel.classList.contains("open")) {
+      closeInquiryPanel();
+    } else {
+      openInquiryPanel();
+    }
+  }
+
+  /**
+   * Render inquiry list
+   */
+  function renderInquiryList() {
+    const container = document.getElementById("inquiryListContainer");
+    if (!container || !inquiryManager) return;
+
+    const inquiries = inquiryManager.getInquiries({ sortBy: "date" });
+
+    if (inquiries.length === 0) {
+      container.innerHTML =
+        '<div class="inquiry-empty">' +
+        '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">' +
+        '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>' +
+        '<polyline points="14 2 14 8 20 8"/>' +
+        '<line x1="12" y1="18" x2="12" y2="12"/>' +
+        '<line x1="9" y1="15" x2="15" y2="15"/>' +
+        "</svg>" +
+        "<p>No saved quotes yet</p>" +
+        "<small>Save a quote to see it here</small>" +
+        "</div>";
+      return;
+    }
+
+    container.innerHTML = inquiries
+      .map((inq) => {
+        const name = inq.customer.name || "Unnamed";
+        const tour = inq.trip.tourType || "No tour";
+        const price = calculator.formatCurrency(inq.result.customerPrice || 0);
+        const date = formatDate(inq.createdAt);
+        const id = inq.id;
+        const status = inq.status;
+
+        return (
+          '<div class="inquiry-card" data-id="' +
+          id +
+          '" onclick="loadInquiry(\'' +
+          id +
+          "')\">" +
+          '<div class="inquiry-card-header">' +
+          '<span class="inquiry-customer">' +
+          name +
+          "</span>" +
+          '<span class="inquiry-status status-' +
+          status +
+          '">' +
+          status +
+          "</span>" +
+          "</div>" +
+          '<div class="inquiry-card-body">' +
+          '<div class="inquiry-tour">' +
+          tour +
+          "</div>" +
+          '<div class="inquiry-meta">' +
+          "<span>" +
+          inq.trip.passengers +
+          " ppl</span>" +
+          "<span>" +
+          inq.trip.duration +
+          "h</span>" +
+          "</div>" +
+          '<div class="inquiry-price">' +
+          price +
+          "</div>" +
+          "</div>" +
+          '<div class="inquiry-card-footer">' +
+          '<span class="inquiry-date">' +
+          date +
+          "</span>" +
+          '<div class="inquiry-actions">' +
+          "<button onclick=\"event.stopPropagation(); duplicateInquiry('" +
+          id +
+          '\')" title="Duplicate">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+          '<rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>' +
+          '<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>' +
+          "</svg>" +
+          "</button>" +
+          "<button onclick=\"event.stopPropagation(); exportInquiry('" +
+          id +
+          '\')" title="Export">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+          '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>' +
+          '<polyline points="7 10 12 15 17 10"/>' +
+          '<line x1="12" y1="15" x2="12" y2="3"/>' +
+          "</svg>" +
+          "</button>" +
+          "<button onclick=\"event.stopPropagation(); deleteInquiry('" +
+          id +
+          '\')" title="Delete" class="delete-btn">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+          '<polyline points="3 6 5 6 21 6"/>' +
+          '<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>' +
+          "</svg>" +
+          "</button>" +
+          "</div>" +
+          "</div>" +
+          "</div>"
+        );
+      })
+      .join("");
+  }
+
+  /**
+   * Format date for display
+   */
+  function formatDate(dateString) {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = now - date;
+
+    if (diff < 60000) return "Just now";
+    if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+    if (diff < 604800000) return `${Math.floor(diff / 86400000)}d ago`;
+
+    return date.toLocaleDateString();
+  }
+
+  /**
+   * Duplicate inquiry
+   */
+  function duplicateInquiry(id) {
+    if (!inquiryManager) return;
+
+    const newInquiry = inquiryManager.duplicateInquiry(id);
+    if (newInquiry) {
+      loadInquiry(newInquiry.id);
+      showToast("Quote duplicated");
+    }
+  }
+
+  /**
+   * Delete inquiry
+   */
+  function deleteInquiry(id) {
+    if (!inquiryManager) return;
+
+    if (confirm("Delete this quote?")) {
+      const deleted = inquiryManager.deleteInquiry(id);
+      if (deleted) {
+        renderInquiryList();
+        updateInquiryCountBadge();
+        showToast("Quote deleted");
+
+        // Clear editing if this was being edited
+        const editingId = document.getElementById("currentInquiryId")?.value;
+        if (editingId === id) {
+          clearEditingInquiry();
+        }
+      }
+    }
+  }
+
+  /**
+   * Export single inquiry
+   */
+  function exportInquiry(id) {
+    if (!inquiryManager) return;
+
+    const inquiry = inquiryManager.getInquiry(id);
+    if (inquiry) {
+      const json = JSON.stringify(inquiry, null, 2);
+      const blob = new Blob([json], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `quote-${inquiry.customer.name || "unnamed"}-${new Date().toISOString().split("T")[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      showToast("Quote exported");
+    }
+  }
+
+  /**
+   * Export all inquiries
+   */
+  function exportAllInquiries() {
+    if (!inquiryManager) return;
+    inquiryManager.downloadExport();
+    showToast("All quotes exported");
+  }
+
+  /**
+   * Import inquiries
+   */
+  function importInquiries() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json";
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const result = inquiryManager.importFromJSON(event.target.result);
+          if (result.success) {
+            showToast(`Imported ${result.imported} quotes`);
+            renderInquiryList();
+            updateInquiryCountBadge();
+          } else {
+            showToast("Import failed: " + result.error);
+          }
+        };
+        reader.readAsText(file);
+      }
+    };
+    input.click();
+  }
+
+  /**
+   * Restore auto-saved data
+   */
+  function restoreAutoSave() {
+    if (!inquiryManager) return;
+
+    const autoSave = inquiryManager.getAutoSave();
+    if (autoSave && confirm("Found auto-saved data. Restore it?")) {
+      // Load basic data
+      if (autoSave.formData) {
+        const data = autoSave.formData;
+        if (data.trip) {
+          if (data.trip.duration) {
+            elements.duration.value = data.trip.duration;
+            updateDurationSlider();
+          }
+          if (data.trip.passengers) {
+            elements.passengers.value = data.trip.passengers;
+          }
+        }
+        if (data.pricingType) {
+          setPricingType(data.pricingType);
+        }
+        calculate();
+      }
+      showToast("Auto-save restored");
+    }
+
+    // Clear auto-save after restore attempt
+    if (autoSave) {
+      inquiryManager.clearAutoSave();
+    }
+  }
+
+  /**
+   * Update inquiry status
+   */
+  function updateInquiryStatus(id, status) {
+    if (!inquiryManager) return;
+    inquiryManager.updateStatus(id, status);
+    renderInquiryList();
+  }
+
+  // Helper functions for setting values
+  function setTourType(value) {
+    const btn = document.querySelector(
+      `#tourTypeTab .tab-option[data-value="${value}"]`,
+    );
+    if (btn) {
+      selectTourType(value, btn);
+    }
+  }
+
+  function setPricingType(value) {
+    const btn = document.querySelector(
+      `#pricingTypeTab .tab-option[data-value="${value}"]`,
+    );
+    if (btn) {
+      selectPricingType(value, btn);
+    }
+  }
+
+  function setSource(value) {
+    const hiddenInput = document.getElementById("source");
+    hiddenInput.value = value;
+    document.getElementById("sourceInput").value =
+      document
+        .querySelector(`.custom-select-option[data-value="${value}"]`)
+        ?.textContent?.trim() || "";
+  }
+
+  function setRepriceType(value) {
+    const btn = document.querySelector(
+      `#repriceTypeTab .tab-option[data-value="${value}"]`,
+    );
+    if (btn) {
+      selectRepriceType(value, btn);
+    }
+  }
+
   // Initialize when DOM is ready
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
@@ -520,3 +1082,511 @@
     init();
   }
 })();
+
+// ============================================
+// INQUIRY MANAGEMENT FUNCTIONS
+// ============================================
+
+/**
+ * Inquiry Manager Instance
+ */
+let inquiryManager = null;
+
+/**
+ * Initialize Inquiry Manager
+ */
+function initInquiryManager() {
+  if (typeof window.InquiryManager !== "undefined") {
+    inquiryManager = new window.InquiryManager();
+
+    // Set up callbacks
+    inquiryManager.onChange(updateInquiryCountBadge);
+    inquiryManager.onAutoSave((data) => {
+      console.log("Auto-saved at", data.timestamp);
+    });
+
+    // Restore auto-saved data if exists
+    restoreAutoSave();
+
+    // Update count badge
+    updateInquiryCountBadge();
+  }
+}
+
+/**
+ * Update inquiry count badge
+ */
+function updateInquiryCountBadge() {
+  const badge = document.getElementById("inquiryCountBadge");
+  if (badge && inquiryManager) {
+    const count = inquiryManager.getInquiries().length;
+    badge.textContent = count;
+    badge.style.display = count > 0 ? "flex" : "none";
+  }
+}
+
+/**
+ * Save current form as inquiry/quote
+ */
+function saveCurrentQuote() {
+  if (!inquiryManager) return;
+
+  const data = getFormData();
+  const result = calculator.calculate(data);
+
+  // Prompt for customer name
+  const customerName = prompt("Customer name:", data.customer?.name || "");
+  if (customerName === null) return; // Cancelled
+
+  const inquiryData = {
+    customer: {
+      name: customerName,
+      email: data.customer?.email || "",
+      phone: data.customer?.phone || "",
+      language: data.customer?.language || "en",
+    },
+  };
+
+  // Check if editing existing
+  const editingId = document.getElementById("currentInquiryId")?.value;
+  if (editingId) {
+    inquiryData.id = editingId;
+  }
+
+  const id = inquiryManager.saveInquiry(inquiryData, data, result);
+  showToast(`Quote saved: ${customerName}`);
+
+  // Update editing state
+  setEditingInquiry(id, customerName);
+
+  // Stop auto-save for this quote
+  inquiryManager.stopAutoSave();
+}
+
+/**
+ * Load inquiry into form
+ */
+function loadInquiry(id) {
+  if (!inquiryManager) return;
+
+  const inquiry = inquiryManager.getInquiry(id);
+  if (!inquiry) {
+    showToast("Quote not found");
+    return;
+  }
+
+  // Load customer data first
+  if (inquiry.customer) {
+    if (inquiry.customer.name) {
+      document.getElementById("customerName").value = inquiry.customer.name;
+    }
+    if (inquiry.customer.email) {
+      document.getElementById("customerEmail").value = inquiry.customer.email;
+    }
+    if (inquiry.customer.phone) {
+      document.getElementById("customerPhone").value = inquiry.customer.phone;
+    }
+  }
+
+  // Load trip data
+  if (inquiry.trip) {
+    if (inquiry.tourType) {
+      setTourType(inquiry.trip.tourType);
+    }
+    if (inquiry.trip.duration) {
+      elements.duration.value = inquiry.trip.duration;
+      updateDurationSlider();
+    }
+    if (inquiry.trip.passengers) {
+      elements.passengers.value = inquiry.trip.passengers;
+    }
+    if (inquiry.trip.date) {
+      document.getElementById("tripDate").value = inquiry.trip.date;
+    }
+  }
+
+  // Load pricing data
+  if (inquiry.pricing) {
+    if (inquiry.pricing.pricingType) {
+      setPricingType(inquiry.pricing.pricingType);
+    }
+    if (inquiry.pricing.source) {
+      setSource(inquiry.pricing.source);
+    }
+    if (inquiry.pricing.extras) {
+      if (inquiry.pricing.extras.fishingLicenses) {
+        elements.fishingLicenses.value = inquiry.pricing.extras.fishingLicenses;
+      }
+      if (inquiry.pricing.extras.amount !== undefined) {
+        elements.extrasAmount.value = inquiry.pricing.extras.amount;
+      }
+    }
+    if (inquiry.pricing.reprice) {
+      if (inquiry.pricing.reprice.type) {
+        setRepriceType(inquiry.pricing.reprice.type);
+      }
+      if (inquiry.pricing.reprice.discount) {
+        elements.repriceDiscount.value = inquiry.pricing.reprice.discount;
+      }
+    }
+  }
+
+  // Recalculate
+  calculate();
+
+  // Set editing state
+  setEditingInquiry(inquiry.id, inquiry.customer.name);
+
+  // Close panel if open
+  closeInquiryPanel();
+
+  // Start auto-save
+  inquiryManager.startAutoSave(getFormData, calculator);
+
+  showToast(`Loaded: ${inquiry.customer.name}`);
+}
+
+/**
+ * Set editing inquiry indicator
+ */
+function setEditingInquiry(id, customerName) {
+  let indicator = document.getElementById("editingIndicator");
+  if (!indicator) {
+    indicator = document.createElement("div");
+    indicator.id = "editingIndicator";
+    indicator.className = "editing-indicator";
+    indicator.innerHTML = `<span>Editing: ${customerName}</span><button onclick="clearEditingInquiry()">×</button>`;
+    document.querySelector(".calculator-container").prepend(indicator);
+  }
+  indicator.innerHTML = `<span>Editing: ${customerName}</span><button onclick="clearEditingInquiry()" title="Clear editing state">×</button>`;
+  indicator.style.display = "flex";
+
+  // Store current ID
+  if (!document.getElementById("currentInquiryId")) {
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.id = "currentInquiryId";
+    input.value = id;
+    document.body.appendChild(input);
+  } else {
+    document.getElementById("currentInquiryId").value = id;
+  }
+}
+
+/**
+ * Clear editing state
+ */
+function clearEditingInquiry() {
+  const indicator = document.getElementById("editingIndicator");
+  if (indicator) {
+    indicator.style.display = "none";
+  }
+
+  const hiddenInput = document.getElementById("currentInquiryId");
+  if (hiddenInput) {
+    hiddenInput.remove();
+  }
+
+  // Stop auto-save
+  if (inquiryManager) {
+    inquiryManager.stopAutoSave();
+  }
+}
+
+/**
+ * Open inquiry panel
+ */
+function openInquiryPanel() {
+  const panel = document.getElementById("inquiryPanel");
+  if (panel) {
+    panel.classList.add("open");
+    renderInquiryList();
+  }
+}
+
+/**
+ * Close inquiry panel
+ */
+function closeInquiryPanel() {
+  const panel = document.getElementById("inquiryPanel");
+  if (panel) {
+    panel.classList.remove("open");
+  }
+}
+
+/**
+ * Toggle inquiry panel
+ */
+function toggleInquiryPanel() {
+  const panel = document.getElementById("inquiryPanel");
+  if (panel && panel.classList.contains("open")) {
+    closeInquiryPanel();
+  } else {
+    openInquiryPanel();
+  }
+}
+
+/**
+ * Render inquiry list
+ */
+function renderInquiryList() {
+  const container = document.getElementById("inquiryListContainer");
+  if (!container || !inquiryManager) return;
+
+  const inquiries = inquiryManager.getInquiries({ sortBy: "date" });
+
+  if (inquiries.length === 0) {
+    container.innerHTML = `
+      <div class="inquiry-empty">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="12" y1="18" x2="12" y2="12"/>
+          <line x1="9" y1="15" x2="15" y2="15"/>
+        </svg>
+        <p>No saved quotes yet</p>
+        <small>Save a quote to see it here</small>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = inquiries
+    .map(
+      (inq) => `
+    <div class="inquiry-card" data-id="${inq.id}" onclick="loadInquiry('${inq.id}')">
+      <div class="inquiry-card-header">
+        <span class="inquiry-customer">${inq.customer.name || "Unnamed"}</span>
+        <span class="inquiry-status status-${inq.status}">${inq.status}</span>
+      </div>
+      <div class="inquiry-card-body">
+        <div class="inquiry-tour">${inq.trip.tourType || "No tour"}</div>
+        <div class="inquiry-meta">
+          <span>${inq.trip.passengers} ppl</span>
+          <span>${inq.trip.duration}h</span>
+        </div>
+        <div class="inquiry-price">
+          ${calculator.formatCurrency(inq.result.customerPrice || 0)}
+        </div>
+      </div>
+      <div class="inquiry-card-footer">
+        <span class="inquiry-date">${formatDate(inq.createdAt)}</span>
+        <div class="inquiry-actions">
+          <button onclick="event.stopPropagation(); duplicateInquiry('${inq.id}')" title="Duplicate">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+          </button>
+          <button onclick="event.stopPropagation(); exportInquiry('${inq.id}')" title="Export">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+          </button>
+          <button onclick="event.stopPropagation(); deleteInquiry('${inq.id}')" title="Delete" class="delete-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  `,
+    )
+    .join("");
+}
+
+/**
+ * Format date for display
+ */
+function formatDate(dateString) {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  const now = new Date();
+  const diff = now - date;
+
+  if (diff < 60000) return "Just now";
+  if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+  if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+  if (diff < 604800000) return `${Math.floor(diff / 86400000)}d ago`;
+
+  return date.toLocaleDateString();
+}
+
+/**
+ * Duplicate inquiry
+ */
+function duplicateInquiry(id) {
+  if (!inquiryManager) return;
+
+  const newInquiry = inquiryManager.duplicateInquiry(id);
+  if (newInquiry) {
+    loadInquiry(newInquiry.id);
+    showToast("Quote duplicated");
+  }
+}
+
+/**
+ * Delete inquiry
+ */
+function deleteInquiry(id) {
+  if (!inquiryManager) return;
+
+  if (confirm("Delete this quote?")) {
+    const deleted = inquiryManager.deleteInquiry(id);
+    if (deleted) {
+      renderInquiryList();
+      updateInquiryCountBadge();
+      showToast("Quote deleted");
+
+      // Clear editing if this was being edited
+      const editingId = document.getElementById("currentInquiryId")?.value;
+      if (editingId === id) {
+        clearEditingInquiry();
+      }
+    }
+  }
+}
+
+/**
+ * Export single inquiry
+ */
+function exportInquiry(id) {
+  if (!inquiryManager) return;
+
+  const inquiry = inquiryManager.getInquiry(id);
+  if (inquiry) {
+    const json = JSON.stringify(inquiry, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `quote-${inquiry.customer.name || "unnamed"}-${new Date().toISOString().split("T")[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showToast("Quote exported");
+  }
+}
+
+/**
+ * Export all inquiries
+ */
+function exportAllInquiries() {
+  if (!inquiryManager) return;
+  inquiryManager.downloadExport();
+  showToast("All quotes exported");
+}
+
+/**
+ * Import inquiries
+ */
+function importInquiries() {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = ".json";
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = inquiryManager.importFromJSON(event.target.result);
+        if (result.success) {
+          showToast(`Imported ${result.imported} quotes`);
+          renderInquiryList();
+          updateInquiryCountBadge();
+        } else {
+          showToast("Import failed: " + result.error);
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
+  input.click();
+}
+
+/**
+ * Restore auto-saved data
+ */
+function restoreAutoSave() {
+  if (!inquiryManager) return;
+
+  const autoSave = inquiryManager.getAutoSave();
+  if (autoSave && confirm("Found auto-saved data. Restore it?")) {
+    // Load basic data
+    if (autoSave.formData) {
+      const data = autoSave.formData;
+      if (data.trip) {
+        if (data.trip.duration) {
+          elements.duration.value = data.trip.duration;
+          updateDurationSlider();
+        }
+        if (data.trip.passengers) {
+          elements.passengers.value = data.trip.passengers;
+        }
+      }
+      if (data.pricingType) {
+        setPricingType(data.pricingType);
+      }
+      calculate();
+    }
+    showToast("Auto-save restored");
+  }
+
+  // Clear auto-save after restore attempt
+  if (autoSave) {
+    inquiryManager.clearAutoSave();
+  }
+}
+
+/**
+ * Update inquiry status
+ */
+function updateInquiryStatus(id, status) {
+  if (!inquiryManager) return;
+  inquiryManager.updateStatus(id, status);
+  renderInquiryList();
+}
+
+// Helper functions for setting values
+function setTourType(value) {
+  const btn = document.querySelector(
+    `#tourTypeTab .tab-option[data-value="${value}"]`,
+  );
+  if (btn) {
+    selectTourType(value, btn);
+  }
+}
+
+function setPricingType(value) {
+  const btn = document.querySelector(
+    `#pricingTypeTab .tab-option[data-value="${value}"]`,
+  );
+  if (btn) {
+    selectPricingType(value, btn);
+  }
+}
+
+function setSource(value) {
+  const hiddenInput = document.getElementById("source");
+  hiddenInput.value = value;
+  document.getElementById("sourceInput").value =
+    document
+      .querySelector(`.custom-select-option[data-value="${value}"]`)
+      ?.textContent?.trim() || "";
+}
+
+function setRepriceType(value) {
+  const btn = document.querySelector(
+    `#repriceTypeTab .tab-option[data-value="${value}"]`,
+  );
+  if (btn) {
+    selectRepriceType(value, btn);
+  }
+}

@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Trip Configurator PWA</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+      :root {
+        --item-height: 54px;
+        --visor-bg: #2c2c2e;
+        --bg-color: #000000;
+        --text-primary: #ffffff;
+        --text-secondary: #8e8e93;
+        --accent-color: #0a84ff;
+      }
+
+      * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      body {
+        margin: 0;
+        background-color: #121212;
+        color: var(--text-primary);
+        font-family: -apple-system, system-ui, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      /* Resumen del Viaje como Panel de Control */
+      .trip-summary {
+        background: #1c1c1e;
+        width: 100%;
+        max-width: 340px;
+        padding: 24px 16px;
+        border-radius: 24px;
+        border: 1px solid #2c2c2e;
+        text-align: center;
+      }
+
+      .summary-title {
+        color: var(--text-secondary);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 20px;
+        display: block;
+        font-weight: 700;
+      }
+
+      .summary-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .summary-item {
+        background: #2c2c2e;
+        padding: 16px 8px;
+        border-radius: 16px;
+        cursor: pointer;
+        transition:
+          transform 0.1s,
+          background 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid transparent;
+      }
+
+      .summary-item:active {
+        transform: scale(0.95);
+        background: #3a3a3c;
+        border-color: #48484a;
+      }
+
+      .summary-item i {
+        font-size: 24px;
+        color: var(--accent-color);
+      }
+
+      .summary-value {
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .summary-label {
+        font-size: 12px;
+        color: var(--text-secondary);
+        font-weight: 500;
+      }
+
+      /* Bottom Sheet */
+      .sheet-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(4px);
+        z-index: 100;
+        visibility: hidden;
+        opacity: 0;
+      }
+
+      .bottom-sheet {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--bg-color);
+        border-top-left-radius: 24px;
+        border-top-right-radius: 24px;
+        z-index: 101;
+        transform: translateY(100%);
+        padding: 20px;
+        padding-bottom: env(safe-area-inset-bottom, 20px);
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+      }
+
+      .sheet-header {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .drag-handle {
+        width: 40px;
+        height: 5px;
+        background: #3a3a3c;
+        border-radius: 10px;
+        margin-bottom: 20px;
+      }
+
+      .sheet-title {
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      /* Picker Container */
+      .picker-container {
+        position: relative;
+        width: 100%;
+        height: calc(var(--item-height) * 5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        mask-image: linear-gradient(
+          to bottom,
+          transparent,
+          black 20%,
+          black 80%,
+          transparent
+        );
+        -webkit-mask-image: linear-gradient(
+          to bottom,
+          transparent,
+          black 20%,
+          black 80%,
+          transparent
+        );
+      }
+
+      .visor {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        height: var(--item-height);
+        background-color: var(--visor-bg);
+        border-radius: 12px;
+        z-index: 1;
+        pointer-events: none;
+      }
+
+      .manual-input {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-100%, -50%);
+        width: 60px;
+        height: var(--item-height);
+        background: transparent;
+        border: none;
+        color: white;
+        font-size: 2rem;
+        font-weight: 500;
+        text-align: center;
+        z-index: 15;
+        outline: none;
+        opacity: 0;
+        pointer-events: none;
+        appearance: textfield;
+        transition: opacity 0.25s ease;
+      }
+
+      .input-trigger {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-100%, -50%);
+        width: 60px;
+        height: var(--item-height);
+        z-index: 20;
+        cursor: pointer;
+      }
+
+      .unit-label {
+        position: absolute;
+        left: calc(50% + 15px);
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-primary);
+        font-size: 1.1rem;
+        font-weight: 600;
+        z-index: 2;
+        pointer-events: none;
+      }
+
+      .scroll-wrapper {
+        position: absolute;
+        inset: 0;
+        overflow-y: scroll;
+        scrollbar-width: none;
+        scroll-snap-type: y mandatory;
+        z-index: 10;
+        transition: opacity 0.25s ease;
+      }
+
+      .scroll-wrapper::-webkit-scrollbar {
+        display: none;
+      }
+      .scroll-list {
+        margin: 0;
+        padding: calc(var(--item-height) * 2) 0;
+        list-style: none;
+      }
+      .scroll-item {
+        height: var(--item-height);
+        scroll-snap-align: center;
+      }
+
+      .wheel-3d {
+        position: relative;
+        width: 60px;
+        height: var(--item-height);
+        transform-style: preserve-3d;
+        pointer-events: none;
+        margin-right: 60px;
+        z-index: 2;
+        transition: opacity 0.25s ease;
+      }
+
+      .is-typing .wheel-3d,
+      .is-typing .scroll-wrapper {
+        opacity: 0;
+      }
+      .is-typing .manual-input {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .is-typing .input-trigger {
+        pointer-events: none;
+      }
+
+      .wheel-item {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 500;
+        backface-visibility: hidden;
+        --radius: 110px;
+        transform: rotateX(calc(var(--angle) * -1deg)) translateZ(var(--radius));
+        opacity: 0.2;
+      }
+
+      .wheel-item.active {
+        opacity: 1;
+        color: var(--text-primary);
+      }
+
+      .done-btn {
+        width: 100%;
+        background: var(--accent-color);
+        color: white;
+        border: none;
+        padding: 16px;
+        border-radius: 14px;
+        font-size: 17px;
+        font-weight: 600;
+        margin-top: 24px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Resumen de Viaje Interactuable -->
+    <div class="trip-summary">
+      <span class="summary-title">Configuración de Viaje</span>
+      <div class="summary-details">
+        <div class="summary-item" onclick="openPicker('duration')">
+          <i class="ph ph-clock"></i>
+          <div class="summary-value">
+            <span id="summaryDuration">2</span>
+            <span class="summary-label">HRS</span>
+          </div>
+        </div>
+        <div class="summary-item" onclick="openPicker('passengers')">
+          <i class="ph ph-users"></i>
+          <div class="summary-value">
+            <span id="summaryPassengers">1</span>
+            <span class="summary-label">PAX</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Sheet Único -->
+    <div class="sheet-overlay" id="overlay"></div>
+    <div class="bottom-sheet" id="sheet">
+      <div class="sheet-header">
+        <div class="drag-handle"></div>
+        <span class="sheet-title" id="sheetTitle">Seleccionar</span>
+      </div>
+
+      <div class="picker-container" id="pickerContainer">
+        <div class="visor"></div>
+        <span class="unit-label" id="unitLabel">HRS</span>
+
+        <div class="input-trigger" id="inputTrigger"></div>
+        <input
+          type="text"
+          class="manual-input"
+          id="durationInput"
+          inputmode="numeric"
+          pattern="[0-9]*"
+        />
+
+        <div class="wheel-3d" id="wheel"></div>
+        <div class="scroll-wrapper" id="scrollWrapper">
+          <ul class="scroll-list" id="scrollList"></ul>
+        </div>
+      </div>
+
+      <button class="done-btn" id="closeSheet">Confirmar</button>
+    </div>
+
+    <script>
+      const CONFIG = {
+        duration: { min: 2, max: 8, label: "HRS", title: "Duración del Viaje" },
+        passengers: {
+          min: 1,
+          max: 4,
+          label: "PAX",
+          title: "Cantidad de Pasajeros",
+        },
+      };
+
+      let currentMode = "duration";
+      let tripData = { duration: 2, passengers: 1 };
+
+      const STEP_ANGLE = 22;
+      const ITEM_HEIGHT = 54;
+
+      const overlay = document.getElementById("overlay");
+      const sheet = document.getElementById("sheet");
+      const wheel = document.getElementById("wheel");
+      const scrollList = document.getElementById("scrollList");
+      const scrollWrapper = document.getElementById("scrollWrapper");
+      const durationInput = document.getElementById("durationInput");
+      const unitLabel = document.getElementById("unitLabel");
+      const sheetTitle = document.getElementById("sheetTitle");
+      const pickerContainer = document.getElementById("pickerContainer");
+      const inputTrigger = document.getElementById("inputTrigger");
+
+      let isSyncing = false;
+
+      function setupPicker(mode) {
+        currentMode = mode;
+        const settings = CONFIG[mode];
+
+        wheel.innerHTML = "";
+        scrollList.innerHTML = "";
+        const items3D = [];
+
+        unitLabel.innerText = settings.label;
+        sheetTitle.innerText = settings.title;
+        durationInput.min = settings.min;
+        durationInput.max = settings.max;
+
+        for (let i = settings.min; i <= settings.max; i++) {
+          const item3d = document.createElement("div");
+          item3d.className = "wheel-item";
+          item3d.innerText = i;
+          item3d.style.setProperty("--angle", (i - settings.min) * STEP_ANGLE);
+          wheel.appendChild(item3d);
+          items3D.push(item3d);
+
+          const scrollItem = document.createElement("li");
+          scrollItem.className = "scroll-item";
+          scrollList.appendChild(scrollItem);
+        }
+
+        return items3D;
+      }
+
+      let activeItems3D = [];
+
+      function openPicker(mode) {
+        activeItems3D = setupPicker(mode);
+        const val = tripData[mode];
+
+        overlay.style.visibility = "visible";
+        gsap.to(overlay, { opacity: 1, duration: 0.3 });
+        gsap.to(sheet, { y: 0, duration: 0.5, ease: "power4.out" });
+
+        isSyncing = true;
+        const targetScroll = (val - CONFIG[mode].min) * ITEM_HEIGHT;
+        scrollWrapper.scrollTop = targetScroll;
+        gsap.set(wheel, { rotateX: (val - CONFIG[mode].min) * STEP_ANGLE });
+
+        updateActiveClasses(val);
+        setTimeout(() => (isSyncing = false), 100);
+      }
+
+      function updateActiveClasses(currentVal) {
+        activeItems3D.forEach((item, index) => {
+          const itemVal = index + CONFIG[currentMode].min;
+          item.classList.toggle("active", itemVal === currentVal);
+        });
+      }
+
+      scrollWrapper.addEventListener("scroll", () => {
+        if (isSyncing) return;
+        const progress = scrollWrapper.scrollTop / ITEM_HEIGHT;
+        const activeIndex = Math.round(progress);
+        const val = activeIndex + CONFIG[currentMode].min;
+
+        gsap.set(wheel, { rotateX: progress * STEP_ANGLE });
+        updateActiveClasses(val);
+        tripData[currentMode] = val;
+      });
+
+      inputTrigger.addEventListener("click", () => {
+        console.log("[DEBUG] inputTrigger clicked");
+        durationInput.focus();
+        console.log("[DEBUG] activeElement:", document.activeElement);
+      });
+
+      durationInput.addEventListener("focus", () => {
+        console.log("[DEBUG] focus event fired");
+        durationInput.value = tripData[currentMode];
+        pickerContainer.classList.add("is-typing");
+        console.log(
+          "[DEBUG] value:",
+          durationInput.value,
+          "has focus:",
+          document.activeElement === durationInput,
+        );
+      });
+
+      durationInput.addEventListener("blur", () => {
+        console.log("[DEBUG] BLUR fired, value:", durationInput.value);
+        const settings = CONFIG[currentMode];
+        if (isNaN(val)) val = tripData[currentMode];
+        if (val < settings.min) val = settings.min;
+        if (val > settings.max) val = settings.max;
+
+        tripData[currentMode] = val;
+        isSyncing = true;
+        scrollWrapper.scrollTop = (val - settings.min) * ITEM_HEIGHT;
+        gsap.set(wheel, { rotateX: (val - settings.min) * STEP_ANGLE });
+        updateActiveClasses(val);
+        pickerContainer.classList.remove("is-typing");
+        setTimeout(() => (isSyncing = false), 50);
+      });
+
+      // Validar que solo se ingresen números
+      durationInput.addEventListener("input", (e) => {
+        console.log(
+          "[DEBUG] input event - value BEFORE replace:",
+          durationInput.value,
+        );
+        durationInput.value = durationInput.value.replace(/\D/g, "");
+        console.log(
+          "[DEBUG] input event - value AFTER replace:",
+          durationInput.value,
+        );
+      });
+
+      durationInput.addEventListener("keydown", (e) => {
+        console.log(
+          "[DEBUG] keydown - key:",
+          e.key,
+          "value:",
+          durationInput.value,
+        );
+      });
+
+      // DEBUG: Detectar eventos de teclado
+      function closeBottomSheet() {
+        gsap.to(sheet, { y: "100%", duration: 0.4, ease: "power4.in" });
+        gsap.to(overlay, {
+          opacity: 0,
+          duration: 0.3,
+          onComplete: () => {
+            overlay.style.visibility = "hidden";
+            document.getElementById("summaryDuration").innerText =
+              tripData.duration;
+            document.getElementById("summaryPassengers").innerText =
+              tripData.passengers;
+          },
+        });
+      }
+
+      document.getElementById("closeSheet").onclick = closeBottomSheet;
+      overlay.onclick = closeBottomSheet;
+      durationInput.onkeypress = (e) =>
+        e.key === "Enter" && durationInput.blur();
+    </script>
+  </body>
+</html>

@@ -40,7 +40,7 @@
       "name": "🚦 Fareharbor",
       "hourlyRate": 600,
       "hasFee": true,
-      "feePercentage": 0.12,
+      "feePercentage": -0.12,
       "feeNote": "12% fee"
     },
     {

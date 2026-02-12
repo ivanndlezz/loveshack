@@ -1,648 +1,2939 @@
 <!doctype html>
-<!-- Test -->
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Reservation Pricing Calculator</title>
-    <link rel="stylesheet" href="css/styles.css" />
-    <link
-      rel="icon"
-      href="https://www.loveshackcruises.com/wp-content/uploads/2020/06/Recurso-5.png"
-      sizes="192x192"
-    />
-    <link
-      rel="apple-touch-icon"
-      href="https://www.loveshackcruises.com/wp-content/uploads/2020/06/Recurso-5.png"
-    />
     <meta
-      name="msapplication-TileImage"
-      content="https://www.loveshackcruises.com/wp-content/uploads/2020/06/Recurso-5.png"
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
+    <title>Loveshack Reservations - PWA</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+      :root {
+        --item-height: 54px;
+        --visor-bg: #2c2c2e;
+        --bg-color: #000000;
+        --text-primary: #ffffff;
+        --text-secondary: #8e8e93;
+        --accent-color: #0a84ff;
+        --fill: -webkit-fill-available;
+        --fill-h: -webkit-fill-available;
+      }
+
+      [hide] {
+        display: none;
+      }
+
+      [style*="--flex"] {
+        display: flex;
+      }
+      [style*="--fill"] {
+        width: var(--fill);
+      }
+
+      [style*="--fill-h"] {
+        height: var(--fill-h);
+      }
+
+      [style*="--flex-col"] {
+        flex-direction: column;
+      }
+
+      [style*="--rad"] {
+        border-radius: var(--rad);
+      }
+
+      [style*="--shadow"] {
+        box-shadow: var(--shadow);
+      }
+
+      [style*="--accent"] {
+        color: var(--accent-color);
+      }
+
+      [style*="--accent-bg"] {
+        background-color: var(--accent-color);
+      }
+
+      [style*="--accent-border"] {
+        border-color: var(--accent-color);
+      }
+
+      [style*="--accent-text"] {
+        color: var(--accent-color);
+      }
+
+      [style*="--w"] {
+        width: var(--w);
+      }
+
+      [style*="--h"] {
+        height: var(--h);
+      }
+
+      [style*="--wh"] {
+        width: var(--wh);
+        height: var(--wh);
+      }
+
+      [style*="--center"] {
+        justify-content: center;
+        align-items: center;
+      }
+
+      [style*="--center-y"] {
+        align-items: center;
+      }
+
+      [style*="--center-x"] {
+        justify-content: center;
+      }
+
+      [style*="--blur"] {
+        backdrop-filter: blur(var(--blur));
+        -webkit-backdrop-filter: blur(var(--blur));
+      }
+
+      [style*="--op"] {
+        opacity: var(--op);
+      }
+
+      * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      body {
+        margin: 0;
+        background-color: #121212;
+        color: var(--text-primary);
+        font-family: -apple-system, system-ui, sans-serif;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        margin-bottom: 100vh;
+      }
+
+      #displayDuration:before {
+        content: "(Up to 14 pax) ";
+        color: grey;
+      }
+
+      /* ========================================
+         DESIGN LAYER - Structural Classes
+         These define the type and layout of elements
+         ======================================== */
+
+      /* Resumen del Viaje Interactuable */
+      .trip-summary {
+        background: #1c1c1e;
+        width: 100%;
+        padding: 24px 16px;
+        padding-top: 35px;
+        border-radius: 24px;
+        border: 1px solid #2c2c2e;
+        text-align: center;
+        position: fixed;
+        bottom: 0px;
+        left: 0px;
+        right: 0px;
+        z-index: 999;
+      }
+
+      .summary-title {
+        color: var(--text-secondary);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 20px;
+        display: block;
+        font-weight: 700;
+      }
+
+      .summary-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .summary-item {
+        background: #2c2c2e;
+        padding: 16px 8px;
+        border-radius: 16px;
+        cursor: pointer;
+        transition:
+          transform 0.1s,
+          background 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border: 1px solid transparent;
+      }
+
+      .summary-item:active {
+        transform: scale(0.95);
+        background: #3a3a3c;
+        border-color: #48484a;
+      }
+
+      .summary-item i {
+        font-size: 24px;
+        color: var(--accent-color);
+      }
+
+      .summary-value {
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .summary-label {
+        font-size: 12px;
+        color: var(--text-secondary);
+        font-weight: 500;
+      }
+
+      /* Bottom Sheet */
+      .sheet-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(75, 75, 75, 35%);
+        backdrop-filter: blur(4px);
+        z-index: 100;
+        visibility: hidden;
+        opacity: 0;
+      }
+
+      .bottom-sheet {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--bg-color);
+        border-top-left-radius: 24px;
+        border-top-right-radius: 24px;
+        z-index: 101;
+        transform: translateY(100%);
+        padding: 20px;
+        padding-bottom: env(safe-area-inset-bottom, 20px);
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+      }
+
+      i.ph.ph-caret-right {
+    margin-left: auto;
+}
+
+      .sheet-header {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .drag-handle {
+        width: 40px;
+        height: 5px;
+        background: #3a3a3c;
+        border-radius: 10px;
+        margin-bottom: 20px;
+      }
+
+      .sheet-title {
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      /* Picker Container */
+      .picker-container {
+        position: relative;
+        width: 100%;
+        height: calc(var(--item-height) * 5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        mask-image: linear-gradient(
+          to bottom,
+          transparent,
+          black 20%,
+          black 80%,
+          transparent
+        );
+        -webkit-mask-image: linear-gradient(
+          to bottom,
+          transparent,
+          black 20%,
+          black 80%,
+          transparent
+        );
+      }
+
+      .visor {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        height: var(--item-height);
+        background-color: var(--visor-bg);
+        border-radius: 12px;
+        z-index: 1;
+        pointer-events: none;
+      }
+
+      .manual-input {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-100%, -50%);
+        width: 60px;
+        height: var(--item-height);
+        background: transparent;
+        border: none;
+        color: white;
+        font-size: 2rem;
+        font-weight: 500;
+        text-align: center;
+        z-index: 15;
+        outline: none;
+        opacity: 0;
+        pointer-events: none;
+        appearance: textfield;
+        transition: opacity 0.25s ease;
+      }
+
+      .input-trigger {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-100%, -50%);
+        width: 60px;
+        height: var(--item-height);
+        z-index: 20;
+        cursor: text;
+        border: 1px solid transparent;
+      }
+
+      .input-trigger:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .unit-label {
+        position: absolute;
+        left: calc(50% + 15px);
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-primary);
+        font-size: 1.1rem;
+        font-weight: 600;
+        z-index: 2;
+        pointer-events: none;
+      }
+
+      .scroll-wrapper {
+        position: absolute;
+        inset: 0;
+        overflow-y: scroll;
+        scrollbar-width: none;
+        scroll-snap-type: y mandatory;
+        z-index: 10;
+        transition: opacity 0.25s ease;
+      }
+
+      .scroll-wrapper::-webkit-scrollbar {
+        display: none;
+      }
+
+      .scroll-list {
+        margin: 0;
+        padding: calc(var(--item-height) * 2) 0;
+        list-style: none;
+      }
+
+      .scroll-item {
+        height: var(--item-height);
+        scroll-snap-align: center;
+        cursor:
+          url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 256 256'><g transform='rotate(-90 128 128)' fill='%237c7c7c'><g transform='scale(10.66667,10.66667)'><path d='M12,11h8v2h-8z'/><path d='M19,8l4,4l-4,4z'/><path d='M17,17v-2h-6c-0.6,0 -1,-0.4 -1,-1v-4c0,-0.6 0.4,-1 1,-1h6v-2c0,-0.6 0.4,-1 1,-1h1c-1.4,-1.2 -5,-2 -7,-2c-4.4,0 -8,3.6 -8,8c0,4.4 3.6,8 8,8c2,0 5.6,-0.8 7,-2h-1c-0.6,0 -1,-0.4 -1,-1z' opacity='0.3'/><path d='M18,18c-0.2,0 -0.4,-0.1 -0.5,-0.2c-1.5,1.4 -3.4,2.2 -5.5,2.2c-4.4,0 -8,-3.6 -8,-8c0,-4.4 3.6,-8 8,-8c2.1,0 4,0.8 5.5,2.2c0.1,-0.1 0.3,-0.2 0.5,-0.2h2c-1.8,-2.4 -4.7,-4 -8,-4c-5.5,0 -10,4.5 -10,10c0,5.5 4.5,10 10,10c3.3,0 6.2,-1.6 8,-4z'/></g></g></svg>")
+            16 16,
+          auto;
+      }
+
+      .wheel-3d {
+        position: relative;
+        width: 60px;
+        height: var(--item-height);
+        transform-style: preserve-3d;
+        pointer-events: none;
+        margin-right: 60px;
+        z-index: 2;
+        transition: opacity 0.25s ease;
+      }
+
+      .wheel-item {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 500;
+        backface-visibility: hidden;
+        --radius: 110px;
+        transform: rotateX(calc(var(--angle) * -1deg)) translateZ(var(--radius));
+        opacity: 0.2;
+      }
+
+      .done-btn {
+        width: 100%;
+        background: var(--accent-color);
+        color: white;
+        border: none;
+        padding: 16px;
+        border-radius: 14px;
+        font-size: 17px;
+        font-weight: 600;
+        margin:24px 0px;
+        cursor: pointer;
+      }
+
+      .manual-input::-webkit-outer-spin-button,
+      .manual-input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      /* ========================================
+         STATE LAYER - Data Attribute Selectors
+         These define styles based on state/data attributes
+         ======================================== */
+
+      /* Bottom sheet open state */
+      .bottom-sheet {
+        transition: all 0.25s ease;
+        z-index: 1000;
+      }
+
+      .bottom-sheet[data-open="true"] {
+        transform: translateY(0);
+      }
+
+      .bottom-sheet[data-open="false"] {
+        transform: translateY(100%);
+      }
+
+      .sheet-overlay[data-visible="true"] {
+        visibility: visible;
+        opacity: 1;
+      }
+
+      /* Input typing state - controlled by data-input-state attribute */
+      .wheel-3d,
+      .scroll-wrapper {
+        transition: all 0.25s ease;
+      }
+
+      [data-input-state="typing"] .wheel-3d,
+      [data-input-state="typing"] .scroll-wrapper,
+      [data-input-state="typing"] [data-wheel-active="true"] {
+        color: transparent;
+      }
+
+      [data-input-state="typing"] .manual-input {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      /* Wheel item active state - controlled by data-wheel-active attribute */
+      [data-wheel-active="true"] {
+        opacity: 1;
+        color: var(--text-primary);
+      }
+
+      /* Pricing Display */
+      .pricing-display {
+        background: #1c1c1e;
+        border-radius: 16px;
+        margin-bottom: 40px;
+        border: 1px solid #2c2c2e;
+        width: var(--fill);
+        display: table;
+      }
+
+      .pricing-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #2c2c2e;
+        padding: 8px 16px;
+      }
+
+      .pricing-row:first-child {
+        border-radius: 16px 16px 0 0;
+      }
+
+      .pricing-row:last-child {
+        border-bottom: none;
+      }
+
+      .pricing-label {
+        color: var(--text-secondary);
+        font-size: 14px;
+      }
+
+      .pricing-value {
+        font-weight: 600;
+        font-size: 16px;
+      }
+
+      .pricing-total {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--accent-color);
+      }
+
+      /* GMB Checkbox */
+      .gmb-toggle {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px;
+        background: #1c1c1e;
+        border-radius: 16px;
+        border: 1px solid #2c2c2e;
+        cursor: pointer;
+      }
+
+      .gmb-toggle:active {
+        background: #2c2c2e;
+      }
+
+      .toggle-switch {
+        width: 50px;
+        height: 28px;
+        background: #3a3a3c;
+        border-radius: 14px;
+        position: relative;
+        transition: background 0.3s;
+      }
+
+      .toggle-switch::after {
+        content: "";
+        position: absolute;
+        width: 24px;
+        height: 24px;
+        background: white;
+        border-radius: 50%;
+        top: 2px;
+        left: 2px;
+        transition: transform 0.3s;
+      }
+
+      .gmb-toggle:has(#source) {
+        padding: 2px;
+        margin: 0 20px;
+        margin-bottom: 20px;
+      }
+
+      .gmb-toggle:has(#source) input {
+        padding: 14px;
+        padding-left: 0px;
+      }
+
+      .gmb-toggle:has(#source) input:not(:focus){
+        text-align: center;
+      }
+
+      .gmb-toggle input:checked + .toggle-switch {
+        background: var(--accent-color);
+      }
+
+      .gmb-toggle input:checked + .toggle-switch::after {
+        transform: translateX(22px);
+      }
+
+      .gmb-label {
+        font-size: 16px;
+        font-weight: 500;
+      }
+
+      .gmb-note {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-top: 4px;
+      }
+
+      /* ==============
+      Wheel css
+      ===============
+      */
+
+      /* SOLUCIÓN: Mejorar visibilidad y jerarquía visual del wheel */
+
+      .picker-container {
+        position: relative;
+        width: 100%;
+        height: calc(var(--item-height) * 5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* Mejorar el gradient mask para ocultar mejor los extremos */
+        mask-image: linear-gradient(
+          to bottom,
+          transparent 0%,
+          black 25%,
+          black 75%,
+          transparent 100%
+        );
+        -webkit-mask-image: linear-gradient(
+          to bottom,
+          transparent 0%,
+          black 25%,
+          black 75%,
+          transparent 100%
+        );
+      }
+
+      .wheel-item {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 500;
+        backface-visibility: hidden;
+        --radius: 110px;
+        transform: rotateX(calc(var(--angle) * -1deg)) translateZ(var(--radius));
+
+        /* CLAVE: Opacidad base muy baja */
+        opacity: 0.05;
+
+        /* Suavizar transiciones */
+        transition:
+          opacity 0.2s ease,
+          font-size 0.2s ease,
+          color 0.2s ease;
+
+        /* Blur progresivo para items alejados */
+        filter: blur(3px);
+      }
+
+      /* Estado ACTIVO - el número seleccionado */
+      [data-wheel-active="true"] {
+        opacity: 1 !important;
+        color: var(--text-primary);
+        font-size: 2.2rem; /* Ligeramente más grande */
+        font-weight: 700; /* Más bold */
+        filter: drop-shadow(0px 0px 6px black) !important;
+      }
+
+      /* NUEVA REGLA: Items cercanos al activo (±1 posición) */
+      .wheel-item[data-wheel-nearby="1"] {
+        opacity: 0.4;
+        filter: blur(0px);
+        font-size: 1.8rem;
+      }
+
+      /* NUEVA REGLA: Items medianamente cercanos (±2 posiciones) */
+      .wheel-item[data-wheel-nearby="2"] {
+        opacity: 0.2;
+        filter: blur(0px);
+        font-size: 1.6rem;
+      }
+
+      /* Items lejanos permanecen con opacity: 0.05 y blur: 2px */
+
+      /*===
+      PRICING BOX DETAILS COLLAPSED AND OPEN CSS
+      ===*/
+
+      #pricingDisplay:not(:checked) + .pricing-display .pricing-row {
+        margin-top: 0px;
+        border-bottom: none;
+        flex-wrap: wrap;
+      }
+
+      #pricingDisplay:not(:checked) + .pricing-display {
+        cursor: pointer;
+      }
+
+      #pricingDisplay:checked + .pricing-display:before {
+        width: var(--fill);
+        cursor: pointer;
+        transform: rotate(180deg) translateY(30px);
+      }
+
+      #pricingDisplay:not(:checked)
+        + .pricing-display
+        .pricing-row:not(:not(#feeRow):not(#customerTotalRow)) {
+        flex-direction: column;
+      }
+
+      #pricingDisplay:not(:checked) + .pricing-display {
+        display: flex;
+        justify-content: center;
+      }
+
+      #pricingDisplay:checked + .pricing-display #businessTotalRow {
+        border-radius: 0 0 16px 16px;
+      }
+
+      #pricingDisplay:not(:checked)
+        + .pricing-display
+        .pricing-row:has(#displayPassengers) {
+        flex-direction: row-reverse;
+        gap: 5px;
+      }
+
+      #pricingDisplay:not(:checked)
+        + .pricing-display
+        .pricing-row:has(#baseRate),
+      #pricingDisplay:not(:checked)
+        + .pricing-display
+        .pricing-row:has(#displayDuration)
+        .pricing-label,
+      #pricingDisplay:not(:checked) + .pricing-display #displayDuration:before,
+      #pricingDisplay:not(:checked)
+        + .pricing-display
+        .pricing-row:has(#businessTotal)
+        .pricing-label {
+        display: none;
+      }
+
+      #pricingDisplay:not(:checked)
+        + .pricing-display
+        .pricing-row:has(#businessTotal),
+      #pricingDisplay:not(:checked)
+        + .pricing-display
+        .pricing-row:has(#displayPassengers) {
+        margin-left: 10px;
+        border-bottom: none;
+      }
+
+      #pricingDisplay:not(:checked) + .pricing-display #businessTotal {
+        font-size: 30px;
+        color: #00ee00;
+        transform: translateY(-5px);
+      }
+
+      .pricing-display:before {
+        content: "";
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23808080' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='18 15 12 9 6 15'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: center;
+        --wh: 24px;
+        width: var(--wh);
+        height: var(--wh);
+        display: flex;
+        transform: translate(0px, -25px);
+        justify-content: center;
+        align-items: center;
+        margin: 0 auto;
+        position: absolute;
+      }
+
+      .pricing-row:hover {
+        background-color: #f0f0f050;
+      }
+
+      /* ========================================
+         CUSTOM SELECT COMPONENT
+         ======================================== */
+      .custom-select {
+        position: relative;
+        width: 100%;
+      }
+
+      .custom-select-trigger {
+        display: flex;
+        align-items: center;
+        background: #2c2c2e;
+        border: 1px solid #3a3a3c;
+        border-radius: 12px;
+        padding: 8px 12px;
+        cursor: pointer;
+        transition: border-color 0.2s;
+      }
+
+      .custom-select-trigger:focus-within {
+        border-color: var(--accent-color);
+      }
+
+      .custom-select-input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        color: var(--text-primary);
+        font-size: 16px;
+        outline: none;
+        padding: 4px;
+      }
+
+      .custom-select-input::placeholder {
+        color: var(--text-secondary);
+      }
+
+      .custom-select-toggle {
+        background: transparent;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        padding: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .custom-select-toggle:hover {
+        color: var(--text-primary);
+      }
+
+      .custom-select-dropdown {
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        right: 0;
+        background: #1c1c1e;
+        border: 1px solid #3a3a3c;
+        border-radius: 12px;
+        max-height: 250px;
+        overflow-y: auto;
+        z-index: 1000;
+        display: none;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      }
+
+      .custom-select-dropdown[data-open="true"] {
+        display: block;
+      }
+
+      .custom-select-option {
+        padding: 12px 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-primary);
+        transition: background 0.15s;
+      }
+
+      .custom-select-option:hover,
+      .custom-select-option[data-selected="true"] {
+        background: #2c2c2e;
+      }
+
+      .custom-select-option[data-highlighted="true"] {
+        background: var(--accent-color);
+        color: white;
+      }
+
+      /* Hide scrollbar for dropdown */
+      .custom-select-dropdown::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .custom-select-dropdown::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .custom-select-dropdown::-webkit-scrollbar-thumb {
+        background: #3a3a3c;
+        border-radius: 3px;
+      }
+
+      /* ========================================
+         TOUR TYPE CARD STYLES
+         ======================================== */
+      .tour-type-card {
+        background: #2c2c2e;
+        border: 2px solid transparent;
+        border-radius: 12px;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .tour-type-card:hover {
+        background: #3a3a3c;
+        border-color: var(--accent-color);
+      }
+
+      .tour-type-card:active {
+        transform: scale(0.98);
+      }
+
+      .tour-type-card[data-selected="true"] {
+        background: #2c2c2e;
+        border-color: var(--accent-color);
+      }
+
+      .tour-type-card[data-selected="true"] .ph-check {
+        opacity: 1 !important;
+      }
+
+      #tourTypeOptions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      @media (max-width: 768px) {
+        #tourTypeOptions .tour-type-card:not(:last-child){
+          max-width: calc(50% - 6px);
+          flex-direction: column;
+          align-items: baseline;
+          padding: 1px 16px;
+        }
+      } 
+
+      .tour-type-card:last-child {
+        flex: 1;
+        width: var(--fill);
+      }
+
+      /* ========================================
+         TAB NAVIGATION STYLES
+         ======================================== */
+      .tab-navigation {
+        display: flex;
+        background: #1c1c1e;
+        position: sticky;
+        top: 0;
+        z-index: 1001;
+        padding: 0 20px;
+      }
+
+      .tab-button {
+        flex: 1;
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid transparent;
+        color: var(--text-secondary);
+        font-size: 16px;
+        font-weight: 600;
+        padding: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .tab-button.active {
+        color: var(--accent-color);
+        border-bottom-color: var(--accent-color);
+      }
+
+      .tab-panel {
+        display: none;
+
+      }
+
+      .tab-panel.active {
+        display: block;
+      }
+
+      .tab-panel.active:not(#tripPanel) {
+        padding: 20px;
+        padding-bottom: 50vh;
+      }
+    </style>
   </head>
   <body>
-    <div class="calculator-container">
-      <!-- Header -->
-      <header class="calculator-header">
-        <h1>Reservation Pricing</h1>
-        <p class="subtitle">
-          Calculate final prices with sources and discounts
-        </p>
-      </header>
+    <!-- Tab Navigation -->
+    <div class="tab-navigation">
+      <button class="tab-button active" onclick="switchTab('trip')">
+        <i class="ph ph-boat" style="margin-right: 8px"></i>
+        Trip Details
+      </button>
+      <button class="tab-button" onclick="switchTab('customer')">
+        <i class="ph ph-user" style="margin-right: 8px"></i>
+        Customer Info
+      </button>
+    </div>
 
-      <!-- Form Card -->
-      <div class="form-card">
-        <!-- Sticky Quick Fields -->
-        <div class="sticky-quick-fields">
-          <div class="sticky-field sticky-field-slider">
-            <label for="duration"
-              >Duration: <span id="durationValue">3</span>h</label
-            >
-            <div class="slider-container">
-              <input
-                type="range"
-                id="duration"
-                data-field="duration"
-                min="2"
-                max="8"
-                step="1"
-                value="3"
-                class="form-slider"
-                list="durationOptions"
-              />
-              <datalist id="durationOptions">
-                <option value="2" label="2h"></option>
-                <option value="3" label="3h"></option>
-                <option value="4" label="4h"></option>
-                <option value="5" label="5h"></option>
-                <option value="6" label="6h"></option>
-                <option value="7" label="7h"></option>
-                <option value="8" label="8h"></option>
-              </datalist>
-            </div>
-          </div>
-          <div class="sticky-field">
-            <label for="passengers">Passengers</label>
-            <input
-              type="number"
-              id="passengers"
-              data-field="passengers"
-              min="1"
-              max="50"
-              value="14"
-              class="form-input"
-            />
-          </div>
+    <!-- Trip Details Tab Panel -->
+    <div id="tripPanel" class="tab-panel active">
+      
+
+      <!-- Pricing Type Tab Glider -->
+      <div style="padding: 0 20px; margin: 20px">
+        <div
+          style="
+            background: #2c2c2e;
+            border-radius: 12px;
+            padding: 4px;
+            display: flex;
+            gap: 4px;
+          "
+        >
+          <button
+            id="pricingTypeRegular"
+            class="pricing-type-tab active"
+            onclick="selectPricingType('regular')"
+            style="
+              flex: 1;
+              background: var(--accent-color);
+              border: none;
+              border-radius: 8px;
+              padding: 12px;
+              color: white;
+              font-size: 14px;
+              font-weight: 600;
+              cursor: pointer;
+              transition: all 0.3s ease;
+            "
+          >
+            Regular
+          </button>
+          <button
+            id="pricingTypeSnack"
+            class="pricing-type-tab"
+            onclick="selectPricingType('snack')"
+            style="
+              flex: 1;
+              background: transparent;
+              border: none;
+              border-radius: 8px;
+              padding: 12px;
+              color: var(--text-secondary);
+              font-size: 14px;
+              font-weight: 600;
+              cursor: pointer;
+              transition: all 0.3s ease;
+            "
+          >
+            Snack
+          </button>
         </div>
-
-        <!-- Trip Details Section -->
-        <section class="form-section">
-          <h2 class="section-title">
-            <span class="icon">🚢</span>
-            Trip Details
-          </h2>
-
-          <div class="form-grid">
-            <!-- Tour Type Tab Group -->
-            <div class="form-group full-width">
-              <label>Tour Type</label>
-              <div class="tab-group" id="tourTypeTab">
-                <button
-                  class="tab-option"
-                  data-value="Bay Trip"
-                  onclick="selectTourType('Bay Trip', this)"
-                >
-                  Bay
-                </button>
-                <button
-                  class="tab-option"
-                  data-value="Whale Watching"
-                  onclick="selectTourType('Whale Watching', this)"
-                >
-                  Whale
-                </button>
-                <button
-                  class="tab-option"
-                  data-value="Snorkeling Tour"
-                  onclick="selectTourType('Snorkeling Tour', this)"
-                >
-                  Snorkel
-                </button>
-                <button
-                  class="tab-option"
-                  data-value="Sunset Cruise"
-                  onclick="selectTourType('Sunset Cruise', this)"
-                >
-                  Sunset
-                </button>
-                <button
-                  class="tab-option"
-                  data-value="Fishing"
-                  onclick="selectTourType('Fishing', this)"
-                >
-                  Fishing
-                </button>
-              </div>
-              <input
-                type="hidden"
-                id="tourType"
-                data-field="tourType"
-                value=""
-              />
-            </div>
-
-            <!-- Pricing Type Tab Group -->
-            <div class="form-group">
-              <label>Pricing Type</label>
-              <div class="tab-group" id="pricingTypeTab">
-                <button
-                  class="tab-option active"
-                  data-value="regular"
-                  onclick="selectPricingType('regular', this)"
-                >
-                  Regular<br /><small>$600/hr</small>
-                </button>
-                <button
-                  class="tab-option"
-                  data-value="snack"
-                  onclick="selectPricingType('snack', this)"
-                >
-                  Snack<br /><small>$450/hr</small>
-                </button>
-              </div>
-              <input
-                type="hidden"
-                id="pricingType"
-                data-field="pricingType"
-                value="regular"
-              />
-            </div>
-
-            <!-- Source Custom Select with Inline Search -->
-            <div class="form-group">
-              <label>Booking Source</label>
-              <div
-                class="custom-select custom-select-searchable"
-                id="sourceSelect"
-              >
-                <input
-                  type="hidden"
-                  id="source"
-                  data-field="source"
-                  value="direct"
-                />
-                <div class="custom-select-trigger">
-                  <input
-                    type="text"
-                    class="custom-select-input"
-                    id="sourceInput"
-                    placeholder="Search sources..."
-                    oninput="handleSelectSearch('source', this.value)"
-                    onfocus="openSelectDropdown('sourceSelect')"
-                  />
-                  <button
-                    class="custom-select-toggle"
-                    onclick="toggleSelect('sourceSelect')"
-                  >
-                    <svg
-                      width="12"
-                      height="12"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    >
-                      <path d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                </div>
-                <div class="custom-select-dropdown">
-                  <div class="custom-select-options" id="sourceOptions"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Extras Section - Accordion -->
-        <section class="form-section accordion-section" id="extrasAccordion">
-          <div
-            class="accordion-header"
-            onclick="toggleAccordion('extrasAccordion')"
-          >
-            <h2 class="section-title">
-              <span class="icon">✨</span>
-              Extra Services
-            </h2>
-            <svg
-              class="accordion-chevron"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
-          <div class="accordion-content">
-            <div class="form-grid">
-              <div class="form-group">
-                <label for="fishingLicenses">Fishing Licenses</label>
-                <input
-                  type="number"
-                  id="fishingLicenses"
-                  data-field="fishingLicenses"
-                  min="0"
-                  value="0"
-                  class="form-input"
-                />
-                <span class="form-hint">$22 each (Fishing tours only)</span>
-              </div>
-
-              <div class="form-group full-width">
-                <label for="extrasAmount">Other Extras Amount</label>
-                <div class="input-with-prefix">
-                  <span class="prefix">$</span>
-                  <input
-                    type="number"
-                    id="extrasAmount"
-                    data-field="extrasAmount"
-                    min="0"
-                    step="0.01"
-                    value="0"
-                    class="form-input"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Reprice Section - Accordion -->
-        <section class="form-section accordion-section" id="repriceAccordion">
-          <div
-            class="accordion-header"
-            onclick="toggleAccordion('repriceAccordion')"
-          >
-            <h2 class="section-title">
-              <span class="icon">🏷️</span>
-              Reprice / Discount
-            </h2>
-            <svg
-              class="accordion-chevron"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
-          <div class="accordion-content">
-            <div class="form-grid">
-              <!-- Reprice Type Tab Group -->
-              <div class="form-group">
-                <label>Discount Type</label>
-                <div class="tab-group" id="repriceTypeTab">
-                  <button
-                    class="tab-option active"
-                    data-value=""
-                    onclick="selectRepriceType('', this)"
-                  >
-                    None
-                  </button>
-                  <button
-                    class="tab-option"
-                    data-value="%"
-                    onclick="selectRepriceType('%', this)"
-                  >
-                    %
-                  </button>
-                  <button
-                    class="tab-option"
-                    data-value="dollar"
-                    onclick="selectRepriceType('dollar', this)"
-                  >
-                    $
-                  </button>
-                </div>
-                <input
-                  type="hidden"
-                  id="repriceType"
-                  data-field="repriceType"
-                  value=""
-                />
-              </div>
-
-              <div class="form-group">
-                <label for="repriceDiscount">Discount Value</label>
-                <div class="input-with-prefix">
-                  <span class="prefix" id="discountPrefix">$</span>
-                  <input
-                    type="number"
-                    id="repriceDiscount"
-                    data-field="repriceDiscount"
-                    min="0"
-                    step="0.01"
-                    value=""
-                    class="form-input"
-                    placeholder="0"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
       </div>
 
-      <!-- Pricing Summary Card -->
-      <div class="summary-card">
-        <h2 class="summary-title">Pricing Summary</h2>
-
-        <div class="summary-breakdown">
-          <div class="summary-row">
-            <span>Total Passengers</span>
-            <span id="totalPassengers">14</span>
-          </div>
-
-          <div class="summary-row">
-            <span
-              >Base Trip (<span id="summaryDuration">3</span>h ×
-              <span id="summaryRate">$600</span>)</span
+      <!-- Booking Source Selector -->
+      <label class="gmb-toggle">
+        <input type="hidden" id="source" data-field="source" value="direct" />
+        <div class="custom-select custom-select-searchable" id="sourceSelect">
+          <label for="sourceInput" class="custom-select-trigger">
+            <input
+              type="text"
+              class="custom-select-input"
+              id="sourceInput"
+              placeholder="Select Source"
+              oninput="handleSelectSearch('source', this.value)"
+              onfocus="openSelectDropdown('sourceSelect')"
+            />
+            <button
+              class="custom-select-toggle"
+              onclick="toggleSelect('sourceSelect')"
             >
-            <span id="baseTripPrice">$1,800</span>
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+          </label>
+          <div class="custom-select-dropdown">
+            <div class="custom-select-options" id="sourceOptions">
+              <div
+                class="custom-select-option"
+                data-value="direct"
+                onclick="selectSource('direct', this)"
+              >
+                📞 Direct - Call
+              </div>
+              <div
+                class="custom-select-option"
+                data-value="get-my-boat"
+                onclick="selectSource('get-my-boat', this)"
+              >
+                🐬 Get My Boat
+              </div>
+              <div
+                class="custom-select-option"
+                data-value="viator"
+                onclick="selectSource('viator', this)"
+              >
+                ✈️ Viator
+              </div>
+              <div
+                class="custom-select-option"
+                data-value="fareharbor"
+                onclick="selectSource('fareharbor', this)"
+              >
+                🚦 Fareharbor
+              </div>
+              <div
+                class="custom-select-option"
+                data-value="travel-cabo-tours"
+                onclick="selectSource('travel-cabo-tours', this)"
+              >
+                🌴 Travel Cabo Tours
+              </div>
+              <div
+                class="custom-select-option"
+                data-value="anchor-rides"
+                onclick="selectSource('anchor-rides', this)"
+              >
+                ⚓ Anchor Rides
+              </div>
+              <div
+                class="custom-select-option"
+                data-value="andres-lopez"
+                onclick="selectSource('andres-lopez', this)"
+              >
+                👤 Andres Lopez
+              </div>
+              <div
+                class="custom-select-option"
+                data-value="mauricio-bojorquez"
+                onclick="selectSource('mauricio-bojorquez', this)"
+              >
+                👤 Mauricio Bojorquez
+              </div>
+              <div
+                class="custom-select-option"
+                data-value="jose-ferron"
+                onclick="selectSource('jose-ferron', this)"
+              >
+                👤 Jose Ferron
+              </div>
+              <div
+                class="custom-select-option"
+                data-value="ramiro-munguia"
+                onclick="selectSource('ramiro-munguia', this)"
+              >
+                👤 Ramiro Munguia
+              </div>
+              <div
+                class="custom-select-option"
+                data-value="adriana-transcabo"
+                onclick="selectSource('adriana-transcabo', this)"
+              >
+                👩 Adriana Transcabo
+              </div>
+              <div
+                class="custom-select-option"
+                data-value="grand-solmar"
+                onclick="selectSource('grand-solmar', this)"
+              >
+                🏨 Grand Solmar - Luis Roberts
+              </div>
+              <div
+                class="custom-select-option"
+                data-value="eduardo-araujo"
+                onclick="selectSource('eduardo-araujo', this)"
+              >
+                👤 Eduardo Araujo
+              </div>
+            </div>
           </div>
+        </div>
+      </label>
 
-          <div class="summary-row" id="extraPassengersRow">
-            <span>Extra Passengers (<span id="extraCount">0</span>)</span>
-            <span id="extraPassengerPrice">$0</span>
+      <!-- Tour Type Selector -->
+      <div style="padding: 0 20px; margin-bottom: 20px">
+        <div
+          class="gmb-toggle"
+          onclick="openTourTypeBottomSheet()"
+          style="cursor: pointer"
+        >
+          <span id="tourTypeIcon" style="font-size: 24px">🌊</span>
+          <div style="flex: 1; margin-left: 12px">
+            <div class="gmb-label">Tour Type</div>
+            <div class="gmb-note" id="tourTypeLabel">Bay Trip</div>
           </div>
+          <i
+            class="ph ph-caret-right"
+            style="font-size: 20px; color: var(--text-secondary)"
+          ></i>
+        </div>
+      </div>
+      
 
-          <div class="summary-row" id="extrasRow">
-            <span>Extra Services</span>
-            <span id="extrasPrice">$0</span>
+      <!-- Extras & Discount Button -->
+      <div
+        class="gmb-toggle"
+        onclick="toggleExtrasPanel()"
+        style="cursor: pointer; margin: 0px 20px 24px 20px"
+      >
+        <i
+          class="ph ph-plus-circle"
+          style="font-size: 24px; color: var(--accent-color)"
+        ></i>
+        <div class="tour-option">
+          <div class="gmb-label">Extras & Discounts</div>
+          <div class="gmb-note" id="extrasPreview">
+            Tap to add services or discounts
           </div>
+        </div>
+        <i
+          class="ph ph-caret-right"
+          style="font-size: 20px; color: var(--text-secondary)"
+        ></i>
+      </div>
+    </div>
 
-          <div class="summary-divider"></div>
+    <!-- Customer Info Tab Panel -->
+    <div id="customerPanel" class="tab-panel">
+      <div style="padding: 0 20px;"></div>
+        <!-- Customer Name -->
+        <div class="gmb-toggle" style="margin-bottom: 16px; flex-direction: column; align-items: flex-start;">
+          <label class="gmb-label" for="customerNameInput" style="margin-bottom: 8px;">Customer Name</label>
+          <input 
+            type="text" 
+            id="customerNameInput" 
+            placeholder="John Doe" 
+            oninput="updateCustomerField('customerName', this.value)"
+            style="width: 100%; background: #2c2c2e; border: 1px solid #3a3a3c; border-radius: 12px; color: var(--text-primary); font-size: 16px; padding: 12px; outline: none;"
+          />
+        </div>
 
-          <div class="summary-row subtotal">
-            <span>Subtotal</span>
-            <span id="subtotalPrice">$1,800</span>
+        <!-- Customer Email -->
+        <div class="gmb-toggle" style="margin-bottom: 16px; flex-direction: column; align-items: flex-start;">
+          <label class="gmb-label" for="customerEmailInput" style="margin-bottom: 8px;">Email</label>
+          <input 
+            type="email" 
+            id="customerEmailInput" 
+            placeholder="john@example.com" 
+            oninput="updateCustomerField('customerEmail', this.value)"
+            style="width: 100%; background: #2c2c2e; border: 1px solid #3a3a3c; border-radius: 12px; color: var(--text-primary); font-size: 16px; padding: 12px; outline: none;"
+          />
+        </div>
+
+        <!-- Customer Phone -->
+        <div class="gmb-toggle" style="margin-bottom: 16px; flex-direction: column; align-items: flex-start;">
+          <label class="gmb-label" for="customerPhoneInput" style="margin-bottom: 8px;">Phone</label>
+          <input 
+            type="tel" 
+            id="customerPhoneInput" 
+            placeholder="+1 (555) 000-0000" 
+            oninput="updateCustomerField('customerPhone', this.value)"
+            style="width: 100%; background: #2c2c2e; border: 1px solid #3a3a3c; border-radius: 12px; color: var(--text-primary); font-size: 16px; padding: 12px; outline: none;"
+          />
+        </div>
+
+        <!-- Trip Date -->
+        <div class="gmb-toggle" style="margin-bottom: 16px; flex-direction: column; align-items: flex-start;">
+          <label class="gmb-label" for="tripDateInput" style="margin-bottom: 8px;">Trip Date</label>
+          <input 
+            type="date" 
+            id="tripDateInput" 
+            oninput="updateCustomerField('tripDate', this.value)"
+            style="width: 100%; background: #2c2c2e; border: 1px solid #3a3a3c; border-radius: 12px; color: var(--text-primary); font-size: 16px; padding: 12px; outline: none;"
+          />
+        </div>
+      </div>
+      <!-- Design Layer: trip-summary with State Layer: data-duration/data-passengers -->
+      <div class="trip-summary" data-duration="2" data-passengers="14">
+        <!-- Pricing Display -->
+        <input type="checkbox" role="status" id="pricingDisplay" hide />
+        <label for="pricingDisplay" class="pricing-display">
+          <div class="pricing-row">
+            <span class="pricing-label">Tarifa base</span>
+            <span class="pricing-value" id="baseRate">$600/hr</span>
           </div>
-
+          <div class="pricing-row">
+            <span class="pricing-label">Duración</span>
+            <span class="pricing-value" id="displayDuration">2 hrs</span>
+          </div>
+          <div class="pricing-row">
+            <span class="pricing-label">Pasajeros</span>
+            <span class="pricing-value" id="displayPassengers">14</span>
+          </div>
           <div
-            class="summary-row discount"
-            id="discountRow"
+            class="pricing-row"
+            id="extraPassengersRow"
             style="display: none"
           >
-            <span>Discount (<span id="discountType">%</span>)</span>
-            <span id="discountAmount">-$0</span>
+            <span class="pricing-label"
+              >Extra pax (<span id="extraCount">0</span>)</span
+            >
+            <span class="pricing-value" id="extraPassengerCost">+$0</span>
           </div>
-
-          <div class="summary-divider"></div>
-
-          <div class="summary-row final">
-            <span>Business Receives</span>
-            <span id="businessPrice">$1,800.00</span>
+          <div class="pricing-row" id="feeRow" style="display: none">
+            <span class="pricing-label">Comisión GMB (11.5%)</span>
+            <span class="pricing-value" id="feeCost">+$0</span>
           </div>
-
-          <div class="summary-row fee" id="feeRow" style="display: none">
-            <span><span id="feeSource">Source</span> Fee</span>
-            <span id="feeAmount">$0</span>
+          <div
+            class="pricing-row"
+            id="fishingLicensesRow"
+            style="display: none"
+          >
+            <span class="pricing-label">Fishing Licenses</span>
+            <span class="pricing-value" id="fishingLicensesCost">+$0</span>
           </div>
-
-          <div class="summary-row total">
-            <span>Customer Pays</span>
-            <span id="customerPrice">$1,800.00</span>
+          <div class="pricing-row" id="extrasRow" style="display: none">
+            <span class="pricing-label">Other Extras</span>
+            <span class="pricing-value" id="extrasCost">+$0</span>
           </div>
-        </div>
-
-        <!-- Fee Notice for Sources with Fees -->
-        <div class="fee-notice" id="feeNotice" style="display: none">
-          <span class="notice-icon">ℹ️</span>
-          <span id="feeNoticeText">Get My Boat charges 11.5% fee</span>
-        </div>
-      </div>
-
-      <!-- Sticky Bottom Bar -->
-      <div class="sticky-bottom-bar">
-        <div class="sticky-bottom-item">
-          <div style="--flex: 1; align-items: center; gap: 3px">
-            <div class="sticky-bottom-icon">
-              <svg
-                style="--wh: 15px"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-              </svg>
+          <div class="pricing-row" id="discountRow" style="display: none">
+            <span class="pricing-label">Discount</span>
+            <span class="pricing-value" id="discountCost" style="color: #4caf50"
+              >-$0</span
+            >
+          </div>
+          <div
+            id="businessTotalRow"
+            class="pricing-row"
+            style="border-bottom: none; margin-top: 8px; padding-top: 12px"
+          >
+            <span class="pricing-label">Total negocio</span>
+            <span class="pricing-value" id="businessTotal">$1,200</span>
+          </div>
+          <div class="pricing-row" id="customerTotalRow" style="display: none">
+            <span class="pricing-label">Total cliente</span>
+            <span class="pricing-total" id="customerTotal">$1,356</span>
+          </div>
+        </label>
+        <span class="summary-title">Configuración de Viaje</span>
+        <div class="summary-details">
+          <!-- Design Layer: summary-item triggers with State Layer: data-trigger attribute -->
+          <div
+            class="summary-item"
+            id="triggerDuration"
+            data-trigger="duration"
+            onclick="openPicker('duration')"
+          >
+            <i class="ph ph-clock"></i>
+            <div class="summary-value">
+              <span id="summaryDuration">2</span>
+              <span class="summary-label">HRS</span>
             </div>
-            <span id="stickyPassengers" style="font-size: 22px">14</span>
           </div>
-
-          <span class="sticky-bottom-label"><small>PPL</small></span>
-        </div>
-        <div class="sticky-bottom-divider"></div>
-        <div class="sticky-bottom-item">
-          <div style="--flex: 1; align-items: center; gap: 3px">
-            <div class="sticky-bottom-icon">
-              <svg
-                style="--wh: 15px"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
-              </svg>
+          <div
+            class="summary-item"
+            id="triggerPassengers"
+            data-trigger="passengers"
+            onclick="openPicker('passengers')"
+          >
+            <i class="ph ph-users"></i>
+            <div class="summary-value">
+              <span id="summaryPassengers">14</span>
+              <span class="summary-label">PAX</span>
             </div>
-            <span id="stickyDuration" style="font-size: 22px">3</span>
           </div>
-          <span class="sticky-bottom-label"><small>HRS</small></span>
-        </div>
-        <div class="sticky-bottom-divider"></div>
-        <div class="sticky-bottom-item sticky-bottom-total">
-          <span id="stickyBusinessPrice">$1,800.00</span>
-          <span class="sticky-bottom-label">business</span>
-        </div>
-        <div class="sticky-bottom-divider"></div>
-        <div class="sticky-bottom-item sticky-bottom-total">
-          <span id="stickyCustomerPrice">$1,800.00</span>
-          <span class="sticky-bottom-label">customer</span>
         </div>
       </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="js/pricing-rules.js"></script>
-    <script src="js/pricing-calculator.js"></script>
-    <script src="js/app.js"></script>
+    <!-- Design Layer: sheet-overlay with State Layer: data-visible attribute -->
+    <div class="sheet-overlay" id="overlay" data-visible="false"></div>
 
-    <!-- Custom Select Component Script -->
+    <!-- Design Layer: bottom-sheet with State Layer: data-open/data-scope attributes -->
+    <div class="bottom-sheet" id="sheet" data-open="false" data-scope="time">
+      <div class="sheet-header">
+        <div class="drag-handle"></div>
+        <span class="sheet-title" id="sheetTitle">Seleccionar</span>
+      </div>
+
+      <!-- Design Layer: picker-container with State Layer: data-input-state/data-picker-mode attributes -->
+      <div
+        class="picker-container"
+        id="pickerContainer"
+        data-input-state="normal"
+        data-picker-mode="duration"
+      >
+        <div class="visor"></div>
+        <span class="unit-label" id="unitLabel">HRS</span>
+
+        <div class="input-trigger" onclick="durationInput.focus()"></div>
+        <input type="number" class="manual-input" id="durationInput" />
+
+        <div class="wheel-3d" id="wheel"></div>
+        <div class="scroll-wrapper" id="scrollWrapper">
+          <ul class="scroll-list" id="scrollList"></ul>
+        </div>
+      </div>
+
+      <button class="done-btn" id="closeSheet">Confirmar</button>
+    </div>
+
+    <!-- Extras Bottom Sheet -->
+    <div
+      class="bottom-sheet"
+      id="extrasSheet"
+      data-open="false"
+      style="max-height: 80vh; overflow-y: auto"
+    >
+      <div class="sheet-header">
+        <div class="drag-handle"></div>
+        <span class="sheet-title">Extras & Discounts</span>
+      </div>
+
+      <div style="padding: 0 4px; padding-bottom: 20px;">
+        <!-- Fishing Licenses -->
+        <div
+          class="gmb-toggle"
+          style="
+            margin-bottom: 16px;
+            flex-direction: column;
+            align-items: flex-start;
+          "
+        >
+          <div class="gmb-label" style="margin-bottom: 8px">
+            Fishing Licenses ($22 each)
+          </div>
+          <div
+            style="display: flex; align-items: center; width: 100%; gap: 12px"
+          >
+            <button
+              class="done-btn"
+              style="flex: 0 0 50px; margin: 0; padding: 12px; font-size: 20px"
+              onclick="adjustFishingLicenses(-1)"
+            >
+              −
+            </button>
+            <div
+              style="
+                flex: 1;
+                text-align: center;
+                font-size: 24px;
+                font-weight: 600;
+              "
+              id="fishingLicensesCount"
+            >
+              0
+            </div>
+            <button
+              class="done-btn"
+              style="flex: 0 0 50px; margin: 0; padding: 12px; font-size: 20px"
+              onclick="adjustFishingLicenses(1)"
+            >
+              +
+            </button>
+          </div>
+        </div>
+
+        <!-- Custom Extras Amount -->
+        <div
+          class="gmb-toggle"
+          style="
+            margin-bottom: 16px;
+            flex-direction: column;
+            align-items: flex-start;
+          "
+        >
+          <label
+            class="gmb-label"
+            for="extrasAmountInput"
+            style="margin-bottom: 8px"
+            >Other Extras Amount</label
+          >
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              width: 100%;
+              background: #2c2c2e;
+              border-radius: 12px;
+              padding: 0 12px;
+            "
+          >
+            <span style="font-size: 20px; color: var(--text-secondary)">$</span>
+            <input
+              type="number"
+              id="extrasAmountInput"
+              value="0"
+              min="0"
+              step="1"
+              oninput="updateExtrasAmount(this.value)"
+              style="
+                flex: 1;
+                background: transparent;
+                border: none;
+                color: var(--text-primary);
+                font-size: 20px;
+                padding: 12px;
+                outline: none;
+                text-align: right;
+              "
+            />
+          </div>
+        </div>
+
+        <!-- Discount Type -->
+        <div
+          class="gmb-toggle"
+          style="
+            margin-bottom: 16px;
+            flex-direction: column;
+            align-items: flex-start;
+          "
+        >
+          <div class="gmb-label" style="margin-bottom: 8px">Discount Type</div>
+          <div style="display: flex; gap: 8px; width: 100%">
+            <button
+              class="done-btn"
+              id="discountNone"
+              style="flex: 1; margin: 0; background: var(--accent-color)"
+              onclick="setDiscountType('')"
+            >
+              None
+            </button>
+            <button
+              class="done-btn"
+              id="discountPercent"
+              style="flex: 1; margin: 0; background: #2c2c2e"
+              onclick="setDiscountType('%')"
+            >
+              %
+            </button>
+            <button
+              class="done-btn"
+              id="discountDollar"
+              style="flex: 1; margin: 0; background: #2c2c2e"
+              onclick="setDiscountType('dollar')"
+            >
+              $
+            </button>
+          </div>
+        </div>
+
+        <!-- Discount Amount -->
+        <div
+          class="gmb-toggle"
+          id="discountAmountSection"
+          style="
+            margin-bottom: 16px;
+            flex-direction: column;
+            align-items: flex-start;
+            display: none;
+          "
+        >
+          <label
+            class="gmb-label"
+            for="discountAmountInput"
+            style="margin-bottom: 8px"
+            >Discount Value</label
+          >
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              width: 100%;
+              background: #2c2c2e;
+              border-radius: 12px;
+              padding: 0 12px;
+            "
+          >
+            <span
+              id="discountPrefix"
+              style="font-size: 20px; color: var(--text-secondary)"
+              >$</span
+            >
+            <input
+              type="number"
+              id="discountAmountInput"
+              value="0"
+              min="0"
+              step="1"
+              oninput="updateDiscountAmount(this.value)"
+              style="
+                flex: 1;
+                background: transparent;
+                border: none;
+                color: var(--text-primary);
+                font-size: 20px;
+                padding: 12px;
+                outline: none;
+                text-align: right;
+              "
+            />
+          </div>
+        </div>
+      </div>
+
+      <button class="done-btn" onclick="closeExtrasSheet()">Done</button>
+    </div>
+
+    <!-- Customer Info Bottom Sheet -->
+    <div
+      class="bottom-sheet"
+      id="customerSheet"
+      data-open="false"
+      style="max-height: 80vh; overflow-y: auto"
+    >
+      <div class="sheet-header">
+        <div class="drag-handle"></div>
+        <span class="sheet-title">Customer Information</span>
+      </div>
+
+      <div style="padding: 0 4px; padding-bottom: 20px;">
+        <!-- Customer Name -->
+        <div
+          class="gmb-toggle"
+          style="
+            margin-bottom: 16px;
+            flex-direction: column;
+            align-items: flex-start;
+          "
+        >
+          <label
+            class="gmb-label"
+            for="customerNameInput"
+            style="margin-bottom: 8px"
+            >Customer Name</label
+          >
+          <input
+            type="text"
+            id="customerNameInput"
+            placeholder="John Doe"
+            oninput="updateCustomerField('customerName', this.value)"
+            style="
+              width: 100%;
+              background: #2c2c2e;
+              border: 1px solid #3a3a3c;
+              border-radius: 12px;
+              color: var(--text-primary);
+              font-size: 16px;
+              padding: 12px;
+              outline: none;
+            "
+          />
+        </div>
+
+        <!-- Customer Email -->
+        <div
+          class="gmb-toggle"
+          style="
+            margin-bottom: 16px;
+            flex-direction: column;
+            align-items: flex-start;
+          "
+        >
+          <label
+            class="gmb-label"
+            for="customerEmailInput"
+            style="margin-bottom: 8px"
+            >Email</label
+          >
+          <input
+            type="email"
+            id="customerEmailInput"
+            placeholder="john@example.com"
+            oninput="updateCustomerField('customerEmail', this.value)"
+            style="
+              width: 100%;
+              background: #2c2c2e;
+              border: 1px solid #3a3a3c;
+              border-radius: 12px;
+              color: var(--text-primary);
+              font-size: 16px;
+              padding: 12px;
+              outline: none;
+            "
+          />
+        </div>
+
+        <!-- Customer Phone -->
+        <div
+          class="gmb-toggle"
+          style="
+            margin-bottom: 16px;
+            flex-direction: column;
+            align-items: flex-start;
+          "
+        >
+          <label
+            class="gmb-label"
+            for="customerPhoneInput"
+            style="margin-bottom: 8px"
+            >Phone</label
+          >
+          <input
+            type="tel"
+            id="customerPhoneInput"
+            placeholder="+1 (555) 000-0000"
+            oninput="updateCustomerField('customerPhone', this.value)"
+            style="
+              width: 100%;
+              background: #2c2c2e;
+              border: 1px solid #3a3a3c;
+              border-radius: 12px;
+              color: var(--text-primary);
+              font-size: 16px;
+              padding: 12px;
+              outline: none;
+            "
+          />
+        </div>
+
+        <!-- Trip Date -->
+        <div
+          class="gmb-toggle"
+          style="
+            margin-bottom: 16px;
+            flex-direction: column;
+            align-items: flex-start;
+          "
+        >
+          <label
+            class="gmb-label"
+            for="tripDateInput"
+            style="margin-bottom: 8px"
+            >Trip Date</label
+          >
+          <input
+            type="date"
+            id="tripDateInput"
+            oninput="updateCustomerField('tripDate', this.value)"
+            style="
+              width: 100%;
+              background: #2c2c2e;
+              border: 1px solid #3a3a3c;
+              border-radius: 12px;
+              color: var(--text-primary);
+              font-size: 16px;
+              padding: 12px;
+              outline: none;
+            "
+          />
+        </div>
+      </div>
+
+      <button class="done-btn" onclick="closeCustomerSheet()">Done</button>
+    </div>
+
+    <!-- Tour Type Bottom Sheet -->
+    <div
+      class="bottom-sheet"
+      id="tourTypeSheet"
+      data-open="false"
+      style="max-height: 80vh; overflow-y: auto"
+    >
+      <div class="sheet-header">
+        <div class="drag-handle"></div>
+        <span class="sheet-title">Select Tour Type</span>
+      </div>
+
+      <div style="padding: 0 4px; padding-bottom: 20px;">
+        <!-- Search Input -->
+        <div style="margin-bottom: 16px">
+          <input
+            type="text"
+            id="tourTypeSearchInput"
+            placeholder="🔍 Search tour types..."
+            oninput="filterTourTypes(this.value)"
+            style="
+              width: 100%;
+              background: #2c2c2e;
+              border: 1px solid #3a3a3c;
+              border-radius: 12px;
+              color: var(--text-primary);
+              font-size: 16px;
+              padding: 12px;
+              outline: none;
+            "
+          />
+        </div>
+
+        <!-- Tour Type Options -->
+        <div id="tourTypeOptions">
+          <div
+            class="tour-type-card"
+            data-tour-type="bay"
+            onclick="selectTourType('bay')"
+          >
+            <span style="font-size: 32px">🌊</span>
+            <div class="tour-option">
+              <div
+                style="
+                  font-size: 16px;
+                  font-weight: 600;
+                  color: var(--text-primary);
+                "
+              >
+                Bay Trip
+              </div>
+              <div style="font-size: 13px; color: var(--text-secondary)">
+                $600/hr • Standard rate
+              </div>
+            </div>
+            <i
+              class="ph ph-check"
+              style="font-size: 24px; color: var(--accent-color); opacity: 0"
+            ></i>
+          </div>
+
+          <div
+            class="tour-type-card"
+            data-tour-type="whale"
+            onclick="selectTourType('whale')"
+          >
+            <span style="font-size: 32px">🐋</span>
+            <div class="tour-option">
+              <div
+                style="
+                  font-size: 16px;
+                  font-weight: 600;
+                  color: var(--text-primary);
+                "
+              >
+                Whale Watching
+              </div>
+              <div style="font-size: 13px; color: var(--text-secondary)">
+                $600/hr • Standard rate
+              </div>
+            </div>
+            <i
+              class="ph ph-check"
+              style="font-size: 24px; color: var(--accent-color); opacity: 0"
+            ></i>
+          </div>
+
+          <div
+            class="tour-type-card"
+            data-tour-type="snorkel"
+            onclick="selectTourType('snorkel')"
+          >
+            <span style="font-size: 32px">🤿</span>
+            <div class="tour-option">
+              <div
+                style="
+                  font-size: 16px;
+                  font-weight: 600;
+                  color: var(--text-primary);
+                "
+              >
+                Snorkeling
+              </div>
+              <div style="font-size: 13px; color: var(--text-secondary)">
+                $600/hr • Standard rate
+              </div>
+            </div>
+            <i
+              class="ph ph-check"
+              style="font-size: 24px; color: var(--accent-color); opacity: 0"
+            ></i>
+          </div>
+
+          <div
+            class="tour-type-card"
+            data-tour-type="sunset"
+            onclick="selectTourType('sunset')"
+          >
+            <span style="font-size: 32px">🌅</span>
+            <div class="tour-option">
+              <div
+                style="
+                  font-size: 16px;
+                  font-weight: 600;
+                  color: var(--text-primary);
+                "
+              >
+                Sunset Cruise
+              </div>
+              <div style="font-size: 13px; color: var(--text-secondary)">
+                $650/hr • Premium rate
+              </div>
+            </div>
+            <i
+              class="ph ph-check"
+              style="font-size: 24px; color: var(--accent-color); opacity: 0"
+            ></i>
+          </div>
+
+          <div
+            class="tour-type-card"
+            data-tour-type="fishing"
+            onclick="selectTourType('fishing')"
+          >
+            <span style="font-size: 32px">🎣</span>
+            <div class="tour-option">
+              <div
+                style="
+                  font-size: 16px;
+                  font-weight: 600;
+                  color: var(--text-primary);
+                "
+              >
+                Fishing
+              </div>
+              <div style="font-size: 13px; color: var(--text-secondary)">
+                $700/hr • Premium rate
+              </div>
+            </div>
+            <i
+              class="ph ph-check"
+              style="font-size: 24px; color: var(--accent-color); opacity: 0"
+            ></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script>
-      // Tab Selection Functions
-      function selectTourType(value, button) {
-        const hiddenInput = document.getElementById("tourType");
-        hiddenInput.value = value;
+      /* ========================================
+         TAB NAVIGATION
+         ======================================== */
 
-        // Update active state
-        document.querySelectorAll("#tourTypeTab .tab-option").forEach((btn) => {
-          btn.classList.remove("active");
-        });
-        button.classList.add("active");
+      function switchTab(tabName) {
+        // Update tab buttons
+        const tabButtons = document.querySelectorAll(".tab-button");
+        tabButtons.forEach((btn) => btn.classList.remove("active"));
+        event.target.closest(".tab-button").classList.add("active");
 
-        // Trigger change event
-        hiddenInput.dispatchEvent(new Event("change", { bubbles: true }));
-      }
+        // Update tab panels
+        const tripPanel = document.getElementById("tripPanel");
+        const customerPanel = document.getElementById("customerPanel");
 
-      function selectPricingType(value, button) {
-        const hiddenInput = document.getElementById("pricingType");
-        hiddenInput.value = value;
-
-        // Update active state
-        document
-          .querySelectorAll("#pricingTypeTab .tab-option")
-          .forEach((btn) => {
-            btn.classList.remove("active");
-          });
-        button.classList.add("active");
-
-        // Trigger change event
-        hiddenInput.dispatchEvent(new Event("change", { bubbles: true }));
-      }
-
-      function selectRepriceType(value, button) {
-        const hiddenInput = document.getElementById("repriceType");
-        hiddenInput.value = value;
-
-        // Update active state
-        document
-          .querySelectorAll("#repriceTypeTab .tab-option")
-          .forEach((btn) => {
-            btn.classList.remove("active");
-          });
-        button.classList.add("active");
-
-        // Update prefix
-        const discountPrefix = document.getElementById("discountPrefix");
-        if (value === "%") {
-          discountPrefix.textContent = "%";
-          document.getElementById("repriceDiscount").placeholder = "10";
-        } else if (value === "dollar") {
-          discountPrefix.textContent = "$";
-          document.getElementById("repriceDiscount").placeholder = "0";
+        if (tabName === "trip") {
+          tripPanel.classList.add("active");
+          customerPanel.classList.remove("active");
         } else {
-          discountPrefix.textContent = "$";
-          document.getElementById("repriceDiscount").placeholder = "0";
+          tripPanel.classList.remove("active");
+          customerPanel.classList.add("active");
         }
 
-        // Trigger change event
-        hiddenInput.dispatchEvent(new Event("change", { bubbles: true }));
+        // Haptic feedback
+        if (window.navigator.vibrate) navigator.vibrate(10);
       }
 
-      // Accordion Toggle Function
-      function toggleAccordion(accordionId) {
-        const accordion = document.getElementById(accordionId);
-        const content = accordion.querySelector(".accordion-content");
-        const chevron = accordion.querySelector(".accordion-chevron");
+      /* ========================================
+         STATE MANAGEMENT CONFIGURATION
+         ======================================== */
+      const CONFIG = {
+        duration: { min: 2, max: 8, label: "HRS", title: "Duración del Viaje" },
+        passengers: {
+          min: 1,
+          max: 50,
+          label: "PAX",
+          title: "Cantidad de Pasajeros",
+        },
+      };
 
-        if (accordion.classList.contains("open")) {
-          accordion.classList.remove("open");
-          content.style.maxHeight = "0";
-          chevron.style.transform = "rotate(0deg)";
-        } else {
-          accordion.classList.add("open");
-          content.style.maxHeight = content.scrollHeight + "px";
-          chevron.style.transform = "rotate(180deg)";
+      /* Tour Type Configuration */
+      const TOUR_TYPES = {
+        bay: { label: "Bay Trip", icon: "🌊", baseRate: 600 },
+        whale: { label: "Whale Watching", icon: "🐋", baseRate: 600 },
+        snorkel: { label: "Snorkeling", icon: "🤿", baseRate: 600 },
+        sunset: { label: "Sunset Cruise", icon: "🌅", baseRate: 650 },
+        fishing: { label: "Fishing", icon: "🎣", baseRate: 700 },
+      };
+
+      /* Pricing Type Configuration */
+      const PRICING_TYPES = {
+        regular: { label: "Regular", rateMultiplier: 1.0 },
+        snack: { label: "Snack", rateMultiplier: 0.75 }, // 75% of regular rate
+      };
+
+      /* ========================================
+         STATE LAYER - Data management
+         ======================================== */
+      let currentMode = "duration";
+      let tripData = {
+        duration: 2,
+        passengers: 14,
+        tourType: "bay",
+        pricingType: "regular",
+        fishingLicenses: 0,
+        extrasAmount: 0,
+        repriceType: "", // '', '%', or 'dollar'
+        repriceDiscount: 0,
+        // Customer Info
+        customerName: "",
+        customerEmail: "",
+        customerPhone: "",
+        tripDate: "",
+      };
+
+      const STEP_ANGLE = 22;
+      const ITEM_HEIGHT = 54;
+
+      /* DOM Elements - State-aware containers */
+      const overlay = document.getElementById("overlay");
+      const sheet = document.getElementById("sheet");
+      const wheel = document.getElementById("wheel");
+      const scrollList = document.getElementById("scrollList");
+      const scrollWrapper = document.getElementById("scrollWrapper");
+      const durationInput = document.getElementById("durationInput");
+      const unitLabel = document.getElementById("unitLabel");
+      const sheetTitle = document.getElementById("sheetTitle");
+      const pickerContainer = document.getElementById("pickerContainer");
+      const tripSummary = document.querySelector(".trip-summary");
+
+      let isSyncing = false;
+      let activeItems3D = [];
+
+      /* ========================================
+         STATE UPDATE FUNCTIONS
+         These functions update data attributes for state management
+         ======================================== */
+
+      /**
+       * Updates state attributes on trip summary container
+       * @param {string} key - The state key (duration|passengers)
+       * @param {number} value - The value to set
+       */
+      function updateTripSummaryState(key, value) {
+        tripSummary.setAttribute(`data-${key}`, value);
+      }
+
+      /**
+       * Updates wheel item state using data attribute
+       * @param {HTMLElement} item - The wheel item element
+       * @param {boolean} isActive - Whether the item is active
+       */
+      function updateWheelItemState(item, isActive) {
+        item.setAttribute("data-wheel-active", isActive.toString());
+      }
+
+      /**
+       * Updates picker container input state
+       * @param {string} state - The input state (normal|typing)
+       */
+      function updateInputState(state) {
+        pickerContainer.setAttribute("data-input-state", state);
+      }
+
+      /**
+       * Updates picker container mode state
+       * @param {string} mode - The picker mode (duration|passengers)
+       */
+      function updatePickerMode(mode) {
+        pickerContainer.setAttribute("data-picker-mode", mode);
+      }
+
+      /**
+       * Updates bottom sheet open state
+       * @param {boolean} isOpen - Whether the sheet is open
+       */
+      function updateSheetState(isOpen) {
+        sheet.setAttribute("data-open", isOpen.toString());
+        overlay.setAttribute("data-visible", isOpen.toString());
+      }
+
+      /**
+       * Updates bottom sheet scope attribute
+       * @param {string} scope - The scope (time|pax)
+       */
+      function updateSheetScope(scope) {
+        sheet.setAttribute("data-scope", scope);
+      }
+
+      /* ========================================
+         PICKER SETUP FUNCTIONS
+         ======================================== */
+
+      function setupPicker(mode) {
+        currentMode = mode;
+        const settings = CONFIG[mode];
+
+        // Clear previous wheel items
+        wheel.innerHTML = "";
+        scrollList.innerHTML = "";
+        activeItems3D = [];
+
+        // Update state attributes
+        updatePickerMode(mode);
+        unitLabel.innerText = settings.label;
+        sheetTitle.innerText = settings.title;
+        durationInput.min = settings.min;
+        durationInput.max = settings.max;
+
+        for (let i = settings.min; i <= settings.max; i++) {
+          const item3d = document.createElement("div");
+          item3d.className = "wheel-item";
+          item3d.setAttribute("data-wheel-value", i);
+          item3d.setAttribute("data-wheel-active", "false");
+          item3d.innerText = i;
+          item3d.style.setProperty("--angle", (i - settings.min) * STEP_ANGLE);
+          wheel.appendChild(item3d);
+          activeItems3D.push(item3d);
+
+          const scrollItem = document.createElement("li");
+          scrollItem.className = "scroll-item";
+          scrollList.appendChild(scrollItem);
         }
       }
 
-      // Close dropdown when clicking outside
-      document.addEventListener("click", function (e) {
-        if (!e.target.closest(".custom-select")) {
-          document.querySelectorAll(".custom-select.open").forEach((select) => {
-            select.classList.remove("open");
-            select
-              .querySelector(".custom-select-dropdown")
-              .classList.remove("open");
-          });
-        }
-      });
+      function updateActiveClasses(currentVal) {
+        const min = CONFIG[currentMode].min;
+        activeItems3D.forEach((item, index) => {
+          const itemVal = index + min;
+          const distance = Math.abs(itemVal - currentVal);
 
-      // Close dropdown with Escape key
-      document.addEventListener("keydown", function (e) {
-        if (e.key === "Escape") {
-          document.querySelectorAll(".custom-select.open").forEach((select) => {
-            select.classList.remove("open");
-            select
-              .querySelector(".custom-select-dropdown")
-              .classList.remove("open");
-          });
-        }
-      });
+          // Marcar el activo
+          const isActive = distance === 0;
+          updateWheelItemState(item, isActive);
 
-      // Custom Select Functions
-      function toggleSelect(selectId) {
-        const select = document.getElementById(selectId);
-        const isOpen = select.classList.contains("open");
-
-        // Close all selects
-        document.querySelectorAll(".custom-select").forEach((s) => {
-          s.classList.remove("open");
-          s.querySelector(".custom-select-dropdown").classList.remove("open");
-        });
-
-        if (!isOpen) {
-          select.classList.add("open");
-          select.querySelector(".custom-select-dropdown").classList.add("open");
-        }
-      }
-
-      function openSelectDropdown(selectId) {
-        const select = document.getElementById(selectId);
-        if (!select.classList.contains("open")) {
-          select.classList.add("open");
-          select.querySelector(".custom-select-dropdown").classList.add("open");
-        }
-      }
-
-      function handleSelectSearch(fieldType, searchTerm) {
-        const term = searchTerm.toLowerCase().trim();
-        const optionsId = fieldType + "Options";
-        const options = document.getElementById(optionsId);
-
-        if (!options) return;
-
-        const items = options.querySelectorAll(".custom-select-option");
-
-        items.forEach((item) => {
-          const text = item.textContent.toLowerCase();
-          if (text.includes(term) || term === "") {
-            item.style.display = "flex";
+          // NUEVO: Marcar proximidad para CSS
+          if (distance === 1) {
+            item.setAttribute("data-wheel-nearby", "1");
+          } else if (distance === 2) {
+            item.setAttribute("data-wheel-nearby", "2");
           } else {
-            item.style.display = "none";
+            item.removeAttribute("data-wheel-nearby");
           }
         });
       }
 
-      function selectOptionValue(fieldType, value, displayText) {
-        const hiddenInput = document.getElementById(fieldType);
-        const inputField = document.getElementById(fieldType + "Input");
-        const selectId = fieldType + "Select";
-        const select = document.getElementById(selectId);
+      function openPicker(mode) {
+        // Update sheet scope based on mode
+        const scope = mode === "duration" ? "time" : "pax";
+        updateSheetScope(scope);
 
-        hiddenInput.value = value;
-        inputField.value = displayText;
+        setupPicker(mode);
+        const val = tripData[mode];
+        const settings = CONFIG[mode];
 
-        // Close dropdown
-        if (select) {
-          select.classList.remove("open");
-          select
-            .querySelector(".custom-select-dropdown")
-            .classList.remove("open");
+        // Clear any GSAP transforms first to avoid conflicts with CSS
+        gsap.set(sheet, { clearProps: "transform" });
+        gsap.set(overlay, { clearProps: "opacity,visibility" });
+
+        // Update sheet state to open
+        updateSheetState(true);
+
+        isSyncing = true;
+        const targetScroll = (val - settings.min) * ITEM_HEIGHT;
+        scrollWrapper.scrollTop = targetScroll;
+        wheel.style.transform = `rotateX(${(val - settings.min) * STEP_ANGLE}deg)`;
+
+        updateActiveClasses(val);
+        setTimeout(() => (isSyncing = false), 100);
+      }
+
+      /* ========================================
+         EVENT HANDLERS - State transitions
+         ======================================== */
+
+      scrollWrapper.addEventListener("scroll", () => {
+        if (isSyncing) return;
+        const settings = CONFIG[currentMode];
+        const progress = scrollWrapper.scrollTop / ITEM_HEIGHT;
+        const activeIndex = Math.round(progress);
+        const val = activeIndex + settings.min;
+
+        wheel.style.transform = `rotateX(${progress * STEP_ANGLE}deg)`;
+        updateActiveClasses(val);
+        tripData[currentMode] = val;
+
+        // Calculate price in real-time as user scrolls
+        calculatePrice();
+      });
+
+      durationInput.addEventListener("focus", () => {
+        durationInput.value = tripData[currentMode];
+        // Update input state to typing - triggers CSS changes via data attribute
+        updateInputState("typing");
+      });
+
+      durationInput.addEventListener("blur", () => {
+        let val = parseInt(durationInput.value);
+        const settings = CONFIG[currentMode];
+
+        // Validate limits based on current mode
+        if (isNaN(val)) val = tripData[currentMode];
+        if (val < settings.min) val = settings.min;
+        if (val > settings.max) val = settings.max;
+
+        tripData[currentMode] = val;
+
+        isSyncing = true;
+        const targetScroll = (val - settings.min) * ITEM_HEIGHT;
+
+        // Sync visual UI (wheel and scroll)
+        wheel.style.transform = `rotateX(${(val - settings.min) * STEP_ANGLE}deg)`;
+        scrollWrapper.scrollTop = targetScroll;
+
+        updateActiveClasses(val);
+
+        // Exit typing mode - triggers CSS changes via data attribute
+        updateInputState("normal");
+
+        setTimeout(() => {
+          isSyncing = false;
+        }, 50);
+      });
+
+      durationInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") durationInput.blur();
+      });
+
+      function closeBottomSheet() {
+        // Animate sheet closed - state updates happen AFTER animation completes
+        gsap.to(sheet, { y: "100%", duration: 0.4, ease: "power4.in" });
+        gsap.to(overlay, {
+          opacity: 0,
+          duration: 0.3,
+          onComplete: () => {
+            // Update state attributes AFTER animation completes
+            updateSheetState(false);
+            overlay.style.visibility = "hidden";
+            // Update trip summary state
+            updateTripSummaryState("duration", tripData.duration);
+            updateTripSummaryState("passengers", tripData.passengers);
+            // Update summary display values
+            document.getElementById("summaryDuration").innerText =
+              tripData.duration;
+            document.getElementById("summaryPassengers").innerText =
+              tripData.passengers;
+          },
+        });
+      }
+
+      // Haptic feedback
+      let lastIdx = 0;
+      scrollWrapper.addEventListener("scroll", () => {
+        const settings = CONFIG[currentMode];
+        const idx = Math.round(scrollWrapper.scrollTop / ITEM_HEIGHT);
+        if (idx !== lastIdx && idx >= 0 && idx <= settings.max - settings.min) {
+          if (window.navigator.vibrate) navigator.vibrate(8);
+          lastIdx = idx;
+        }
+      });
+
+      document.getElementById("closeSheet").onclick = closeBottomSheet;
+      overlay.onclick = closeBottomSheet;
+
+      // Escape key support to close bottom sheet
+      document.addEventListener("keydown", (e) => {
+        const isOpen = sheet.getAttribute("data-open") === "true";
+
+        if (e.key === "Escape") {
+          if (isOpen) {
+            closeBottomSheet();
+          }
         }
 
-        // Trigger change event
-        hiddenInput.dispatchEvent(new Event("change", { bubbles: true }));
+        // Number key support - directly input value when sheet is open
+        if (isOpen && e.key >= "0" && e.key <= "9") {
+          const settings = CONFIG[currentMode];
+          const val = parseInt(e.key);
+
+          // Validate the value is within range
+          if (val >= settings.min && val <= settings.max) {
+            tripData[currentMode] = val;
+
+            // Sync visual UI (wheel and scroll)
+            wheel.style.transform = `rotateX(${(val - settings.min) * STEP_ANGLE}deg)`;
+            scrollWrapper.scrollTop = (val - settings.min) * ITEM_HEIGHT;
+
+            updateActiveClasses(val);
+
+            // Optional: vibrate for feedback
+            if (window.navigator.vibrate) navigator.vibrate(15);
+          }
+        }
+
+        // Arrow key support - increment/decrement value when sheet is open
+        if (isOpen) {
+          const settings = CONFIG[currentMode];
+          const currentVal = tripData[currentMode];
+          let newVal = currentVal;
+
+          if (e.key === "ArrowUp") {
+            e.preventDefault();
+            newVal = Math.min(currentVal + 1, settings.max);
+          } else if (e.key === "ArrowDown") {
+            e.preventDefault();
+            newVal = Math.max(currentVal - 1, settings.min);
+          }
+
+          if (newVal !== currentVal) {
+            tripData[currentMode] = newVal;
+
+            // Sync visual UI (wheel and scroll)
+            wheel.style.transform = `rotateX(${(newVal - settings.min) * STEP_ANGLE}deg)`;
+            scrollWrapper.scrollTop = (newVal - settings.min) * ITEM_HEIGHT;
+
+            updateActiveClasses(newVal);
+
+            // Haptic feedback
+            if (window.navigator.vibrate) navigator.vibrate(8);
+          }
+        }
+      });
+
+      /* ========================================
+         BOOKING SOURCE SELECTOR
+         ======================================== */
+      const SOURCE_CONFIG = {
+        direct: {
+          rate: 600,
+          feeType: "none",
+          feeValue: 0,
+          label: "📞 Direct - Call",
+        },
+        "get-my-boat": {
+          rate: 500,
+          feeType: "fixed",
+          feeValue: 50,
+          label: "🐬 Get My Boat",
+        },
+        viator: {
+          rate: 600,
+          feeType: "percentage",
+          feeValue: 0.15,
+          label: "✈️ Viator",
+        },
+        fareharbor: {
+          rate: 600,
+          feeType: "percentage",
+          feeValue: 0.12,
+          label: "🚦 Fareharbor",
+        },
+        "travel-cabo-tours": {
+          rate: 600,
+          feeType: "percentage",
+          feeValue: 0.1,
+          label: "🌴 Travel Cabo Tours",
+        },
+        "anchor-rides": {
+          rate: 550,
+          feeType: "fixed",
+          feeValue: 75,
+          label: "⚓ Anchor Rides",
+        },
+        "andres-lopez": {
+          rate: 600,
+          feeType: "percentage",
+          feeValue: 0.1,
+          label: "👤 Andres Lopez",
+        },
+        "mauricio-bojorquez": {
+          rate: 600,
+          feeType: "percentage",
+          feeValue: 0.1,
+          label: "👤 Mauricio Bojorquez",
+        },
+        "jose-ferron": {
+          rate: 600,
+          feeType: "percentage",
+          feeValue: 0.1,
+          label: "👤 Jose Ferron",
+        },
+        "ramiro-munguia": {
+          rate: 600,
+          feeType: "percentage",
+          feeValue: 0.1,
+          label: "👤 Ramiro Munguia",
+        },
+        "adriana-transcabo": {
+          rate: 600,
+          feeType: "percentage",
+          feeValue: 0.1,
+          label: "👩 Adriana Transcabo",
+        },
+        "grand-solmar": {
+          rate: 600,
+          feeType: "percentage",
+          feeValue: 0.12,
+          label: "🏨 Grand Solmar - Luis Roberts",
+        },
+        "eduardo-araujo": {
+          rate: 600,
+          feeType: "percentage",
+          feeValue: 0.1,
+          label: "👤 Eduardo Araujo",
+        },
+      };
+
+      function toggleSelect(selectId) {
+        const dropdown = document.querySelector(
+          "#" + selectId + " .custom-select-dropdown",
+        );
+        const isOpen = dropdown.getAttribute("data-open") === "true";
+
+        // Close all dropdowns first
+        document
+          .querySelectorAll('.custom-select-dropdown[data-open="true"]')
+          .forEach((el) => {
+            el.setAttribute("data-open", "false");
+          });
+
+        if (!isOpen) {
+          dropdown.setAttribute("data-open", "true");
+        }
       }
+
+      function openSelectDropdown(selectId) {
+        const dropdown = document.querySelector(
+          "#" + selectId + " .custom-select-dropdown",
+        );
+        dropdown.setAttribute("data-open", "true");
+      }
+
+      function handleSelectSearch(fieldName, value) {
+        const selectId = fieldName + "Select";
+        const options = document.querySelectorAll(
+          "#" + selectId + " .custom-select-option",
+        );
+
+        options.forEach((option) => {
+          const optionValue = option.getAttribute("data-value");
+          const optionText = option.textContent.toLowerCase();
+          const searchValue = value.toLowerCase();
+
+          if (
+            optionValue.includes(searchValue) ||
+            optionText.includes(searchValue)
+          ) {
+            option.style.display = "flex";
+          } else {
+            option.style.display = "none";
+          }
+        });
+      }
+
+      function selectSource(sourceValue, element) {
+        const sourceInput = document.getElementById("source");
+        const sourceInputDisplay = document.getElementById("sourceInput");
+        const dropdown = document.querySelector(
+          "#sourceSelect .custom-select-dropdown",
+        );
+
+        // Update hidden input
+        sourceInput.value = sourceValue;
+
+        // Update display
+        const config = SOURCE_CONFIG[sourceValue];
+        sourceInputDisplay.placeholder = config.label;
+
+        // Update selected state
+        document
+          .querySelectorAll("#sourceOptions .custom-select-option")
+          .forEach((opt) => {
+            opt.setAttribute("data-selected", "false");
+          });
+        element.setAttribute("data-selected", "true");
+
+        // Close dropdown
+        dropdown.setAttribute("data-open", "false");
+
+        // Recalculate price
+        calculatePrice();
+      }
+
+      // Close dropdowns when clicking outside
+      document.addEventListener("click", (e) => {
+        if (!e.target.closest(".custom-select")) {
+          document
+            .querySelectorAll('.custom-select-dropdown[data-open="true"]')
+            .forEach((el) => {
+              el.setAttribute("data-open", "false");
+            });
+        }
+      });
+
+      /* ========================================
+         TOUR TYPE & PRICING TYPE FUNCTIONS
+         ======================================== */
+
+      const tourTypeSheet = document.getElementById("tourTypeSheet");
+
+      function selectPricingType(type) {
+        tripData.pricingType = type;
+
+        // Update button states
+        const regularBtn = document.getElementById("pricingTypeRegular");
+        const snackBtn = document.getElementById("pricingTypeSnack");
+
+        if (type === "regular") {
+          regularBtn.style.background = "var(--accent-color)";
+          regularBtn.style.color = "white";
+          snackBtn.style.background = "transparent";
+          snackBtn.style.color = "var(--text-secondary)";
+        } else {
+          snackBtn.style.background = "var(--accent-color)";
+          snackBtn.style.color = "white";
+          regularBtn.style.background = "transparent";
+          regularBtn.style.color = "var(--text-secondary)";
+        }
+
+        // Haptic feedback
+        if (window.navigator.vibrate) navigator.vibrate(10);
+
+        calculatePrice();
+      }
+
+      function openTourTypeBottomSheet() {
+        // Open tour type sheet
+        gsap.set(tourTypeSheet, { clearProps: "transform" });
+        gsap.set(overlay, { clearProps: "opacity,visibility" });
+
+        tourTypeSheet.setAttribute("data-open", "true");
+        overlay.setAttribute("data-visible", "true");
+
+        // Clear search
+        document.getElementById("tourTypeSearchInput").value = "";
+
+        // Update selected state
+        updateTourTypeSelection();
+      }
+
+      function closeTourTypeSheet() {
+        gsap.to(tourTypeSheet, { y: "100%", duration: 0.4, ease: "power4.in" });
+        gsap.to(overlay, {
+          opacity: 0,
+          duration: 0.3,
+          onComplete: () => {
+            tourTypeSheet.setAttribute("data-open", "false");
+            overlay.setAttribute("data-visible", "false");
+            overlay.style.visibility = "hidden";
+          },
+        });
+      }
+
+      function selectTourType(tourKey) {
+        const tourConfig = TOUR_TYPES[tourKey];
+        tripData.tourType = tourKey;
+
+        // Update UI
+        document.getElementById("tourTypeIcon").textContent = tourConfig.icon;
+        document.getElementById("tourTypeLabel").textContent = tourConfig.label;
+
+        // Update selected state in cards
+        updateTourTypeSelection();
+
+        // Haptic feedback
+        if (window.navigator.vibrate) navigator.vibrate(10);
+
+        // Close sheet
+        closeTourTypeSheet();
+
+        // Recalculate price
+        calculatePrice();
+      }
+
+      function updateTourTypeSelection() {
+        const cards = document.querySelectorAll(".tour-type-card");
+        cards.forEach((card) => {
+          const tourType = card.getAttribute("data-tour-type");
+          if (tourType === tripData.tourType) {
+            card.setAttribute("data-selected", "true");
+          } else {
+            card.setAttribute("data-selected", "false");
+          }
+        });
+      }
+
+      function filterTourTypes(searchText) {
+        const cards = document.querySelectorAll(".tour-type-card");
+        const search = searchText.toLowerCase();
+
+        cards.forEach((card) => {
+          const tourType = card.getAttribute("data-tour-type");
+          const tourConfig = TOUR_TYPES[tourType];
+          const label = tourConfig.label.toLowerCase();
+
+          if (label.includes(search)) {
+            card.style.display = "flex";
+          } else {
+            card.style.display = "none";
+          }
+        });
+      }
+
+      // Close tour type sheet when clicking overlay
+      overlay.addEventListener("click", () => {
+        if (tourTypeSheet.getAttribute("data-open") === "true") {
+          closeTourTypeSheet();
+        }
+      });
+
+      /* ========================================
+         EXTRAS PANEL FUNCTIONS
+         ======================================== */
+
+      const extrasSheet = document.getElementById("extrasSheet");
+      const extrasOverlay = overlay; // Reuse the same overlay
+
+      function toggleExtrasPanel() {
+        const isOpen = extrasSheet.getAttribute("data-open") === "true";
+
+        if (!isOpen) {
+          // Open extras panel
+          gsap.set(extrasSheet, { clearProps: "transform" });
+          gsap.set(extrasOverlay, { clearProps: "opacity,visibility" });
+
+          extrasSheet.setAttribute("data-open", "true");
+          extrasOverlay.setAttribute("data-visible", "true");
+
+          // Sync UI with current values
+          document.getElementById("fishingLicensesCount").textContent =
+            tripData.fishingLicenses;
+          document.getElementById("extrasAmountInput").value =
+            tripData.extrasAmount;
+          document.getElementById("discountAmountInput").value =
+            tripData.repriceDiscount;
+
+          // Update discount type buttons
+          updateDiscountTypeButtons();
+        } else {
+          closeExtrasSheet();
+        }
+      }
+
+      function closeExtrasSheet() {
+        gsap.to(extrasSheet, { y: "100%", duration: 0.4, ease: "power4.in" });
+        gsap.to(extrasOverlay, {
+          opacity: 0,
+          duration: 0.3,
+          onComplete: () => {
+            extrasSheet.setAttribute("data-open", "false");
+            extrasOverlay.setAttribute("data-visible", "false");
+            extrasOverlay.style.visibility = "hidden";
+            updateExtrasPreview();
+          },
+        });
+      }
+
+      function adjustFishingLicenses(delta) {
+        const newValue = Math.max(0, (tripData.fishingLicenses || 0) + delta);
+        tripData.fishingLicenses = newValue;
+        document.getElementById("fishingLicensesCount").textContent = newValue;
+
+        if (window.navigator.vibrate) navigator.vibrate(10);
+        calculatePrice();
+      }
+
+      function updateExtrasAmount(value) {
+        tripData.extrasAmount = parseFloat(value) || 0;
+        calculatePrice();
+      }
+
+      function setDiscountType(type) {
+        tripData.repriceType = type;
+        updateDiscountTypeButtons();
+
+        // Show/hide discount amount section
+        const discountSection = document.getElementById(
+          "discountAmountSection",
+        );
+        const discountPrefix = document.getElementById("discountPrefix");
+
+        if (type) {
+          discountSection.style.display = "flex";
+          discountPrefix.textContent = type === "%" ? "%" : "$";
+        } else {
+          discountSection.style.display = "none";
+          tripData.repriceDiscount = 0;
+          document.getElementById("discountAmountInput").value = 0;
+        }
+
+        if (window.navigator.vibrate) navigator.vibrate(10);
+        calculatePrice();
+      }
+
+      function updateDiscountAmount(value) {
+        tripData.repriceDiscount = parseFloat(value) || 0;
+        calculatePrice();
+      }
+
+      function updateDiscountTypeButtons() {
+        const buttons = {
+          "": document.getElementById("discountNone"),
+          "%": document.getElementById("discountPercent"),
+          dollar: document.getElementById("discountDollar"),
+        };
+
+        Object.keys(buttons).forEach((key) => {
+          if (buttons[key]) {
+            buttons[key].style.background =
+              key === tripData.repriceType ? "var(--accent-color)" : "#2c2c2e";
+          }
+        });
+      }
+
+      function updateExtrasPreview() {
+        const preview = document.getElementById("extrasPreview");
+        const parts = [];
+
+        if (tripData.fishingLicenses > 0) {
+          parts.push(
+            `${tripData.fishingLicenses} license${tripData.fishingLicenses > 1 ? "s" : ""}`,
+          );
+        }
+        if (tripData.extrasAmount > 0) {
+          parts.push(`$${tripData.extrasAmount} extras`);
+        }
+        if (tripData.repriceDiscount > 0) {
+          const discountText =
+            tripData.repriceType === "%"
+              ? `${tripData.repriceDiscount}% discount`
+              : `$${tripData.repriceDiscount} discount`;
+          parts.push(discountText);
+        }
+
+        preview.textContent =
+          parts.length > 0
+            ? parts.join(" • ")
+            : "Tap to add services or discounts";
+      }
+
+      // Close extras sheet when clicking overlay
+      extrasOverlay.addEventListener("click", () => {
+        if (extrasSheet.getAttribute("data-open") === "true") {
+          closeExtrasSheet();
+        }
+      });
+
+      /* ========================================
+         CUSTOMER INFO PANEL FUNCTIONS
+         ======================================== */
+
+      const customerSheet = document.getElementById("customerSheet");
+
+      function toggleCustomerPanel() {
+        const isOpen = customerSheet.getAttribute("data-open") === "true";
+
+        if (!isOpen) {
+          // Open customer panel
+          gsap.set(customerSheet, { clearProps: "transform" });
+          gsap.set(overlay, { clearProps: "opacity,visibility" });
+
+          customerSheet.setAttribute("data-open", "true");
+          overlay.setAttribute("data-visible", "true");
+
+          // Sync UI with current values
+          document.getElementById("customerNameInput").value =
+            tripData.customerName || "";
+          document.getElementById("customerEmailInput").value =
+            tripData.customerEmail || "";
+          document.getElementById("customerPhoneInput").value =
+            tripData.customerPhone || "";
+          document.getElementById("tripDateInput").value =
+            tripData.tripDate || "";
+        } else {
+          closeCustomerSheet();
+        }
+      }
+
+      function closeCustomerSheet() {
+        gsap.to(customerSheet, { y: "100%", duration: 0.4, ease: "power4.in" });
+        gsap.to(overlay, {
+          opacity: 0,
+          duration: 0.3,
+          onComplete: () => {
+            customerSheet.setAttribute("data-open", "false");
+            overlay.setAttribute("data-visible", "false");
+            overlay.style.visibility = "hidden";
+            updateCustomerPreview();
+          },
+        });
+      }
+
+      function updateCustomerField(field, value) {
+        tripData[field] = value;
+      }
+
+      function updateCustomerPreview() {
+        const preview = document.getElementById("customerPreview");
+        const parts = [];
+
+        if (tripData.customerName) {
+          parts.push(tripData.customerName);
+        }
+        if (tripData.tripDate) {
+          parts.push(new Date(tripData.tripDate).toLocaleDateString());
+        }
+
+        preview.textContent =
+          parts.length > 0 ? parts.join(" • ") : "Tap to add customer details";
+      }
+
+      /* ========================================
+         PRICING CALCULATION
+         ======================================== */
+
+      function calculatePrice() {
+        const duration = tripData.duration || 2;
+        const passengers = tripData.passengers || 1;
+
+        // Get source configuration
+        const sourceInput = document.getElementById("source");
+        const sourceKey = sourceInput.value || "direct";
+        const sourceConfig = SOURCE_CONFIG[sourceKey];
+
+        // Pricing constants
+        const INCLUDED_PASSENGERS = 14;
+        const EXTRA_PASSENGER_RATE = 100;
+
+        // Calculate hourly rate based on tour type, pricing type, and source
+        const tourType = tripData.tourType || "bay";
+        const pricingType = tripData.pricingType || "regular";
+        const tourConfig = TOUR_TYPES[tourType];
+        const pricingConfig = PRICING_TYPES[pricingType];
+
+        // For sources with specific rates (like get-my-boat), use their rate
+        // Otherwise use tour base rate * pricing multiplier
+        let hourlyRate;
+        if (sourceConfig.rate && sourceKey !== "direct") {
+          hourlyRate = sourceConfig.rate * pricingConfig.rateMultiplier;
+        } else {
+          hourlyRate = tourConfig.baseRate * pricingConfig.rateMultiplier;
+        }
+
+        document.getElementById("baseRate").textContent =
+          Math.round(hourlyRate) + "/hr";
+
+        // Update display
+        document.getElementById("displayDuration").textContent =
+          duration + " hrs";
+        document.getElementById("displayPassengers").textContent = passengers;
+
+        // Calculate base trip cost
+        const baseTripCost = duration * hourlyRate;
+
+        // Calculate extra passengers
+        const extraPassengers = Math.max(0, passengers - INCLUDED_PASSENGERS);
+        const extraPassengerCost = extraPassengers * EXTRA_PASSENGER_RATE;
+
+        // Show/hide extra passengers row
+        const extraPassengersRow =
+          document.getElementById("extraPassengersRow");
+        if (extraPassengers > 0) {
+          extraPassengersRow.style.display = "flex";
+          document.getElementById("extraCount").textContent = extraPassengers;
+          document.getElementById("extraPassengerCost").textContent =
+            "+" + extraPassengerCost.toLocaleString();
+        } else {
+          extraPassengersRow.style.display = "none";
+        }
+
+        // Calculate fishing licenses
+        const FISHING_LICENSE_RATE = 22;
+        const fishingLicenses = tripData.fishingLicenses || 0;
+        const fishingLicensesCost = fishingLicenses * FISHING_LICENSE_RATE;
+
+        const fishingLicensesRow =
+          document.getElementById("fishingLicensesRow");
+        if (fishingLicenses > 0) {
+          fishingLicensesRow.style.display = "flex";
+          document.getElementById("fishingLicensesCost").textContent =
+            "+$" + fishingLicensesCost.toLocaleString();
+        } else {
+          fishingLicensesRow.style.display = "none";
+        }
+
+        // Calculate custom extras
+        const extrasAmount = tripData.extrasAmount || 0;
+        const extrasRow = document.getElementById("extrasRow");
+        if (extrasAmount > 0) {
+          extrasRow.style.display = "flex";
+          document.getElementById("extrasCost").textContent =
+            "+$" + extrasAmount.toLocaleString();
+        } else {
+          extrasRow.style.display = "none";
+        }
+
+        // Calculate subtotal (before discount)
+        const subtotal =
+          baseTripCost +
+          extraPassengerCost +
+          fishingLicensesCost +
+          extrasAmount;
+
+        // Calculate discount
+        let discountAmount = 0;
+        const repriceType = tripData.repriceType || "";
+        const repriceDiscount = tripData.repriceDiscount || 0;
+
+        if (repriceType && repriceDiscount > 0) {
+          if (repriceType === "%") {
+            discountAmount = subtotal * (repriceDiscount / 100);
+          } else if (repriceType === "dollar") {
+            discountAmount = repriceDiscount;
+          }
+        }
+
+        const discountRow = document.getElementById("discountRow");
+        if (discountAmount > 0) {
+          discountRow.style.display = "flex";
+          document.getElementById("discountCost").textContent =
+            "-$" + Math.round(discountAmount).toLocaleString();
+        } else {
+          discountRow.style.display = "none";
+        }
+
+        // Calculate business total (after discount)
+        const businessTotal = subtotal - discountAmount;
+        document.getElementById("businessTotal").textContent =
+          Math.round(businessTotal).toLocaleString();
+
+        // Calculate source fee if applicable
+        const feeRow = document.getElementById("feeRow");
+        const customerTotalRow = document.getElementById("customerTotalRow");
+
+        // Update fee label based on source
+        const feeLabel = document.querySelector("#feeRow .pricing-label");
+        if (sourceConfig.feeType !== "none") {
+          feeRow.style.display = "flex";
+          customerTotalRow.style.display = "flex";
+
+          let customerTotal;
+          let feeAmount;
+          let feeLabelText;
+
+          if (sourceConfig.feeType === "fixed") {
+            // Fixed fee: add to business total
+            feeAmount = sourceConfig.feeValue;
+            customerTotal = businessTotal + feeAmount;
+            feeLabelText =
+              "Comisión " + sourceConfig.label.split(" ")[0] + " ($-fijo)";
+          } else if (sourceConfig.feeType === "percentage") {
+            // Percentage fee: customer pays business_total / (1 - fee_percentage)
+            customerTotal = businessTotal / (1 - sourceConfig.feeValue);
+            feeAmount = customerTotal - businessTotal;
+            feeLabelText =
+              "Comisión " +
+              sourceConfig.label.split(" ")[0] +
+              " (" +
+              sourceConfig.feeValue * 100 +
+              "%)";
+          }
+
+          feeLabel.textContent = feeLabelText;
+          document.getElementById("feeCost").textContent =
+            "+" + Math.round(feeAmount).toLocaleString();
+          document.getElementById("customerTotal").textContent =
+            Math.round(customerTotal).toLocaleString();
+        } else {
+          feeRow.style.display = "none";
+          customerTotalRow.style.display = "none";
+        }
+      }
+
+      // Initialize pricing calculation
+      calculatePrice();
+
+      // Also calculate when pickers are closed
+      const originalCloseBottomSheet = closeBottomSheet;
+      closeBottomSheet = function () {
+        originalCloseBottomSheet();
+        calculatePrice();
+      };
+
+      // MutationObserver to watch for data-open changes
+      // This ensures price calculates even when data-open="false" is set directly
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (
+            mutation.type === "attributes" &&
+            mutation.attributeName === "data-open"
+          ) {
+            const isOpen = sheet.getAttribute("data-open") === "true";
+            if (!isOpen) {
+              // Sheet just closed - update summary display values
+              document.getElementById("summaryDuration").innerText =
+                tripData.duration;
+              document.getElementById("summaryPassengers").innerText =
+                tripData.passengers;
+            }
+          }
+        });
+      });
+
+      observer.observe(sheet, { attributes: true });
     </script>
   </body>
 </html>

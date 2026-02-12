@@ -1,0 +1,1274 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Loveshack Reservations - PWA</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+      :root {
+        --item-height: 54px;
+        --visor-bg: #2c2c2e;
+        --bg-color: #000000;
+        --text-primary: #ffffff;
+        --text-secondary: #8e8e93;
+        --accent-color: #0a84ff;
+        --fill: -webkit-fill-available;
+        --fill-h: -webkit-fill-available;
+      }
+
+      [hide] {
+        display: none;
+      }
+
+      [style*="--flex"] {
+        display: flex;
+      }
+      [style*="--fill"] {
+        width: var(--fill);
+      }
+
+      [style*="--fill-h"] {
+        height: var(--fill-h);
+      }
+
+      [style*="--flex-col"] {
+        flex-direction: column;
+      }
+
+      [style*="--rad"] {
+        border-radius: var(--rad);
+      }
+
+      [style*="--shadow"] {
+        box-shadow: var(--shadow);
+      }
+
+      [style*="--accent"] {
+        color: var(--accent-color);
+      }
+
+      [style*="--accent-bg"] {
+        background-color: var(--accent-color);
+      }
+
+      [style*="--accent-border"] {
+        border-color: var(--accent-color);
+      }
+
+      [style*="--accent-text"] {
+        color: var(--accent-color);
+      }
+
+      [style*="--w"] {
+        width: var(--w);
+      }
+
+      [style*="--h"] {
+        height: var(--h);
+      }
+
+      [style*="--wh"] {
+        width: var(--wh);
+        height: var(--wh);
+      }
+
+      [style*="--center"] {
+        justify-content: center;
+        align-items: center;
+      }
+
+      [style*="--center-y"] {
+        align-items: center;
+      }
+
+      [style*="--center-x"] {
+        justify-content: center;
+      }
+
+      [style*="--blur"] {
+        backdrop-filter: blur(var(--blur));
+        -webkit-backdrop-filter: blur(var(--blur));
+      }
+
+      [style*="--op"] {
+        opacity: var(--op);
+      }
+
+      * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      body {
+        margin: 0;
+        background-color: #121212;
+        color: var(--text-primary);
+        font-family: -apple-system, system-ui, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      #displayDuration:before {
+        content: "(Up to 14 pax) ";
+        color: grey;
+      }
+
+      /* ========================================
+         DESIGN LAYER - Structural Classes
+         These define the type and layout of elements
+         ======================================== */
+
+      /* Resumen del Viaje Interactuable */
+      .trip-summary {
+        background: #1c1c1e;
+        width: 100%;
+        padding: 24px 16px;
+        padding-top: 35px;
+        border-radius: 24px;
+        border: 1px solid #2c2c2e;
+        text-align: center;
+        position: fixed;
+        bottom: 0px;
+        left: 0px;
+        right: 0px;
+      }
+
+      .summary-title {
+        color: var(--text-secondary);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 20px;
+        display: block;
+        font-weight: 700;
+      }
+
+      .summary-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .summary-item {
+        background: #2c2c2e;
+        padding: 16px 8px;
+        border-radius: 16px;
+        cursor: pointer;
+        transition:
+          transform 0.1s,
+          background 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border: 1px solid transparent;
+      }
+
+      .summary-item:active {
+        transform: scale(0.95);
+        background: #3a3a3c;
+        border-color: #48484a;
+      }
+
+      .summary-item i {
+        font-size: 24px;
+        color: var(--accent-color);
+      }
+
+      .summary-value {
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .summary-label {
+        font-size: 12px;
+        color: var(--text-secondary);
+        font-weight: 500;
+      }
+
+      /* Bottom Sheet */
+      .sheet-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(75, 75, 75, 35%);
+        backdrop-filter: blur(4px);
+        z-index: 100;
+        visibility: hidden;
+        opacity: 0;
+      }
+
+      .bottom-sheet {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--bg-color);
+        border-top-left-radius: 24px;
+        border-top-right-radius: 24px;
+        z-index: 101;
+        transform: translateY(100%);
+        padding: 20px;
+        padding-bottom: env(safe-area-inset-bottom, 20px);
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+      }
+
+      .sheet-header {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .drag-handle {
+        width: 40px;
+        height: 5px;
+        background: #3a3a3c;
+        border-radius: 10px;
+        margin-bottom: 20px;
+      }
+
+      .sheet-title {
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      /* Picker Container */
+      .picker-container {
+        position: relative;
+        width: 100%;
+        height: calc(var(--item-height) * 5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        mask-image: linear-gradient(
+          to bottom,
+          transparent,
+          black 20%,
+          black 80%,
+          transparent
+        );
+        -webkit-mask-image: linear-gradient(
+          to bottom,
+          transparent,
+          black 20%,
+          black 80%,
+          transparent
+        );
+      }
+
+      .visor {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        height: var(--item-height);
+        background-color: var(--visor-bg);
+        border-radius: 12px;
+        z-index: 1;
+        pointer-events: none;
+      }
+
+      .manual-input {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-100%, -50%);
+        width: 60px;
+        height: var(--item-height);
+        background: transparent;
+        border: none;
+        color: white;
+        font-size: 2rem;
+        font-weight: 500;
+        text-align: center;
+        z-index: 15;
+        outline: none;
+        opacity: 0;
+        pointer-events: none;
+        appearance: textfield;
+        transition: opacity 0.25s ease;
+      }
+
+      .input-trigger {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-100%, -50%);
+        width: 60px;
+        height: var(--item-height);
+        z-index: 20;
+        cursor: text;
+        border: 1px solid transparent;
+      }
+
+      .input-trigger:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .unit-label {
+        position: absolute;
+        left: calc(50% + 15px);
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-primary);
+        font-size: 1.1rem;
+        font-weight: 600;
+        z-index: 2;
+        pointer-events: none;
+      }
+
+      .scroll-wrapper {
+        position: absolute;
+        inset: 0;
+        overflow-y: scroll;
+        scrollbar-width: none;
+        scroll-snap-type: y mandatory;
+        z-index: 10;
+        transition: opacity 0.25s ease;
+      }
+
+      .scroll-wrapper::-webkit-scrollbar {
+        display: none;
+      }
+
+      .scroll-list {
+        margin: 0;
+        padding: calc(var(--item-height) * 2) 0;
+        list-style: none;
+      }
+
+      .scroll-item {
+        height: var(--item-height);
+        scroll-snap-align: center;
+        cursor:
+          url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 256 256'><g transform='rotate(-90 128 128)' fill='%237c7c7c'><g transform='scale(10.66667,10.66667)'><path d='M12,11h8v2h-8z'/><path d='M19,8l4,4l-4,4z'/><path d='M17,17v-2h-6c-0.6,0 -1,-0.4 -1,-1v-4c0,-0.6 0.4,-1 1,-1h6v-2c0,-0.6 0.4,-1 1,-1h1c-1.4,-1.2 -5,-2 -7,-2c-4.4,0 -8,3.6 -8,8c0,4.4 3.6,8 8,8c2,0 5.6,-0.8 7,-2h-1c-0.6,0 -1,-0.4 -1,-1z' opacity='0.3'/><path d='M18,18c-0.2,0 -0.4,-0.1 -0.5,-0.2c-1.5,1.4 -3.4,2.2 -5.5,2.2c-4.4,0 -8,-3.6 -8,-8c0,-4.4 3.6,-8 8,-8c2.1,0 4,0.8 5.5,2.2c0.1,-0.1 0.3,-0.2 0.5,-0.2h2c-1.8,-2.4 -4.7,-4 -8,-4c-5.5,0 -10,4.5 -10,10c0,5.5 4.5,10 10,10c3.3,0 6.2,-1.6 8,-4z'/></g></g></svg>")
+            16 16,
+          auto;
+      }
+
+      .wheel-3d {
+        position: relative;
+        width: 60px;
+        height: var(--item-height);
+        transform-style: preserve-3d;
+        pointer-events: none;
+        margin-right: 60px;
+        z-index: 2;
+        transition: opacity 0.25s ease;
+      }
+
+      .wheel-item {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 500;
+        backface-visibility: hidden;
+        --radius: 110px;
+        transform: rotateX(calc(var(--angle) * -1deg)) translateZ(var(--radius));
+        opacity: 0.2;
+      }
+
+      .done-btn {
+        width: 100%;
+        background: var(--accent-color);
+        color: white;
+        border: none;
+        padding: 16px;
+        border-radius: 14px;
+        font-size: 17px;
+        font-weight: 600;
+        margin-top: 24px;
+        cursor: pointer;
+      }
+
+      .manual-input::-webkit-outer-spin-button,
+      .manual-input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      /* ========================================
+         STATE LAYER - Data Attribute Selectors
+         These define styles based on state/data attributes
+         ======================================== */
+
+      /* Bottom sheet open state */
+      .bottom-sheet {
+        transition: all 0.25s ease;
+      }
+
+      .bottom-sheet[data-open="true"] {
+        transform: translateY(0);
+      }
+
+      .bottom-sheet[data-open="false"] {
+        transform: translateY(100%);
+      }
+
+      .sheet-overlay[data-visible="true"] {
+        visibility: visible;
+        opacity: 1;
+      }
+
+      /* Input typing state - controlled by data-input-state attribute */
+      .wheel-3d,
+      .scroll-wrapper {
+        transition: all 0.25s ease;
+      }
+
+      [data-input-state="typing"] .wheel-3d,
+      [data-input-state="typing"] .scroll-wrapper,
+      [data-input-state="typing"] [data-wheel-active="true"] {
+        color: transparent;
+      }
+
+      [data-input-state="typing"] .manual-input {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      /* Wheel item active state - controlled by data-wheel-active attribute */
+      [data-wheel-active="true"] {
+        opacity: 1;
+        color: var(--text-primary);
+      }
+
+      /* Pricing Display */
+      .pricing-display {
+        background: #1c1c1e;
+        border-radius: 16px;
+        margin-bottom: 40px;
+        border: 1px solid #2c2c2e;
+        width: var(--fill);
+        display: table;
+      }
+
+      .pricing-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #2c2c2e;
+        padding: 8px 16px;
+      }
+
+      .pricing-row:first-child {
+        border-radius: 16px 16px 0 0;
+      }
+
+      .pricing-row:last-child {
+        border-bottom: none;
+      }
+
+      .pricing-label {
+        color: var(--text-secondary);
+        font-size: 14px;
+      }
+
+      .pricing-value {
+        font-weight: 600;
+        font-size: 16px;
+      }
+
+      .pricing-total {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--accent-color);
+      }
+
+      /* GMB Checkbox */
+      .gmb-toggle {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 16px;
+        padding: 16px;
+        background: #1c1c1e;
+        border-radius: 16px;
+        border: 1px solid #2c2c2e;
+        cursor: pointer;
+      }
+
+      .gmb-toggle:active {
+        background: #2c2c2e;
+      }
+
+      .toggle-switch {
+        width: 50px;
+        height: 28px;
+        background: #3a3a3c;
+        border-radius: 14px;
+        position: relative;
+        transition: background 0.3s;
+      }
+
+      .toggle-switch::after {
+        content: "";
+        position: absolute;
+        width: 24px;
+        height: 24px;
+        background: white;
+        border-radius: 50%;
+        top: 2px;
+        left: 2px;
+        transition: transform 0.3s;
+      }
+
+      .gmb-toggle input {
+        display: none;
+      }
+
+      .gmb-toggle input:checked + .toggle-switch {
+        background: var(--accent-color);
+      }
+
+      .gmb-toggle input:checked + .toggle-switch::after {
+        transform: translateX(22px);
+      }
+
+      .gmb-label {
+        font-size: 16px;
+        font-weight: 500;
+      }
+
+      .gmb-note {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-top: 4px;
+      }
+
+      /* ==============
+      Wheel css
+      ===============
+      */
+
+      /* SOLUCIÓN: Mejorar visibilidad y jerarquía visual del wheel */
+
+      .picker-container {
+        position: relative;
+        width: 100%;
+        height: calc(var(--item-height) * 5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* Mejorar el gradient mask para ocultar mejor los extremos */
+        mask-image: linear-gradient(
+          to bottom,
+          transparent 0%,
+          black 25%,
+          black 75%,
+          transparent 100%
+        );
+        -webkit-mask-image: linear-gradient(
+          to bottom,
+          transparent 0%,
+          black 25%,
+          black 75%,
+          transparent 100%
+        );
+      }
+
+      .wheel-item {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 500;
+        backface-visibility: hidden;
+        --radius: 110px;
+        transform: rotateX(calc(var(--angle) * -1deg)) translateZ(var(--radius));
+
+        /* CLAVE: Opacidad base muy baja */
+        opacity: 0.05;
+
+        /* Suavizar transiciones */
+        transition:
+          opacity 0.2s ease,
+          font-size 0.2s ease,
+          color 0.2s ease;
+
+        /* Blur progresivo para items alejados */
+        filter: blur(3px);
+      }
+
+      /* Estado ACTIVO - el número seleccionado */
+      [data-wheel-active="true"] {
+        opacity: 1 !important;
+        color: var(--text-primary);
+        font-size: 2.2rem; /* Ligeramente más grande */
+        font-weight: 700; /* Más bold */
+        filter: drop-shadow(0px 0px 6px black) !important;
+      }
+
+      /* NUEVA REGLA: Items cercanos al activo (±1 posición) */
+      .wheel-item[data-wheel-nearby="1"] {
+        opacity: 0.4;
+        filter: blur(0px);
+        font-size: 1.8rem;
+      }
+
+      /* NUEVA REGLA: Items medianamente cercanos (±2 posiciones) */
+      .wheel-item[data-wheel-nearby="2"] {
+        opacity: 0.2;
+        filter: blur(0px);
+        font-size: 1.6rem;
+      }
+
+      /* Items lejanos permanecen con opacity: 0.05 y blur: 2px */
+
+      /*===
+      PRICING BOX DETAILS COLLAPSED AND OPEN CSS
+      ===*/
+
+      #pricingDisplay:not(:checked) + .pricing-display .pricing-row {
+        margin-top: 0px;
+        border-bottom: none;
+      }
+
+      #pricingDisplay:not(:checked) + .pricing-display {
+        cursor: pointer;
+      }
+
+      #pricingDisplay:checked + .pricing-display:before {
+        width: var(--fill);
+        cursor: pointer;
+        transform: rotate(180deg) translateY(30px);
+      }
+
+      #pricingDisplay:not(:checked)
+        + .pricing-display
+        .pricing-row:not(:not(#feeRow):not(#customerTotalRow)) {
+        flex-direction: column;
+      }
+
+      #pricingDisplay:not(:checked) + .pricing-display {
+        display: flex;
+        justify-content: center;
+      }
+
+      #pricingDisplay:checked + .pricing-display #businessTotalRow {
+        border-radius: 0 0 16px 16px;
+      }
+
+      #pricingDisplay:not(:checked)
+        + .pricing-display
+        .pricing-row:has(#displayPassengers) {
+        flex-direction: row-reverse;
+        gap: 5px;
+      }
+
+      #pricingDisplay:not(:checked)
+        + .pricing-display
+        .pricing-row:has(#baseRate),
+      #pricingDisplay:not(:checked)
+        + .pricing-display
+        .pricing-row:has(#displayDuration)
+        .pricing-label,
+      #pricingDisplay:not(:checked) + .pricing-display #displayDuration:before,
+      #pricingDisplay:not(:checked)
+        + .pricing-display
+        .pricing-row:has(#businessTotal)
+        .pricing-label {
+        display: none;
+      }
+
+      #pricingDisplay:not(:checked)
+        + .pricing-display
+        .pricing-row:has(#businessTotal),
+      #pricingDisplay:not(:checked)
+        + .pricing-display
+        .pricing-row:has(#displayPassengers) {
+        margin-left: 10px;
+        border-bottom: none;
+      }
+
+      #pricingDisplay:not(:checked) + .pricing-display #businessTotal {
+        font-size: 30px;
+        color: #00ee00;
+        transform: translateY(-5px);
+      }
+
+      .pricing-display:before {
+        content: "";
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23808080' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='18 15 12 9 6 15'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: center;
+        --wh: 24px;
+        width: var(--wh);
+        height: var(--wh);
+        display: flex;
+        transform: translate(0px, -25px);
+        justify-content: center;
+        align-items: center;
+        margin: 0 auto;
+        position: absolute;
+      }
+
+      .pricing-row:hover {
+        background-color: #f0f0f050;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Design Layer: trip-summary with State Layer: data-duration/data-passengers -->
+    <div class="trip-summary" data-duration="2" data-passengers="1">
+      <!-- Pricing Display -->
+      <input type="checkbox" role="status" id="pricingDisplay" hide />
+      <label for="pricingDisplay" class="pricing-display">
+        <div class="pricing-row">
+          <span class="pricing-label">Tarifa base</span>
+          <span class="pricing-value" id="baseRate">$600/hr</span>
+        </div>
+        <div class="pricing-row">
+          <span class="pricing-label">Duración</span>
+          <span class="pricing-value" id="displayDuration">2 hrs</span>
+        </div>
+        <div class="pricing-row">
+          <span class="pricing-label">Pasajeros</span>
+          <span class="pricing-value" id="displayPassengers">14</span>
+        </div>
+        <div class="pricing-row" id="extraPassengersRow" style="display: none">
+          <span class="pricing-label"
+            >Extra pax (<span id="extraCount">0</span>)</span
+          >
+          <span class="pricing-value" id="extraPassengerCost">+$0</span>
+        </div>
+        <div class="pricing-row" id="feeRow" style="display: none">
+          <span class="pricing-label">Comisión GMB (11.5%)</span>
+          <span class="pricing-value" id="feeCost">+$0</span>
+        </div>
+        <div
+          id="businessTotalRow"
+          class="pricing-row"
+          style="border-bottom: none; margin-top: 8px; padding-top: 12px"
+        >
+          <span class="pricing-label">Total negocio</span>
+          <span class="pricing-value" id="businessTotal">$1,200</span>
+        </div>
+        <div class="pricing-row" id="customerTotalRow" style="display: none">
+          <span class="pricing-label">Total cliente</span>
+          <span class="pricing-total" id="customerTotal">$1,356</span>
+        </div>
+      </label>
+      <span class="summary-title">Configuración de Viaje</span>
+      <div class="summary-details">
+        <!-- Design Layer: summary-item triggers with State Layer: data-trigger attribute -->
+        <div
+          class="summary-item"
+          id="triggerDuration"
+          data-trigger="duration"
+          onclick="openPicker('duration')"
+        >
+          <i class="ph ph-clock"></i>
+          <div class="summary-value">
+            <span id="summaryDuration">2</span>
+            <span class="summary-label">HRS</span>
+          </div>
+        </div>
+        <div
+          class="summary-item"
+          id="triggerPassengers"
+          data-trigger="passengers"
+          onclick="openPicker('passengers')"
+        >
+          <i class="ph ph-users"></i>
+          <div class="summary-value">
+            <span id="summaryPassengers">14</span>
+            <span class="summary-label">PAX</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GMB Toggle -->
+    <label class="gmb-toggle">
+      <input type="checkbox" id="isGMB" onchange="calculatePrice()" />
+      <div class="toggle-switch"></div>
+      <div>
+        <div class="gmb-label">🐬 Get My Boat</div>
+        <div class="gmb-note">Tarifa especial $500/hr + 11.5% fee</div>
+      </div>
+    </label>
+
+    <!-- Design Layer: sheet-overlay with State Layer: data-visible attribute -->
+    <div class="sheet-overlay" id="overlay" data-visible="false"></div>
+
+    <!-- Design Layer: bottom-sheet with State Layer: data-open/data-scope attributes -->
+    <div class="bottom-sheet" id="sheet" data-open="false" data-scope="time">
+      <div class="sheet-header">
+        <div class="drag-handle"></div>
+        <span class="sheet-title" id="sheetTitle">Seleccionar</span>
+      </div>
+
+      <!-- Design Layer: picker-container with State Layer: data-input-state/data-picker-mode attributes -->
+      <div
+        class="picker-container"
+        id="pickerContainer"
+        data-input-state="normal"
+        data-picker-mode="duration"
+      >
+        <div class="visor"></div>
+        <span class="unit-label" id="unitLabel">HRS</span>
+
+        <div class="input-trigger" onclick="durationInput.focus()"></div>
+        <input type="number" class="manual-input" id="durationInput" />
+
+        <div class="wheel-3d" id="wheel"></div>
+        <div class="scroll-wrapper" id="scrollWrapper">
+          <ul class="scroll-list" id="scrollList"></ul>
+        </div>
+      </div>
+
+      <button class="done-btn" id="closeSheet">Confirmar</button>
+    </div>
+
+    <script>
+      /* ========================================
+         STATE MANAGEMENT CONFIGURATION
+         ======================================== */
+      const CONFIG = {
+        duration: { min: 2, max: 8, label: "HRS", title: "Duración del Viaje" },
+        passengers: {
+          min: 1,
+          max: 50,
+          label: "PAX",
+          title: "Cantidad de Pasajeros",
+        },
+      };
+
+      /* ========================================
+         STATE LAYER - Data management
+         ======================================== */
+      let currentMode = "duration";
+      let tripData = { duration: 2, passengers: 14 };
+
+      const STEP_ANGLE = 22;
+      const ITEM_HEIGHT = 54;
+
+      /* DOM Elements - State-aware containers */
+      const overlay = document.getElementById("overlay");
+      const sheet = document.getElementById("sheet");
+      const wheel = document.getElementById("wheel");
+      const scrollList = document.getElementById("scrollList");
+      const scrollWrapper = document.getElementById("scrollWrapper");
+      const durationInput = document.getElementById("durationInput");
+      const unitLabel = document.getElementById("unitLabel");
+      const sheetTitle = document.getElementById("sheetTitle");
+      const pickerContainer = document.getElementById("pickerContainer");
+      const tripSummary = document.querySelector(".trip-summary");
+
+      let isSyncing = false;
+      let activeItems3D = [];
+
+      /* ========================================
+         STATE UPDATE FUNCTIONS
+         These functions update data attributes for state management
+         ======================================== */
+
+      /**
+       * Updates state attributes on trip summary container
+       * @param {string} key - The state key (duration|passengers)
+       * @param {number} value - The value to set
+       */
+      function updateTripSummaryState(key, value) {
+        tripSummary.setAttribute(`data-${key}`, value);
+      }
+
+      /**
+       * Updates wheel item state using data attribute
+       * @param {HTMLElement} item - The wheel item element
+       * @param {boolean} isActive - Whether the item is active
+       */
+      function updateWheelItemState(item, isActive) {
+        item.setAttribute("data-wheel-active", isActive.toString());
+      }
+
+      /**
+       * Updates picker container input state
+       * @param {string} state - The input state (normal|typing)
+       */
+      function updateInputState(state) {
+        pickerContainer.setAttribute("data-input-state", state);
+      }
+
+      /**
+       * Updates picker container mode state
+       * @param {string} mode - The picker mode (duration|passengers)
+       */
+      function updatePickerMode(mode) {
+        pickerContainer.setAttribute("data-picker-mode", mode);
+      }
+
+      /**
+       * Updates bottom sheet open state
+       * @param {boolean} isOpen - Whether the sheet is open
+       */
+      function updateSheetState(isOpen) {
+        sheet.setAttribute("data-open", isOpen.toString());
+        overlay.setAttribute("data-visible", isOpen.toString());
+      }
+
+      /**
+       * Updates bottom sheet scope attribute
+       * @param {string} scope - The scope (time|pax)
+       */
+      function updateSheetScope(scope) {
+        sheet.setAttribute("data-scope", scope);
+      }
+
+      /* ========================================
+         PICKER SETUP FUNCTIONS
+         ======================================== */
+
+      function setupPicker(mode) {
+        currentMode = mode;
+        const settings = CONFIG[mode];
+
+        // Clear previous wheel items
+        wheel.innerHTML = "";
+        scrollList.innerHTML = "";
+        activeItems3D = [];
+
+        // Update state attributes
+        updatePickerMode(mode);
+        unitLabel.innerText = settings.label;
+        sheetTitle.innerText = settings.title;
+        durationInput.min = settings.min;
+        durationInput.max = settings.max;
+
+        for (let i = settings.min; i <= settings.max; i++) {
+          const item3d = document.createElement("div");
+          item3d.className = "wheel-item";
+          item3d.setAttribute("data-wheel-value", i);
+          item3d.setAttribute("data-wheel-active", "false");
+          item3d.innerText = i;
+          item3d.style.setProperty("--angle", (i - settings.min) * STEP_ANGLE);
+          wheel.appendChild(item3d);
+          activeItems3D.push(item3d);
+
+          const scrollItem = document.createElement("li");
+          scrollItem.className = "scroll-item";
+          scrollList.appendChild(scrollItem);
+        }
+      }
+
+      function updateActiveClasses(currentVal) {
+        const min = CONFIG[currentMode].min;
+        activeItems3D.forEach((item, index) => {
+          const itemVal = index + min;
+          const distance = Math.abs(itemVal - currentVal);
+
+          // Marcar el activo
+          const isActive = distance === 0;
+          updateWheelItemState(item, isActive);
+
+          // NUEVO: Marcar proximidad para CSS
+          if (distance === 1) {
+            item.setAttribute("data-wheel-nearby", "1");
+          } else if (distance === 2) {
+            item.setAttribute("data-wheel-nearby", "2");
+          } else {
+            item.removeAttribute("data-wheel-nearby");
+          }
+        });
+      }
+
+      function openPicker(mode) {
+        // Update sheet scope based on mode
+        const scope = mode === "duration" ? "time" : "pax";
+        updateSheetScope(scope);
+
+        setupPicker(mode);
+        const val = tripData[mode];
+        const settings = CONFIG[mode];
+
+        // Clear any GSAP transforms first to avoid conflicts with CSS
+        gsap.set(sheet, { clearProps: "transform" });
+        gsap.set(overlay, { clearProps: "opacity,visibility" });
+
+        // Update sheet state to open
+        updateSheetState(true);
+
+        isSyncing = true;
+        const targetScroll = (val - settings.min) * ITEM_HEIGHT;
+        scrollWrapper.scrollTop = targetScroll;
+        wheel.style.transform = `rotateX(${(val - settings.min) * STEP_ANGLE}deg)`;
+
+        updateActiveClasses(val);
+        setTimeout(() => (isSyncing = false), 100);
+      }
+
+      /* ========================================
+         EVENT HANDLERS - State transitions
+         ======================================== */
+
+      scrollWrapper.addEventListener("scroll", () => {
+        if (isSyncing) return;
+        const settings = CONFIG[currentMode];
+        const progress = scrollWrapper.scrollTop / ITEM_HEIGHT;
+        const activeIndex = Math.round(progress);
+        const val = activeIndex + settings.min;
+
+        wheel.style.transform = `rotateX(${progress * STEP_ANGLE}deg)`;
+        updateActiveClasses(val);
+        tripData[currentMode] = val;
+
+        // Calculate price in real-time as user scrolls
+        calculatePrice();
+      });
+
+      durationInput.addEventListener("focus", () => {
+        durationInput.value = tripData[currentMode];
+        // Update input state to typing - triggers CSS changes via data attribute
+        updateInputState("typing");
+      });
+
+      durationInput.addEventListener("blur", () => {
+        let val = parseInt(durationInput.value);
+        const settings = CONFIG[currentMode];
+
+        // Validate limits based on current mode
+        if (isNaN(val)) val = tripData[currentMode];
+        if (val < settings.min) val = settings.min;
+        if (val > settings.max) val = settings.max;
+
+        tripData[currentMode] = val;
+
+        isSyncing = true;
+        const targetScroll = (val - settings.min) * ITEM_HEIGHT;
+
+        // Sync visual UI (wheel and scroll)
+        wheel.style.transform = `rotateX(${(val - settings.min) * STEP_ANGLE}deg)`;
+        scrollWrapper.scrollTop = targetScroll;
+
+        updateActiveClasses(val);
+
+        // Exit typing mode - triggers CSS changes via data attribute
+        updateInputState("normal");
+
+        setTimeout(() => {
+          isSyncing = false;
+        }, 50);
+      });
+
+      durationInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") durationInput.blur();
+      });
+
+      function closeBottomSheet() {
+        // Animate sheet closed - state updates happen AFTER animation completes
+        gsap.to(sheet, { y: "100%", duration: 0.4, ease: "power4.in" });
+        gsap.to(overlay, {
+          opacity: 0,
+          duration: 0.3,
+          onComplete: () => {
+            // Update state attributes AFTER animation completes
+            updateSheetState(false);
+            overlay.style.visibility = "hidden";
+            // Update trip summary state
+            updateTripSummaryState("duration", tripData.duration);
+            updateTripSummaryState("passengers", tripData.passengers);
+            // Update summary display values
+            document.getElementById("summaryDuration").innerText =
+              tripData.duration;
+            document.getElementById("summaryPassengers").innerText =
+              tripData.passengers;
+          },
+        });
+      }
+
+      // Haptic feedback
+      let lastIdx = 0;
+      scrollWrapper.addEventListener("scroll", () => {
+        const settings = CONFIG[currentMode];
+        const idx = Math.round(scrollWrapper.scrollTop / ITEM_HEIGHT);
+        if (idx !== lastIdx && idx >= 0 && idx <= settings.max - settings.min) {
+          if (window.navigator.vibrate) navigator.vibrate(8);
+          lastIdx = idx;
+        }
+      });
+
+      document.getElementById("closeSheet").onclick = closeBottomSheet;
+      overlay.onclick = closeBottomSheet;
+
+      // Escape key support to close bottom sheet
+      document.addEventListener("keydown", (e) => {
+        const isOpen = sheet.getAttribute("data-open") === "true";
+
+        if (e.key === "Escape") {
+          if (isOpen) {
+            closeBottomSheet();
+          }
+        }
+
+        // Number key support - directly input value when sheet is open
+        if (isOpen && e.key >= "0" && e.key <= "9") {
+          const settings = CONFIG[currentMode];
+          const val = parseInt(e.key);
+
+          // Validate the value is within range
+          if (val >= settings.min && val <= settings.max) {
+            tripData[currentMode] = val;
+
+            // Sync visual UI (wheel and scroll)
+            wheel.style.transform = `rotateX(${(val - settings.min) * STEP_ANGLE}deg)`;
+            scrollWrapper.scrollTop = (val - settings.min) * ITEM_HEIGHT;
+
+            updateActiveClasses(val);
+
+            // Optional: vibrate for feedback
+            if (window.navigator.vibrate) navigator.vibrate(15);
+          }
+        }
+
+        // Arrow key support - increment/decrement value when sheet is open
+        if (isOpen) {
+          const settings = CONFIG[currentMode];
+          const currentVal = tripData[currentMode];
+          let newVal = currentVal;
+
+          if (e.key === "ArrowUp") {
+            e.preventDefault();
+            newVal = Math.min(currentVal + 1, settings.max);
+          } else if (e.key === "ArrowDown") {
+            e.preventDefault();
+            newVal = Math.max(currentVal - 1, settings.min);
+          }
+
+          if (newVal !== currentVal) {
+            tripData[currentMode] = newVal;
+
+            // Sync visual UI (wheel and scroll)
+            wheel.style.transform = `rotateX(${(newVal - settings.min) * STEP_ANGLE}deg)`;
+            scrollWrapper.scrollTop = (newVal - settings.min) * ITEM_HEIGHT;
+
+            updateActiveClasses(newVal);
+
+            // Haptic feedback
+            if (window.navigator.vibrate) navigator.vibrate(8);
+          }
+        }
+      });
+
+      /* ========================================
+         PRICING CALCULATION
+         ======================================== */
+
+      function calculatePrice() {
+        const duration = tripData.duration || 2;
+        const passengers = tripData.passengers || 1;
+        const isGMB = document.getElementById("isGMB").checked;
+
+        // Pricing constants
+        const REGULAR_RATE = 600;
+        const GMB_RATE = 500;
+        const INCLUDED_PASSENGERS = 14;
+        const EXTRA_PASSENGER_RATE = 100;
+        const GMB_FEE_PERCENTAGE = 0.115;
+
+        // Get base rate
+        const hourlyRate = isGMB ? GMB_RATE : REGULAR_RATE;
+        document.getElementById("baseRate").textContent = `${hourlyRate}/hr`;
+
+        // Update display
+        document.getElementById("displayDuration").textContent =
+          `${duration} hrs`;
+        document.getElementById("displayPassengers").textContent = passengers;
+
+        // Calculate base trip cost
+        const baseTripCost = duration * hourlyRate;
+
+        // Calculate extra passengers
+        const extraPassengers = Math.max(0, passengers - INCLUDED_PASSENGERS);
+        const extraPassengerCost = extraPassengers * EXTRA_PASSENGER_RATE;
+
+        // Show/hide extra passengers row
+        const extraPassengersRow =
+          document.getElementById("extraPassengersRow");
+        if (extraPassengers > 0) {
+          extraPassengersRow.style.display = "flex";
+          document.getElementById("extraCount").textContent = extraPassengers;
+          document.getElementById("extraPassengerCost").textContent =
+            `+${extraPassengerCost.toLocaleString()}`;
+        } else {
+          extraPassengersRow.style.display = "none";
+        }
+
+        // Calculate business total
+        const businessTotal = baseTripCost + extraPassengerCost;
+        document.getElementById("businessTotal").textContent =
+          `${businessTotal.toLocaleString()}`;
+
+        // Calculate GMB fee if applicable
+        const feeRow = document.getElementById("feeRow");
+        const customerTotalRow = document.getElementById("customerTotalRow");
+
+        if (isGMB) {
+          feeRow.style.display = "flex";
+          customerTotalRow.style.display = "flex";
+
+          // GMB fee: customer pays business_total / (1 - fee_percentage)
+          const customerTotal = businessTotal / (1 - GMB_FEE_PERCENTAGE);
+          const feeAmount = customerTotal - businessTotal;
+
+          document.getElementById("feeCost").textContent =
+            `+${Math.round(feeAmount).toLocaleString()}`;
+          document.getElementById("customerTotal").textContent =
+            `${Math.round(customerTotal).toLocaleString()}`;
+        } else {
+          feeRow.style.display = "none";
+          customerTotalRow.style.display = "none";
+        }
+      }
+
+      // Initialize pricing calculation
+      calculatePrice();
+
+      // Also calculate when pickers are closed
+      const originalCloseBottomSheet = closeBottomSheet;
+      closeBottomSheet = function () {
+        originalCloseBottomSheet();
+        calculatePrice();
+      };
+
+      // MutationObserver to watch for data-open changes
+      // This ensures price calculates even when data-open="false" is set directly
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (
+            mutation.type === "attributes" &&
+            mutation.attributeName === "data-open"
+          ) {
+            const isOpen = sheet.getAttribute("data-open") === "true";
+            if (!isOpen) {
+              // Sheet just closed - update summary display values
+              document.getElementById("summaryDuration").innerText =
+                tripData.duration;
+              document.getElementById("summaryPassengers").innerText =
+                tripData.passengers;
+            }
+          }
+        });
+      });
+
+      observer.observe(sheet, { attributes: true });
+    </script>
+  </body>
+</html>
