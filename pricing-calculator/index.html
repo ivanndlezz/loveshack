@@ -20,7 +20,7 @@
       content="https://www.loveshackcruises.com/wp-content/uploads/2020/06/Recurso-5.png"
     />
     <title>Loveshack Reservations - PWA</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
       :root {
@@ -225,11 +225,10 @@
       .sheet-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(0, 0, 0, 0.5);
+        background: rgb(55 55 55 / 50%);
         z-index: 100;
         visibility: hidden;
         opacity: 0;
-        transition: opacity 0.18s ease-out;
       }
 
       .bottom-sheet {
@@ -246,7 +245,7 @@
         padding-bottom: env(safe-area-inset-bottom, 20px);
         box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
         will-change: transform;
-        transition: transform 0.18s ease;
+        transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
       }
 
       i.ph.ph-caret-right {
@@ -259,6 +258,7 @@
         flex-direction: column;
         align-items: center;
         margin-bottom: 20px;
+        position: relative;
       }
 
       .drag-handle {
@@ -267,6 +267,32 @@
         background: #3a3a3c;
         border-radius: 10px;
         margin-bottom: 20px;
+      }
+
+      .close-sheet-btn {
+        position: absolute;
+        right: 0;
+        top: 0;
+        background: #3a3a3c;
+        border: none;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #fff;
+        font-size: 18px;
+        transition: background 0.2s;
+      }
+
+      .close-sheet-btn:hover {
+        background: #48484a;
+      }
+
+      .close-sheet-btn:active {
+        transform: scale(0.95);
       }
 
       .sheet-title {
@@ -959,6 +985,7 @@
         margin: 0 auto;
         position: absolute;
         width: var(--fill);
+        left: 0px;
       }
 
       .pricing-row:hover {
@@ -1636,13 +1663,25 @@
     </div>
 
     <!-- Design Layer: sheet-overlay with State Layer: data-visible attribute -->
-    <div class="sheet-overlay" id="overlay" data-visible="false"></div>
+    <div
+      class="sheet-overlay"
+      style="--blur: 3px"
+      id="overlay"
+      data-visible="false"
+    ></div>
 
     <!-- Design Layer: bottom-sheet with State Layer: data-open/data-scope attributes -->
     <div class="bottom-sheet" id="sheet" data-open="false" data-scope="time">
       <div class="sheet-header">
         <div class="drag-handle"></div>
         <span class="sheet-title" id="sheetTitle">Seleccionar</span>
+        <button
+          class="close-sheet-btn"
+          onclick="closeBottomSheet()"
+          aria-label="Cerrar"
+        >
+          <i class="ph ph-x"></i>
+        </button>
       </div>
 
       <!-- Design Layer: picker-container with State Layer: data-input-state/data-picker-mode attributes -->
@@ -1677,6 +1716,13 @@
       <div class="sheet-header">
         <div class="drag-handle"></div>
         <span class="sheet-title">Extras & Discounts</span>
+        <button
+          class="close-sheet-btn"
+          onclick="closeExtrasSheet()"
+          aria-label="Cerrar"
+        >
+          <i class="ph ph-x"></i>
+        </button>
       </div>
 
       <div style="padding: 0 4px; padding-bottom: 20px">
@@ -1875,6 +1921,13 @@
       <div class="sheet-header">
         <div class="drag-handle"></div>
         <span class="sheet-title">Customer Information</span>
+        <button
+          class="close-sheet-btn"
+          onclick="closeCustomerSheet()"
+          aria-label="Cerrar"
+        >
+          <i class="ph ph-x"></i>
+        </button>
       </div>
 
       <div style="padding: 0 4px; padding-bottom: 20px">
@@ -2023,6 +2076,13 @@
       <div class="sheet-header">
         <div class="drag-handle"></div>
         <span class="sheet-title">Select Tour Type</span>
+        <button
+          class="close-sheet-btn"
+          onclick="closeTourTypeSheet()"
+          aria-label="Cerrar"
+        >
+          <i class="ph ph-x"></i>
+        </button>
       </div>
 
       <div style="padding: 0 4px; padding-bottom: 20px">
@@ -2414,11 +2474,8 @@
         const val = tripData[mode];
         const settings = CONFIG[mode];
 
-        // Clear any GSAP transforms first to avoid conflicts with CSS
-        gsap.set(sheet, { clearProps: "transform" });
-        gsap.set(overlay, { clearProps: "opacity,visibility" });
-
-        // Update sheet state to open
+        // Update sheet state to open - CSS handles animation
+        closeAllBottomSheets();
         updateSheetState(true);
 
         isSyncing = true;
@@ -2488,25 +2545,20 @@
       });
 
       function closeBottomSheet() {
-        // Animate sheet closed - state updates happen AFTER animation completes
-        gsap.to(sheet, { y: "100%", duration: 0.4, ease: "power4.in" });
-        gsap.to(overlay, {
-          opacity: 0,
-          duration: 0.3,
-          onComplete: () => {
-            // Update state attributes AFTER animation completes
-            updateSheetState(false);
-            overlay.style.visibility = "hidden";
-            // Update trip summary state
-            updateTripSummaryState("duration", tripData.duration);
-            updateTripSummaryState("passengers", tripData.passengers);
-            // Update summary display values
-            document.getElementById("summaryDuration").innerText =
-              tripData.duration;
-            document.getElementById("summaryPassengers").innerText =
-              tripData.passengers;
-          },
-        });
+        // Close sheet - CSS handles animation
+        updateSheetState(false);
+
+        // Update UI after animation completes (300ms matches CSS transition)
+        setTimeout(() => {
+          // Update trip summary state
+          updateTripSummaryState("duration", tripData.duration);
+          updateTripSummaryState("passengers", tripData.passengers);
+          // Update summary display values
+          document.getElementById("summaryDuration").innerText =
+            tripData.duration;
+          document.getElementById("summaryPassengers").innerText =
+            tripData.passengers;
+        }, 300);
       }
 
       // Haptic feedback
@@ -2788,11 +2840,22 @@
         calculatePrice();
       }
 
-      function openTourTypeBottomSheet() {
-        // Open tour type sheet
-        gsap.set(tourTypeSheet, { clearProps: "transform" });
-        gsap.set(overlay, { clearProps: "opacity,visibility" });
+      // Helper function to close all bottom sheets
+      function closeAllBottomSheets() {
+        if (sheet.getAttribute("data-open") === "true") closeBottomSheet();
+        if (tourTypeSheet.getAttribute("data-open") === "true")
+          closeTourTypeSheet();
+        if (extrasSheet.getAttribute("data-open") === "true")
+          closeExtrasSheet();
+        if (customerSheet.getAttribute("data-open") === "true")
+          closeCustomerSheet();
+      }
 
+      function openTourTypeBottomSheet() {
+        // Close any other open bottom sheet first
+        closeAllBottomSheets();
+
+        // Open tour type sheet - CSS handles animation
         tourTypeSheet.setAttribute("data-open", "true");
         overlay.setAttribute("data-visible", "true");
         // Lock body scroll
@@ -2806,18 +2869,15 @@
       }
 
       function closeTourTypeSheet() {
-        gsap.to(tourTypeSheet, { y: "100%", duration: 0.4, ease: "power4.in" });
-        gsap.to(overlay, {
-          opacity: 0,
-          duration: 0.3,
-          onComplete: () => {
-            tourTypeSheet.setAttribute("data-open", "false");
-            overlay.setAttribute("data-visible", "false");
-            overlay.style.visibility = "hidden";
-            // Unlock body scroll
-            setBodyState(null);
-          },
-        });
+        // Close tour type sheet - CSS handles animation
+        tourTypeSheet.setAttribute("data-open", "false");
+        overlay.setAttribute("data-visible", "false");
+        overlay.style.visibility = "hidden";
+
+        // Unlock body scroll after animation completes (300ms matches CSS transition)
+        setTimeout(() => {
+          setBodyState(null);
+        }, 300);
       }
 
       function selectTourType(tourKey) {
@@ -2870,11 +2930,16 @@
         });
       }
 
-      // Close tour type sheet when clicking overlay
+      // Close any open bottom sheet when clicking overlay
       overlay.addEventListener("click", () => {
-        if (tourTypeSheet.getAttribute("data-open") === "true") {
+        // Close any bottom sheet that's currently open
+        if (sheet.getAttribute("data-open") === "true") closeBottomSheet();
+        else if (tourTypeSheet.getAttribute("data-open") === "true")
           closeTourTypeSheet();
-        }
+        else if (extrasSheet.getAttribute("data-open") === "true")
+          closeExtrasSheet();
+        else if (customerSheet.getAttribute("data-open") === "true")
+          closeCustomerSheet();
       });
 
       /* ========================================
@@ -2888,9 +2953,8 @@
         const isOpen = extrasSheet.getAttribute("data-open") === "true";
 
         if (!isOpen) {
-          // Open extras panel
-          gsap.set(extrasSheet, { clearProps: "transform" });
-          gsap.set(extrasOverlay, { clearProps: "opacity,visibility" });
+          // Open extras panel - CSS handles animation
+          closeAllBottomSheets();
 
           extrasSheet.setAttribute("data-open", "true");
           extrasOverlay.setAttribute("data-visible", "true");
@@ -2913,19 +2977,16 @@
       }
 
       function closeExtrasSheet() {
-        gsap.to(extrasSheet, { y: "100%", duration: 0.4, ease: "power4.in" });
-        gsap.to(extrasOverlay, {
-          opacity: 0,
-          duration: 0.3,
-          onComplete: () => {
-            extrasSheet.setAttribute("data-open", "false");
-            extrasOverlay.setAttribute("data-visible", "false");
-            extrasOverlay.style.visibility = "hidden";
-            // Unlock body scroll
-            setBodyState(null);
-            updateExtrasPreview();
-          },
-        });
+        // Close extras sheet - CSS handles animation
+        extrasSheet.setAttribute("data-open", "false");
+        extrasOverlay.setAttribute("data-visible", "false");
+        extrasOverlay.style.visibility = "hidden";
+
+        // Unlock body scroll after animation completes (300ms matches CSS transition)
+        setTimeout(() => {
+          setBodyState(null);
+          updateExtrasPreview();
+        }, 300);
       }
 
       function adjustFishingLicenses(delta) {
@@ -3028,9 +3089,8 @@
         const isOpen = customerSheet.getAttribute("data-open") === "true";
 
         if (!isOpen) {
-          // Open customer panel
-          gsap.set(customerSheet, { clearProps: "transform" });
-          gsap.set(overlay, { clearProps: "opacity,visibility" });
+          // Open customer panel - CSS handles animation
+          closeAllBottomSheets();
 
           customerSheet.setAttribute("data-open", "true");
           overlay.setAttribute("data-visible", "true");
@@ -3052,19 +3112,16 @@
       }
 
       function closeCustomerSheet() {
-        gsap.to(customerSheet, { y: "100%", duration: 0.4, ease: "power4.in" });
-        gsap.to(overlay, {
-          opacity: 0,
-          duration: 0.3,
-          onComplete: () => {
-            customerSheet.setAttribute("data-open", "false");
-            overlay.setAttribute("data-visible", "false");
-            overlay.style.visibility = "hidden";
-            // Unlock body scroll
-            setBodyState(null);
-            updateCustomerPreview();
-          },
-        });
+        // Close customer sheet - CSS handles animation
+        customerSheet.setAttribute("data-open", "false");
+        overlay.setAttribute("data-visible", "false");
+        overlay.style.visibility = "hidden";
+
+        // Unlock body scroll after animation completes (300ms matches CSS transition)
+        setTimeout(() => {
+          setBodyState(null);
+          updateCustomerPreview();
+        }, 300);
       }
 
       function updateCustomerField(field, value) {
