@@ -1376,3 +1376,73 @@
     padding-bottom: calc(12px + env(safe-area-inset-bottom));
   }
 }
+
+/* ==================== STATE MANAGEMENT ==================== */
+/* Base class for state-managed elements with smooth transitions */
+.state-managed {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition:
+    opacity 0.25s ease,
+    visibility 0.25s ease,
+    transform 0.25s ease;
+  pointer-events: none;
+}
+
+/* Visible states - smooth fade in */
+.state-managed[data-state="visible"],
+.state-managed[data-state="active"],
+.state-managed[data-state="expanded"] {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Hidden states - fade out */
+.state-managed[data-state="hidden"],
+.state-managed[data-state="inactive"],
+.state-managed[data-state="collapsed"] {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  pointer-events: none;
+}
+
+/* Display overrides for flex/block elements */
+.state-managed[data-state="flex"] {
+  display: flex !important;
+}
+
+.state-managed[data-state="block"] {
+  display: block !important;
+}
+
+/* Slide + fade transition variant */
+.state-managed-slide {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-15px);
+  transition:
+    opacity 0.3s ease,
+    visibility 0.3s ease,
+    transform 0.3s ease;
+  pointer-events: none;
+}
+
+.state-managed-slide[data-state="visible"],
+.state-managed-slide[data-state="expanded"] {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.state-managed-slide[data-state="hidden"],
+.state-managed-slide[data-state="collapsed"] {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-15px);
+  pointer-events: none;
+}

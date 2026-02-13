@@ -295,23 +295,23 @@
 
     // Extra passengers
     if (basePricing.extraPassengers > 0) {
-      elements.extraPassengersRow.style.display = "flex";
+      elements.extraPassengersRow.setAttribute("data-state", "visible");
       elements.extraCount.textContent = basePricing.extraPassengers;
       elements.extraPassengerPrice.textContent = calculator.formatCurrency(
         basePricing.extraPassengerCharge,
       );
     } else {
-      elements.extraPassengersRow.style.display = "none";
+      elements.extraPassengersRow.setAttribute("data-state", "hidden");
     }
 
     // Extras
     if (extrasPricing.total > 0) {
-      elements.extrasRow.style.display = "flex";
+      elements.extrasRow.setAttribute("data-state", "visible");
       elements.extrasPrice.textContent = calculator.formatCurrency(
         extrasPricing.total,
       );
     } else {
-      elements.extrasRow.style.display = "none";
+      elements.extrasRow.setAttribute("data-state", "hidden");
     }
 
     // Subtotal
@@ -321,12 +321,12 @@
 
     // Discount
     if (summary.discount > 0) {
-      elements.discountRow.style.display = "flex";
+      elements.discountRow.setAttribute("data-state", "visible");
       elements.discountType.textContent = reprice.repriceType;
       elements.discountAmount.textContent =
         "-" + calculator.formatCurrency(summary.discount);
     } else {
-      elements.discountRow.style.display = "none";
+      elements.discountRow.setAttribute("data-state", "hidden");
     }
 
     // Business price
@@ -336,14 +336,14 @@
 
     // Fee
     if (fee.hasFee) {
-      elements.feeRow.style.display = "flex";
+      elements.feeRow.setAttribute("data-state", "visible");
       elements.feeSource.textContent = fee.sourceName;
       elements.feeAmount.textContent = calculator.formatCurrency(summary.fee);
-      elements.feeNotice.style.display = "flex";
+      elements.feeNotice.setAttribute("data-state", "visible");
       elements.feeNoticeText.textContent = `${fee.sourceName} ${fee.feeNote}`;
     } else {
-      elements.feeRow.style.display = "none";
-      elements.feeNotice.style.display = "none";
+      elements.feeRow.setAttribute("data-state", "hidden");
+      elements.feeNotice.setAttribute("data-state", "hidden");
     }
 
     // Customer price
@@ -365,7 +365,7 @@
 
     if (!validation.isValid) {
       if (elements.validationMessages) {
-        elements.validationMessages.style.display = "block";
+        elements.validationMessages.setAttribute("data-state", "block");
         elements.validationMessages.innerHTML = validation.errors
           .map((error) => `<div class="validation-message">⚠️ ${error}</div>`)
           .join("");
@@ -374,7 +374,7 @@
       }
     } else {
       if (elements.validationMessages) {
-        elements.validationMessages.style.display = "none";
+        elements.validationMessages.setAttribute("data-state", "hidden");
       }
     }
   }
@@ -574,7 +574,7 @@
     if (badge && inquiryManager) {
       const count = inquiryManager.getInquiries().length;
       badge.textContent = count;
-      badge.style.display = count > 0 ? "flex" : "none";
+      badge.setAttribute("data-state", count > 0 ? "visible" : "hidden");
     }
   }
 
@@ -708,12 +708,12 @@
     if (!indicator) {
       indicator = document.createElement("div");
       indicator.id = "editingIndicator";
-      indicator.className = "editing-indicator";
+      indicator.className = "editing-indicator state-managed";
       indicator.innerHTML = `<span>Editing: ${customerName}</span><button onclick=\"clearEditingInquiry()\">×</button>`;
       document.querySelector(".calculator-container").prepend(indicator);
     }
     indicator.innerHTML = `<span>Editing: ${customerName}</span><button onclick=\"clearEditingInquiry()\" title=\"Clear editing state\">×</button>`;
-    indicator.style.display = "flex";
+    indicator.setAttribute("data-state", "visible");
 
     // Store current ID
     if (!document.getElementById("currentInquiryId")) {
@@ -733,7 +733,7 @@
   function clearEditingInquiry() {
     const indicator = document.getElementById("editingIndicator");
     if (indicator) {
-      indicator.style.display = "none";
+      indicator.setAttribute("data-state", "hidden");
     }
 
     const hiddenInput = document.getElementById("currentInquiryId");
@@ -1121,7 +1121,7 @@ function updateInquiryCountBadge() {
   if (badge && inquiryManager) {
     const count = inquiryManager.getInquiries().length;
     badge.textContent = count;
-    badge.style.display = count > 0 ? "flex" : "none";
+    badge.setAttribute("data-state", count > 0 ? "visible" : "hidden");
   }
 }
 
@@ -1254,12 +1254,12 @@ function setEditingInquiry(id, customerName) {
   if (!indicator) {
     indicator = document.createElement("div");
     indicator.id = "editingIndicator";
-    indicator.className = "editing-indicator";
+    indicator.className = "editing-indicator state-managed";
     indicator.innerHTML = `<span>Editing: ${customerName}</span><button onclick="clearEditingInquiry()">×</button>`;
     document.querySelector(".calculator-container").prepend(indicator);
   }
   indicator.innerHTML = `<span>Editing: ${customerName}</span><button onclick="clearEditingInquiry()" title="Clear editing state">×</button>`;
-  indicator.style.display = "flex";
+  indicator.setAttribute("data-state", "visible");
 
   // Store current ID
   if (!document.getElementById("currentInquiryId")) {
@@ -1279,7 +1279,7 @@ function setEditingInquiry(id, customerName) {
 function clearEditingInquiry() {
   const indicator = document.getElementById("editingIndicator");
   if (indicator) {
-    indicator.style.display = "none";
+    indicator.setAttribute("data-state", "hidden");
   }
 
   const hiddenInput = document.getElementById("currentInquiryId");

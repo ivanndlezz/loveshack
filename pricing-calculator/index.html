@@ -115,9 +115,15 @@
         margin-bottom: 100vh;
       }
 
+      /* Scroll lock state - prevents body scroll when any bottom sheet is open */
+      body[data-state="locked"] {
+        overflow: hidden;
+      }
+
       #displayDuration:before {
         content: "(Up to 14 pax) ";
         color: grey;
+            font-size: 10px;
       }
 
       /* ========================================
@@ -198,11 +204,11 @@
       .sheet-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(75, 75, 75, 35%);
-        backdrop-filter: blur(4px);
+        background: rgba(0, 0, 0, 0.5);
         z-index: 100;
         visibility: hidden;
         opacity: 0;
+        transition: opacity 0.18s ease-out;
       }
 
       .bottom-sheet {
@@ -213,11 +219,13 @@
         background: var(--bg-color);
         border-top-left-radius: 24px;
         border-top-right-radius: 24px;
-        z-index: 101;
+        z-index: 999;
         transform: translateY(100%);
         padding: 20px;
         padding-bottom: env(safe-area-inset-bottom, 20px);
         box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+        will-change: transform;
+        transition: transform 0.18s cubic-bezier(0.32, 0.72, 0, 1);
       }
 
       i.ph.ph-caret-right {
@@ -300,7 +308,7 @@
         opacity: 0;
         pointer-events: none;
         appearance: textfield;
-        transition: opacity 0.25s ease;
+        transition: opacity 0.15s ease-out;
       }
 
       .input-trigger {
@@ -340,7 +348,7 @@
         scrollbar-width: none;
         scroll-snap-type: y mandatory;
         z-index: 10;
-        transition: opacity 0.25s ease;
+        transition: opacity 0.15s ease-out;
       }
 
       .scroll-wrapper::-webkit-scrollbar {
@@ -370,7 +378,7 @@
         pointer-events: none;
         margin-right: 60px;
         z-index: 2;
-        transition: opacity 0.25s ease;
+        transition: opacity 0.15s ease-out;
       }
 
       .wheel-item {
@@ -412,11 +420,6 @@
          ======================================== */
 
       /* Bottom sheet open state */
-      .bottom-sheet {
-        transition: all 0.25s ease;
-        z-index: 1000;
-      }
-
       .bottom-sheet[data-open="true"] {
         transform: translateY(0);
       }
@@ -434,7 +437,7 @@
       /* Input typing state - controlled by data-input-state attribute */
       .wheel-3d,
       .scroll-wrapper {
-        transition: all 0.25s ease;
+        transition: opacity 0.15s ease-out;
       }
 
       [data-input-state="typing"] .wheel-3d,
@@ -518,7 +521,7 @@
         background: #3a3a3c;
         border-radius: 14px;
         position: relative;
-        transition: background 0.3s;
+        transition: background 0.2s ease-out;
       }
 
       .toggle-switch::after {
@@ -530,7 +533,7 @@
         border-radius: 50%;
         top: 2px;
         left: 2px;
-        transition: transform 0.3s;
+        transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
       }
 
       .gmb-toggle:has(#source) {
@@ -613,38 +616,39 @@
         /* CLAVE: Opacidad base muy baja */
         opacity: 0.05;
 
-        /* Suavizar transiciones */
+        /* Transiciones rápidas */
         transition:
-          opacity 0.2s ease,
-          font-size 0.2s ease,
-          color 0.2s ease;
+          opacity 0.12s ease-out,
+          font-size 0.12s ease-out;
 
-        /* Blur progresivo para items alejados */
-        filter: blur(3px);
+        /* Sin blur para mejor rendimiento */
+        filter: none;
       }
 
       /* Estado ACTIVO - el número seleccionado */
       [data-wheel-active="true"] {
         opacity: 1 !important;
         color: var(--text-primary);
-        font-size: 2.2rem; /* Ligeramente más grande */
-        
+        font-size: 2.2rem;
         filter: drop-shadow(0px 0px 6px black) !important;
       }
 
       /* NUEVA REGLA: Items cercanos al activo (±1 posición) */
       .wheel-item[data-wheel-nearby="1"] {
         opacity: 0.4;
-        filter: blur(0px);
         font-size: 1.8rem;
       }
 
       /* NUEVA REGLA: Items medianamente cercanos (±2 posiciones) */
       .wheel-item[data-wheel-nearby="2"] {
         opacity: 0.2;
-        filter: blur(0px);
         font-size: 1.6rem;
       }
+
+      .wheel-item:not([data-wheel-nearby]):not([data-wheel-active="true"])
+{
+  opacity: 0;
+}
 
       /* Items lejanos permanecen con opacity: 0.05 y blur: 2px */
 
@@ -674,9 +678,10 @@
         border-radius: 8px;
         background: rgba(255, 255, 255, 0.04);
         border-bottom: none;
-        transition: all 0.2s ease;
+        transition: background 0.15s ease, transform 0.15s ease;
         flex: 1;
         min-width: 0;
+        flex-wrap: wrap;
       }
 
       /* Wrap the 3 main metrics in a horizontal container */
@@ -717,7 +722,16 @@
         font-size: 16px;
         font-weight: 700;
         white-space: nowrap;
-        margin-left: auto;
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      #pricingDisplay:not(:checked) + .pricing-display .pricing-row:nth-child(3){
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
       }
 
       /* Total row - Always show customer total if available, otherwise nothing in collapsed */
@@ -725,13 +739,13 @@
         grid-column: 1 / -1;
         display: flex !important;
         flex-direction: row;
-        justify-content: space-between;
+        justify-content: center;
         align-items: center;
         padding: 12px 16px;
         margin: 4px 0 0 0;
         border-radius: 10px;
-        background: linear-gradient(135deg, var(--accent-color) 0%, #0066cc 100%);
-        box-shadow: 0 2px 12px rgba(0, 123, 255, 0.3);
+       box-shadow: 0 2px 12px rgba(0, 123, 255, 0.3);
+       gap: 10px;
       }
 
       #pricingDisplay:not(:checked) + .pricing-display #customerTotalRow .pricing-label {
@@ -765,7 +779,7 @@
         align-items: center;
         padding: 12px 0;
         border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        transition: all 0.2s ease;
+        transition: background 0.15s ease, padding 0.15s ease;
       }
 
       #pricingDisplay:checked + .pricing-display .pricing-row:hover {
@@ -830,11 +844,11 @@
         
         cursor: pointer;
         transform: rotate(180deg) translateY(30px);
-        transition: transform 0.3s ease;
+        transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
       }
 
       #pricingDisplay:not(:checked) + .pricing-display:before {
-        transition: transform 0.3s ease;
+        transition: transform 0.2s ease-out;
       }
 
       /* Add subtle icons for different row types */
@@ -903,8 +917,7 @@
         align-items: center;
         background: #2c2c2e;
         border: 1px solid #3a3a3c;
-        border-radius: 12px;
-        padding: 8px 12px;
+        border-radius: 100px;
         cursor: pointer;
         transition: border-color 0.2s;
       }
@@ -921,6 +934,7 @@
         font-size: 16px;
         outline: none;
         padding: 4px;
+        padding: 20px;
       }
 
       .custom-select-input::placeholder {
@@ -936,6 +950,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        margin-right: 20px;
       }
 
       .custom-select-toggle:hover {
@@ -1161,36 +1176,30 @@
         </div>
       </div>
 
-      <!-- Booking Source Selector -->
-      <label class="gmb-toggle">
-        <input type="hidden" id="source" data-field="source" value="direct" />
-        <div class="custom-select custom-select-searchable" id="sourceSelect">
-          <label for="sourceInput" class="custom-select-trigger">
-            <input
-              type="text"
-              class="custom-select-input"
-              id="sourceInput"
-              placeholder="Select Source"
-              oninput="handleSelectSearch('source', this.value)"
-              onfocus="openSelectDropdown('sourceSelect')"
-            />
-            <button
-              class="custom-select-toggle"
-              onclick="toggleSelect('sourceSelect')"
-            >
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M19 9l-7 7-7-7"></path>
-              </svg>
-            </button>
-          </label>
-          <div class="custom-select-dropdown">
+      <!-- Booking Source Selector - FIXED -->
+<div style="padding: 0 20px; margin-bottom: 20px;">
+  <div class="custom-select custom-select-searchable" id="sourceSelect">
+    <input type="hidden" id="source" data-field="source" value="direct" />
+    
+    <div class="custom-select-trigger">
+      <input
+        type="text"
+        class="custom-select-input"
+        id="sourceInput"
+        placeholder="Select Source"
+        oninput="handleSelectSearch('source', this.value)"
+        onfocus="openSelectDropdown('sourceSelect')"
+      />
+      <button
+        class="custom-select-toggle"
+        onclick="toggleSelect('sourceSelect')"
+        type="button"
+      >
+        <i class="ph ph-magnifying-glass" style="font-size: 18px; color: var(--text-secondary);"></i>
+      </button>
+    </div>
+    
+    <div class="custom-select-dropdown">
             <div class="custom-select-options" id="sourceOptions">
               <div
                 class="custom-select-option"
@@ -1285,8 +1294,9 @@
               </div>
             </div>
           </div>
-        </div>
-      </label>
+
+  </div>
+</div>
 
       <!-- Tour Type Selector -->
       <div style="padding: 0 20px; margin-bottom: 20px">
@@ -1399,32 +1409,32 @@
             <span class="pricing-value" id="displayPassengers">14</span>
           </div>
           <div
-            class="pricing-row"
+            class="pricing-row state-managed"
             id="extraPassengersRow"
-            style="display: none"
+            data-state="hidden"
           >
             <span class="pricing-label"
               >Extra pax (<span id="extraCount">0</span>)</span
             >
             <span class="pricing-value" id="extraPassengerCost">+$0</span>
           </div>
-          <div class="pricing-row" id="feeRow" style="display: none">
-            <span class="pricing-label">Comisión GMB (11.5%)</span>
+          <div class="pricing-row state-managed" id="feeRow" data-state="hidden">
+            <span class="pricing-label" id="feeLabel">Comisión</span>
             <span class="pricing-value" id="feeCost">+$0</span>
           </div>
           <div
-            class="pricing-row"
+            class="pricing-row state-managed"
             id="fishingLicensesRow"
-            style="display: none"
+            data-state="hidden"
           >
             <span class="pricing-label">Fishing Licenses</span>
             <span class="pricing-value" id="fishingLicensesCost">+$0</span>
           </div>
-          <div class="pricing-row" id="extrasRow" style="display: none">
+          <div class="pricing-row state-managed" id="extrasRow" data-state="hidden">
             <span class="pricing-label">Other Extras</span>
             <span class="pricing-value" id="extrasCost">+$0</span>
           </div>
-          <div class="pricing-row" id="discountRow" style="display: none">
+          <div class="pricing-row state-managed" id="discountRow" data-state="hidden">
             <span class="pricing-label">Discount</span>
             <span class="pricing-value" id="discountCost" style="color: #4caf50"
               >-$0</span
@@ -1438,7 +1448,7 @@
             <span class="pricing-label">Total negocio</span>
             <span class="pricing-value" id="businessTotal">$1,200</span>
           </div>
-          <div class="pricing-row" id="customerTotalRow" style="display: none">
+          <div class="pricing-row state-managed" id="customerTotalRow" data-state="visible">
             <span class="pricing-label">Total cliente</span>
             <span class="pricing-total" id="customerTotal">$1,356</span>
           </div>
@@ -1649,13 +1659,13 @@
 
         <!-- Discount Amount -->
         <div
-          class="gmb-toggle"
+          class="gmb-toggle state-managed"
           id="discountAmountSection"
+          data-state="hidden"
           style="
             margin-bottom: 16px;
             flex-direction: column;
             align-items: flex-start;
-            display: none;
           "
         >
           <label
@@ -2152,6 +2162,22 @@
         pickerContainer.setAttribute("data-picker-mode", mode);
       }
 
+      /* ========================================
+         SCROLL LOCK UTILITY
+         ======================================== */
+
+      /**
+       * Sets body state for scroll locking
+       * @param {string|null} state - The state to set ('locked' to lock, null to unlock)
+       */
+      function setBodyState(state) {
+        if (state === 'locked') {
+          document.body.setAttribute('data-state', 'locked');
+        } else {
+          document.body.removeAttribute('data-state');
+        }
+      }
+
       /**
        * Updates bottom sheet open state
        * @param {boolean} isOpen - Whether the sheet is open
@@ -2159,6 +2185,8 @@
       function updateSheetState(isOpen) {
         sheet.setAttribute("data-open", isOpen.toString());
         overlay.setAttribute("data-visible", isOpen.toString());
+        // Lock/unlock body scroll
+        setBodyState(isOpen ? 'locked' : null);
       }
 
       /**
@@ -2535,39 +2563,34 @@
       }
 
       function selectSource(sourceValue, element) {
-        const sourceInput = document.getElementById("source");
-        const sourceInputDisplay = document.getElementById("sourceInput");
-        const dropdown = document.querySelector(
-          "#sourceSelect .custom-select-dropdown",
-        );
+  const sourceInput = document.getElementById("source");
+  const sourceInputDisplay = document.getElementById("sourceInput");
+  const dropdown = document.querySelector("#sourceSelect .custom-select-dropdown");
 
-        // Update hidden input
-        sourceInput.value = sourceValue;
+  // Update hidden input
+  sourceInput.value = sourceValue;
 
-        // Update display
-        const config = SOURCE_CONFIG[sourceValue];
-        sourceInputDisplay.placeholder = config.label;
+  // Update display
+  const config = SOURCE_CONFIG[sourceValue];
+  sourceInputDisplay.value = config.label; // ✅ Usar .value en vez de placeholder
 
-        // Update selected state
-        document
-          .querySelectorAll("#sourceOptions .custom-select-option")
-          .forEach((opt) => {
-            opt.setAttribute("data-selected", "false");
-          });
-        element.setAttribute("data-selected", "true");
+  // Update selected state
+  document.querySelectorAll("#sourceOptions .custom-select-option")
+    .forEach((opt) => opt.setAttribute("data-selected", "false"));
+  element.setAttribute("data-selected", "true");
 
-        // Close dropdown
-        dropdown.setAttribute("data-open", "false");
+  // Close dropdown
+  dropdown.setAttribute("data-open", "false");
+  
+  // ❌ ELIMINAR ESTA LÍNEA COMPLETAMENTE:
+  // document.getElementById("sourceOptions").style.display = "none";
 
-        // Hide sourceOptions dropdown
-        document.getElementById("sourceOptions").style.display = "none";
+  // Blur the input
+  sourceInputDisplay.blur();
 
-        // Blur the input
-        sourceInputDisplay.blur();
-
-        // Recalculate price
-        calculatePrice();
-      }
+  // Recalculate price
+  calculatePrice();
+}
 
       // Close dropdowns when clicking outside
       document.addEventListener("click", (e) => {
@@ -2618,6 +2641,8 @@
 
         tourTypeSheet.setAttribute("data-open", "true");
         overlay.setAttribute("data-visible", "true");
+        // Lock body scroll
+        setBodyState('locked');
 
         // Clear search
         document.getElementById("tourTypeSearchInput").value = "";
@@ -2635,6 +2660,8 @@
             tourTypeSheet.setAttribute("data-open", "false");
             overlay.setAttribute("data-visible", "false");
             overlay.style.visibility = "hidden";
+            // Unlock body scroll
+            setBodyState(null);
           },
         });
       }
@@ -2713,6 +2740,8 @@
 
           extrasSheet.setAttribute("data-open", "true");
           extrasOverlay.setAttribute("data-visible", "true");
+          // Lock body scroll
+          setBodyState('locked');
 
           // Sync UI with current values
           document.getElementById("fishingLicensesCount").textContent =
@@ -2738,6 +2767,8 @@
             extrasSheet.setAttribute("data-open", "false");
             extrasOverlay.setAttribute("data-visible", "false");
             extrasOverlay.style.visibility = "hidden";
+            // Unlock body scroll
+            setBodyState(null);
             updateExtrasPreview();
           },
         });
@@ -2768,10 +2799,10 @@
         const discountPrefix = document.getElementById("discountPrefix");
 
         if (type) {
-          discountSection.style.display = "flex";
+          discountSection.setAttribute("data-state", "visible");
           discountPrefix.textContent = type === "%" ? "%" : "$";
         } else {
-          discountSection.style.display = "none";
+          discountSection.setAttribute("data-state", "hidden");
           tripData.repriceDiscount = 0;
           document.getElementById("discountAmountInput").value = 0;
         }
@@ -2849,6 +2880,8 @@
 
           customerSheet.setAttribute("data-open", "true");
           overlay.setAttribute("data-visible", "true");
+          // Lock body scroll
+          setBodyState('locked');
 
           // Sync UI with current values
           document.getElementById("customerNameInput").value =
@@ -2873,6 +2906,8 @@
             customerSheet.setAttribute("data-open", "false");
             overlay.setAttribute("data-visible", "false");
             overlay.style.visibility = "hidden";
+            // Unlock body scroll
+            setBodyState(null);
             updateCustomerPreview();
           },
         });
@@ -2906,9 +2941,22 @@
         const passengers = tripData.passengers || 1;
 
         // Get source configuration
+        // Use hidden input for key, NOT the display input
         const sourceInput = document.getElementById("source");
-        const sourceKey = sourceInput.value || "direct";
-        const sourceConfig = SOURCE_CONFIG[sourceKey];
+        let sourceKey = sourceInput.value;
+        
+        // Fallback: if sourceKey doesn't match config, try to find it by label
+        if (!SOURCE_CONFIG[sourceKey]) {
+          // Find source key by matching label
+          for (const [key, config] of Object.entries(SOURCE_CONFIG)) {
+            if (config.label === sourceKey) {
+              sourceKey = key;
+              break;
+            }
+          }
+        }
+        
+        const sourceConfig = SOURCE_CONFIG[sourceKey] || SOURCE_CONFIG["direct"];
 
         // Pricing constants
         const INCLUDED_PASSENGERS = 14;
@@ -2948,12 +2996,12 @@
         const extraPassengersRow =
           document.getElementById("extraPassengersRow");
         if (extraPassengers > 0) {
-          extraPassengersRow.style.display = "flex";
+          extraPassengersRow.setAttribute("data-state", "visible");
           document.getElementById("extraCount").textContent = extraPassengers;
           document.getElementById("extraPassengerCost").textContent =
             "+" + extraPassengerCost.toLocaleString();
         } else {
-          extraPassengersRow.style.display = "none";
+          extraPassengersRow.setAttribute("data-state", "hidden");
         }
 
         // Calculate fishing licenses
@@ -2964,22 +3012,22 @@
         const fishingLicensesRow =
           document.getElementById("fishingLicensesRow");
         if (fishingLicenses > 0) {
-          fishingLicensesRow.style.display = "flex";
+          fishingLicensesRow.setAttribute("data-state", "visible");
           document.getElementById("fishingLicensesCost").textContent =
             "+$" + fishingLicensesCost.toLocaleString();
         } else {
-          fishingLicensesRow.style.display = "none";
+          fishingLicensesRow.setAttribute("data-state", "hidden");
         }
 
         // Calculate custom extras
         const extrasAmount = tripData.extrasAmount || 0;
         const extrasRow = document.getElementById("extrasRow");
         if (extrasAmount > 0) {
-          extrasRow.style.display = "flex";
+          extrasRow.setAttribute("data-state", "visible");
           document.getElementById("extrasCost").textContent =
             "+$" + extrasAmount.toLocaleString();
         } else {
-          extrasRow.style.display = "none";
+          extrasRow.setAttribute("data-state", "hidden");
         }
 
         // Calculate subtotal (before discount)
@@ -3004,11 +3052,11 @@
 
         const discountRow = document.getElementById("discountRow");
         if (discountAmount > 0) {
-          discountRow.style.display = "flex";
+          discountRow.setAttribute("data-state", "visible");
           document.getElementById("discountCost").textContent =
             "-$" + Math.round(discountAmount).toLocaleString();
         } else {
-          discountRow.style.display = "none";
+          discountRow.setAttribute("data-state", "hidden");
         }
 
         // Calculate business total (after discount)
@@ -3021,10 +3069,10 @@
         const customerTotalRow = document.getElementById("customerTotalRow");
 
         // Update fee label based on source
-        const feeLabel = document.querySelector("#feeRow .pricing-label");
+        const feeLabel = document.getElementById("feeLabel");
         if (sourceConfig.feeType !== "none") {
-          feeRow.style.display = "flex";
-          customerTotalRow.style.display = "flex";
+          feeRow.setAttribute("data-state", "visible");
+          customerTotalRow.setAttribute("data-state", "visible");
 
           let customerTotal;
           let feeAmount;
@@ -3054,8 +3102,14 @@
           document.getElementById("customerTotal").textContent =
             Math.round(customerTotal).toLocaleString();
         } else {
-          feeRow.style.display = "none";
-          customerTotalRow.style.display = "none";
+          feeRow.setAttribute("data-state", "hidden");
+          // Show customerTotalRow with businessTotal when no fee
+          customerTotalRow.setAttribute("data-state", "visible");
+          document.getElementById("customerTotal").textContent =
+            Math.round(businessTotal).toLocaleString();
+          // Reset fee label and cost for "direct" source
+          feeLabel.textContent = "Comisión";
+          document.getElementById("feeCost").textContent = "+$0";
         }
       }
 
