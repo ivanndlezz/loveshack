@@ -1,0 +1,817 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>Trip Configurator PWA</title>
+    <style>
+      :root {
+        --item-height: 54px;
+        --visor-bg: #2c2c2e;
+        --bg-color: #000000;
+        --text-primary: #ffffff;
+        --text-secondary: #8e8e93;
+        --accent-color: #0a84ff;
+        --transition-duration: 0.4s;
+        --transition-easing: cubic-bezier(0.32, 0.72, 0, 1);
+      }
+
+      * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      body {
+        margin: 0;
+        background-color: #121212;
+        color: var(--text-primary);
+        font-family: -apple-system, system-ui, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      /* ========================================
+         DESIGN LAYER - Structural Classes
+         These define the type and layout of elements
+         ======================================== */
+
+      /* Resumen del Viaje Interactuable */
+      .trip-summary {
+        background: #1c1c1e;
+        width: 100%;
+        max-width: 340px;
+        padding: 24px 16px;
+        border-radius: 24px;
+        border: 1px solid #2c2c2e;
+        text-align: center;
+      }
+
+      .summary-title {
+        color: var(--text-secondary);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 20px;
+        display: block;
+        font-weight: 700;
+      }
+
+      .summary-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .summary-item {
+        background: #2c2c2e;
+        padding: 16px 8px;
+        border-radius: 16px;
+        cursor: pointer;
+        transition:
+          transform 0.1s,
+          background 0.2s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid transparent;
+      }
+
+      .summary-item:active {
+        transform: scale(0.95);
+        background: #3a3a3c;
+        border-color: #48484a;
+      }
+
+      .summary-item i {
+        font-size: 24px;
+        color: var(--accent-color);
+      }
+
+      .summary-value {
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .summary-label {
+        font-size: 12px;
+        color: var(--text-secondary);
+        font-weight: 500;
+      }
+
+      /* Bottom Sheet */
+      .sheet-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(4px);
+        z-index: 100;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity var(--transition-duration) ease;
+      }
+
+      .bottom-sheet {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--bg-color);
+        border-top-left-radius: 24px;
+        border-top-right-radius: 24px;
+        z-index: 101;
+        transform: translateY(100%);
+        transition: transform var(--transition-duration)
+          var(--transition-easing);
+        padding: 20px;
+        padding-bottom: env(safe-area-inset-bottom, 20px);
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+      }
+
+      .sheet-header {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .drag-handle {
+        width: 40px;
+        height: 5px;
+        background: #3a3a3c;
+        border-radius: 10px;
+        margin-bottom: 20px;
+      }
+
+      .sheet-title {
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      /* ========================================
+         STATE LAYER - Data Attribute Selectors
+         These define styles based on state/data attributes
+         ======================================== */
+
+      /* Bottom sheet open state */
+      .bottom-sheet[data-open="true"] {
+        transform: translateY(0);
+      }
+
+      .sheet-overlay[data-visible="true"] {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      /* Picker Container */
+      .picker-container {
+        position: relative;
+        width: 100%;
+        height: calc(var(--item-height) * 5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        mask-image: linear-gradient(
+          to bottom,
+          transparent,
+          black 20%,
+          black 80%,
+          transparent
+        );
+        -webkit-mask-image: linear-gradient(
+          to bottom,
+          transparent,
+          black 20%,
+          black 80%,
+          transparent
+        );
+      }
+
+      .visor {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        height: var(--item-height);
+        background-color: var(--visor-bg);
+        border-radius: 12px;
+        z-index: 1;
+        pointer-events: none;
+      }
+
+      .manual-input {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-100%, -50%);
+        width: 60px;
+        height: var(--item-height);
+        background: transparent;
+        border: none;
+        color: white;
+        font-size: 2rem;
+        font-weight: 500;
+        text-align: center;
+        z-index: 15;
+        outline: none;
+        opacity: 0;
+        pointer-events: none;
+        appearance: textfield;
+        transition: opacity 0.25s ease;
+      }
+
+      .input-trigger {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-100%, -50%);
+        width: 60px;
+        height: var(--item-height);
+        z-index: 20;
+        cursor: pointer;
+        background-color: transparent;
+        border: 1px solid transparent;
+      }
+
+      .unit-label {
+        position: absolute;
+        left: calc(50% + 15px);
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-primary);
+        font-size: 1.1rem;
+        font-weight: 600;
+        z-index: 2;
+        pointer-events: none;
+      }
+
+      .scroll-wrapper {
+        position: absolute;
+        inset: 0;
+        overflow-y: scroll;
+        scrollbar-width: none;
+        scroll-snap-type: y mandatory;
+        z-index: 10;
+        transition: opacity 0.25s ease;
+      }
+
+      .scroll-wrapper::-webkit-scrollbar {
+        display: none;
+      }
+
+      .scroll-list {
+        margin: 0;
+        padding: calc(var(--item-height) * 2) 0;
+        list-style: none;
+      }
+
+      .scroll-item {
+        height: var(--item-height);
+        scroll-snap-align: center;
+      }
+
+      .wheel-3d {
+        position: relative;
+        width: 60px;
+        height: var(--item-height);
+        transform-style: preserve-3d;
+        pointer-events: none;
+        margin-right: 60px;
+        z-index: 2;
+        transition: opacity 0.25s ease;
+      }
+
+      .wheel-item {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 500;
+        backface-visibility: hidden;
+        --radius: 110px;
+        transform: rotateX(calc(var(--angle) * -1deg)) translateZ(var(--radius))
+          scale(0.85);
+        opacity: 0;
+        transition:
+          opacity 0.25s ease,
+          transform 0.25s ease;
+      }
+
+      .done-btn {
+        width: 100%;
+        background: var(--accent-color);
+        color: white;
+        border: none;
+        padding: 16px;
+        border-radius: 14px;
+        font-size: 17px;
+        font-weight: 600;
+        margin-top: 24px;
+        cursor: pointer;
+      }
+
+      .manual-input::-webkit-outer-spin-button,
+      .manual-input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      /* ========================================
+         STATE LAYER - Data Attribute Selectors
+         These define styles based on state/data attributes
+         ======================================== */
+
+      /* Bottom sheet open state - CSS handles the transition */
+      .bottom-sheet[data-open="true"] {
+        transform: translateY(0);
+      }
+
+      .sheet-overlay[data-visible="true"] {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      /* Input typing state - controlled by data-input-state attribute */
+      [data-input-state="typing"] .wheel-3d,
+      [data-input-state="typing"] .scroll-wrapper {
+        opacity: 0;
+      }
+
+      [data-input-state="typing"] .manual-input {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      /* Wheel item active state - controlled by data-wheel-active attribute */
+      [data-wheel-active="true"] {
+        opacity: 1;
+        color: var(--text-primary);
+        transform: rotateX(calc(var(--angle) * -1deg)) translateZ(var(--radius))
+          scale(1.05);
+      }
+
+      /* Nearby items for distance 1 and 2 to avoid 360-degree overlap */
+      [data-wheel-nearby="1"] {
+        opacity: 0.4;
+        transform: rotateX(calc(var(--angle) * -1deg)) translateZ(var(--radius))
+          scale(0.95);
+      }
+
+      [data-wheel-nearby="2"] {
+        opacity: 0.15;
+        transform: rotateX(calc(var(--angle) * -1deg)) translateZ(var(--radius))
+          scale(0.9);
+      }
+
+      @media screen and (max-width: 768px) {
+        input,
+        textarea,
+        select {
+          font-size: 16px !important;
+        }
+        .input-trigger {
+          pointer-events: none;
+        }
+      }
+    </style>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  </head>
+  <body>
+    <!-- Design Layer: trip-summary with State Layer: data-duration/data-passengers -->
+    <div class="trip-summary" data-duration="2" data-passengers="14">
+      <span class="summary-title">Configuración de Viaje</span>
+      <div class="summary-details">
+        <!-- Design Layer: summary-item triggers with State Layer: data-trigger attribute -->
+        <div
+          class="summary-item"
+          id="triggerDuration"
+          data-trigger="duration"
+          onclick="openPicker('duration')"
+          onkeydown="handleTriggerKeydown(event, 'duration')"
+          aria-label="Abrir selector de duración del viaje"
+          role="button"
+          tabindex="0"
+        >
+          <i class="ph ph-clock" aria-hidden="true"></i>
+          <div class="summary-value">
+            <span id="summaryDuration">2</span>
+            <span class="summary-label" aria-label="Hours">HRS</span>
+          </div>
+        </div>
+        <div
+          class="summary-item"
+          id="triggerPassengers"
+          data-trigger="passengers"
+          onclick="openPicker('passengers')"
+          onkeydown="handleTriggerKeydown(event, 'passengers')"
+          aria-label="Abrir selector de número de pasajeros"
+          role="button"
+          tabindex="0"
+        >
+          <i class="ph ph-users" aria-hidden="true"></i>
+          <div class="summary-value">
+            <span id="summaryPassengers">14</span>
+            <span class="summary-label" aria-label="Passengers">PAX</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Design Layer: sheet-overlay with State Layer: data-visible attribute -->
+    <div class="sheet-overlay" id="overlay" data-visible="false"></div>
+
+    <!-- Design Layer: bottom-sheet with State Layer: data-open/data-scope attributes -->
+    <div class="bottom-sheet" id="sheet" data-open="false" data-scope="time">
+      <div class="sheet-header">
+        <div class="drag-handle"></div>
+        <span class="sheet-title" id="sheetTitle">Seleccionar</span>
+      </div>
+
+      <!-- Design Layer: picker-container with State Layer: data-input-state/data-picker-mode attributes -->
+      <div
+        class="picker-container"
+        id="pickerContainer"
+        data-input-state="normal"
+        data-picker-mode="duration"
+        role="region"
+        aria-label="Selector de valores"
+      >
+        <div class="visor"></div>
+        <span class="unit-label" id="unitLabel" aria-live="polite">HRS</span>
+
+        <button
+          class="input-trigger"
+          onclick="durationInput.focus()"
+          aria-label="Cambiar a entrada manual"
+          type="button"
+        ></button>
+        <input type="number" class="manual-input" id="durationInput" />
+
+        <div
+          class="wheel-3d"
+          id="wheel"
+          role="group"
+          aria-label="Rueda de selección 3D"
+        ></div>
+        <div
+          class="scroll-wrapper"
+          id="scrollWrapper"
+          role="region"
+          aria-label="Lista de opciones"
+        >
+          <ul class="scroll-list" id="scrollList"></ul>
+        </div>
+      </div>
+
+      <button class="done-btn" id="closeSheet" aria-label="Confirmar selección">
+        Confirmar
+      </button>
+    </div>
+
+    <script>
+      /* ========================================
+         STATE MANAGEMENT CONFIGURATION
+         ======================================== */
+      const CONFIG = {
+        duration: {
+          min: 2,
+          max: 8,
+          default: 2,
+          label: "Hours",
+          title: "Duración del Viaje",
+        },
+        passengers: {
+          min: 1,
+          max: 55,
+          default: 14,
+          label: "Passengers",
+          title: "Cantidad de Pasajeros",
+        },
+      };
+
+      /* ========================================
+         STATE LAYER - Data management
+         ======================================== */
+      let currentMode = "duration";
+      let tripData = { duration: CONFIG.duration.default, passengers: CONFIG.passengers.default };
+
+      const STEP_ANGLE = 22;
+      const ITEM_HEIGHT = 54;
+
+      /* DOM Elements - State-aware containers */
+      const overlay = document.getElementById("overlay");
+      const sheet = document.getElementById("sheet");
+      const wheel = document.getElementById("wheel");
+      const scrollList = document.getElementById("scrollList");
+      const scrollWrapper = document.getElementById("scrollWrapper");
+      const durationInput = document.getElementById("durationInput");
+      const unitLabel = document.getElementById("unitLabel");
+      const sheetTitle = document.getElementById("sheetTitle");
+      const pickerContainer = document.getElementById("pickerContainer");
+      const tripSummary = document.querySelector(".trip-summary");
+
+      let isSyncing = false;
+      let activeItems3D = [];
+
+      /* ========================================
+         STATE UPDATE FUNCTIONS
+         These functions update data attributes for state management
+         ======================================== */
+
+      /**
+       * Updates state attributes on trip summary container
+       * @param {string} key - The state key (duration|passengers)
+       * @param {number} value - The value to set
+       */
+      function updateTripSummaryState(key, value) {
+        tripSummary.setAttribute(`data-${key}`, value);
+      }
+
+      /**
+       * Updates wheel item state using data attribute
+       * @param {HTMLElement} item - The wheel item element
+       * @param {boolean} isActive - Whether the item is active
+       */
+      function updateWheelItemState(item, isActive) {
+        item.setAttribute("data-wheel-active", isActive.toString());
+      }
+
+      /**
+       * Updates picker container input state
+       * @param {string} state - The input state (normal|typing)
+       */
+      function updateInputState(state) {
+        pickerContainer.setAttribute("data-input-state", state);
+      }
+
+      /**
+       * Updates picker container mode state
+       * @param {string} mode - The picker mode (duration|passengers)
+       */
+      function updatePickerMode(mode) {
+        pickerContainer.setAttribute("data-picker-mode", mode);
+      }
+
+      /**
+       * Updates bottom sheet open state
+       * @param {boolean} isOpen - Whether the sheet is open
+       */
+      function updateSheetState(isOpen) {
+        sheet.setAttribute("data-open", isOpen.toString());
+        overlay.setAttribute("data-visible", isOpen.toString());
+      }
+
+      /**
+       * Updates bottom sheet scope attribute
+       * @param {string} scope - The scope (time|pax)
+       */
+      function updateSheetScope(scope) {
+        sheet.setAttribute("data-scope", scope);
+      }
+
+      /* ========================================
+         PICKER SETUP FUNCTIONS
+         ======================================== */
+
+      function setupPicker(mode) {
+        currentMode = mode;
+        const settings = CONFIG[mode];
+
+        // Clear previous wheel items
+        wheel.innerHTML = "";
+        scrollList.innerHTML = "";
+        activeItems3D = [];
+
+        // Update state attributes
+        updatePickerMode(mode);
+        unitLabel.innerText = settings.label;
+        unitLabel.setAttribute(
+          "aria-label",
+          settings.label === "Hours" ? "Unidad: horas" : "Unidad: pasajeros",
+        );
+        sheetTitle.innerText = settings.title;
+        durationInput.min = settings.min;
+        durationInput.max = settings.max;
+
+        for (let i = settings.min; i <= settings.max; i++) {
+          const item3d = document.createElement("div");
+          item3d.className = "wheel-item";
+          item3d.setAttribute("data-wheel-value", i);
+          item3d.setAttribute("data-wheel-active", "false");
+          item3d.innerText = i;
+          item3d.style.setProperty("--angle", (i - settings.min) * STEP_ANGLE);
+          wheel.appendChild(item3d);
+          activeItems3D.push(item3d);
+
+          const scrollItem = document.createElement("li");
+          scrollItem.className = "scroll-item";
+          scrollList.appendChild(scrollItem);
+        }
+      }
+
+      function updateActiveClasses(currentVal) {
+        const min = CONFIG[currentMode].min;
+        activeItems3D.forEach((item, index) => {
+          const itemVal = index + min;
+          const distance = Math.abs(itemVal - currentVal);
+
+          if (distance === 0) {
+            updateWheelItemState(item, true);
+            item.removeAttribute("data-wheel-nearby");
+          } else if (distance <= 2) {
+            updateWheelItemState(item, false);
+            item.setAttribute("data-wheel-nearby", distance.toString());
+          } else {
+            updateWheelItemState(item, false);
+            item.removeAttribute("data-wheel-nearby");
+          }
+        });
+      }
+
+      function openPicker(mode) {
+        // Update sheet scope based on mode
+        const scope = mode === "duration" ? "time" : "pax";
+        updateSheetScope(scope);
+
+        setupPicker(mode);
+        const val = tripData[mode];
+        const settings = CONFIG[mode];
+
+        // Update sheet state to open - CSS handles animation
+        // closeAllBottomSheets removed
+        updateSheetState(true);
+
+        isSyncing = true;
+        const targetScroll = (val - settings.min) * ITEM_HEIGHT;
+        scrollWrapper.scrollTop = targetScroll;
+        wheel.style.transform = `rotateX(${(val - settings.min) * STEP_ANGLE}deg)`;
+
+        updateActiveClasses(val);
+        setTimeout(() => (isSyncing = false), 100);
+      }
+
+      /* ========================================
+         EVENT HANDLERS - State transitions
+         ======================================== */
+
+      scrollWrapper.addEventListener("scroll", () => {
+        if (isSyncing) return;
+        const settings = CONFIG[currentMode];
+        const progress = scrollWrapper.scrollTop / ITEM_HEIGHT;
+        const activeIndex = Math.round(progress);
+        const val = activeIndex + settings.min;
+
+        wheel.style.transform = `rotateX(${progress * STEP_ANGLE}deg)`;
+        updateActiveClasses(val);
+        tripData[currentMode] = val;
+      });
+
+      durationInput.addEventListener("focus", () => {
+        durationInput.value = tripData[currentMode];
+        // Update input state to typing - triggers CSS changes via data attribute
+        updateInputState("typing");
+      });
+
+      durationInput.addEventListener("blur", () => {
+        let val = parseInt(durationInput.value);
+        const settings = CONFIG[currentMode];
+
+        // Validate limits based on current mode
+        if (isNaN(val)) val = tripData[currentMode];
+        if (val < settings.min) val = settings.min;
+        if (val > settings.max) val = settings.max;
+
+        tripData[currentMode] = val;
+
+        isSyncing = true;
+        const targetScroll = (val - settings.min) * ITEM_HEIGHT;
+
+        // Sync visual UI (wheel and scroll)
+        wheel.style.transform = `rotateX(${(val - settings.min) * STEP_ANGLE}deg)`;
+        scrollWrapper.scrollTop = targetScroll;
+
+        updateActiveClasses(val);
+
+        // Exit typing mode - triggers CSS changes via data attribute
+        updateInputState("normal");
+
+        setTimeout(() => {
+          isSyncing = false;
+        }, 50);
+      });
+
+      durationInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") durationInput.blur();
+      });
+
+      function closeBottomSheet() {
+        // Close sheet - CSS handles animation via data-open attribute
+        updateSheetState(false);
+
+        // Update UI after animation completes (400ms matches CSS transition)
+        setTimeout(() => {
+          // Update trip summary state
+          updateTripSummaryState("duration", tripData.duration);
+          updateTripSummaryState("passengers", tripData.passengers);
+          // Update summary display values
+          document.getElementById("summaryDuration").innerText =
+            tripData.duration;
+          document.getElementById("summaryPassengers").innerText =
+            tripData.passengers;
+        }, 400);
+      }
+
+      // Haptic feedback
+      let lastIdx = 0;
+      scrollWrapper.addEventListener("scroll", () => {
+        const settings = CONFIG[currentMode];
+        const idx = Math.round(scrollWrapper.scrollTop / ITEM_HEIGHT);
+        if (idx !== lastIdx && idx >= 0 && idx <= settings.max - settings.min) {
+          if (window.navigator.vibrate) navigator.vibrate(8);
+          lastIdx = idx;
+        }
+      });
+
+      document.getElementById("closeSheet").onclick = closeBottomSheet;
+      overlay.onclick = closeBottomSheet;
+
+      // Escape key support to close bottom sheet
+      document.addEventListener("keydown", (e) => {
+        const isOpen = sheet.getAttribute("data-open") === "true";
+
+        if (e.key === "Escape") {
+          if (isOpen) {
+            closeBottomSheet();
+          }
+        }
+
+        // Number key support - directly input value when sheet is open
+        if (isOpen && e.key >= "0" && e.key <= "9") {
+          const settings = CONFIG[currentMode];
+          const val = parseInt(e.key);
+
+          // Validate the value is within range
+          if (val >= settings.min && val <= settings.max) {
+            tripData[currentMode] = val;
+
+            // Sync visual UI (wheel and scroll)
+            wheel.style.transform = `rotateX(${(val - settings.min) * STEP_ANGLE}deg)`;
+            scrollWrapper.scrollTop = (val - settings.min) * ITEM_HEIGHT;
+
+            updateActiveClasses(val);
+
+            // Optional: vibrate for feedback
+            if (window.navigator.vibrate) navigator.vibrate(15);
+          }
+        }
+
+        // Arrow key support - increment/decrement value when sheet is open
+        if (isOpen) {
+          const settings = CONFIG[currentMode];
+          const currentVal = tripData[currentMode];
+          let newVal = currentVal;
+
+          if (e.key === "ArrowUp") {
+            e.preventDefault();
+            newVal = Math.min(currentVal + 1, settings.max);
+          } else if (e.key === "ArrowDown") {
+            e.preventDefault();
+            newVal = Math.max(currentVal - 1, settings.min);
+          }
+
+          if (newVal !== currentVal) {
+            tripData[currentMode] = newVal;
+
+            // Sync visual UI (wheel and scroll)
+            wheel.style.transform = `rotateX(${(newVal - settings.min) * STEP_ANGLE}deg)`;
+            scrollWrapper.scrollTop = (newVal - settings.min) * ITEM_HEIGHT;
+
+            updateActiveClasses(newVal);
+
+            // Haptic feedback
+            if (window.navigator.vibrate) navigator.vibrate(8);
+          }
+        }
+      });
+
+      // Keyboard support for summary-item triggers
+      function handleTriggerKeydown(e, mode) {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          openPicker(mode);
+        }
+      }
+    </script>
+  </body>
+</html>

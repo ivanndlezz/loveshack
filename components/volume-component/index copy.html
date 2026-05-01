@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Volume Component</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg-light: hsl(220, 16%, 94%);
+      --bg-light2: hsl(212, 50%, 92%);
+      --bg-dark: hsl(222, 16%, 16%);
+      --bg-dark2: hsl(222, 20%, 18%);
+      --fg-light: hsl(212 22% 26%);
+      --fg-dark: hsl(222, 39%, 95%);
+      --input-bg-light: hsl(from var(--bg-light) h 15% 100%);
+      --input-bg-dark: hsl(from var(--bg-dark) h 15% 10%);
+      --input-border-light: hsl(from var(--bg-light) h 15% 85%);
+      --input-border-dark: hsl(from var(--bg-light) h 15% 35%);
+      --bg: light-dark(var(--bg-light), var(--bg-dark));
+      --bg2: light-dark(var(--bg-light2), var(--bg-dark2));
+      --fg: light-dark(var(--fg-light), var(--fg-dark));
+      --b: light-dark(var(--input-bg-light), var(--input-bg-dark));
+      --bor: light-dark(var(--input-border-light), var(--input-border-dark));
+      --cubic: cubic-bezier(0.66, 0, 0.34, 1);
+      --cubic-out: cubic-bezier(0.33, 1, 0.68, 1);
+      --spring: linear(0, 0.008 1.1%, 0.034 2.3%, 0.134 4.9%, 0.264 7.3%, 0.683 14.3%, 0.797 16.5%, 0.89 18.6%, 0.967 20.7%, 1.027 22.8%, 1.073 25%, 1.104 27.3%, 1.123 30.6%, 1.119 34.3%, 1.018 49.5%, 0.988 58.6%, 0.985 65.2%, 1 84.5%, 1);
+      --active-color: #3880f6;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body, html, #app {
+      display: grid;
+      min-height: 100%;
+      justify-content: center;
+    }
+
+    body {
+      background-color: var(--bg2);
+      color: var(--fg);
+      min-width: 100svw;
+      min-height: 100svh;
+    }
+
+    #app {
+      display: flex;
+      gap: 5vh;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      max-width: 420px;
+    }
+
+    button[popovertarget] {
+      anchor-name: --anchor-volume;
+      --outline-color: #e8e8e8;
+      border-radius: 100vw;
+      background: white;
+      border: none;
+      outline: none;
+      box-shadow: inset 0 0 0 1px #ddd, 0 1px 1px -1px #aaa, 0 0 0 4px var(--outline-color);
+      padding: 0.66em 1.33em;
+      margin: clamp(3em, 30vh, 30em) 0 auto;
+      transition: box-shadow 0.15s var(--cubic-out);
+      cursor: pointer;
+      color: #000;
+    }
+
+    button[popovertarget]:focus-visible {
+      --outline-color: var(--active-color);
+    }
+
+    button[popovertarget] svg {
+      height: 30px;
+      transition: transform 0.15s var(--cubic-out);
+    }
+
+    #volume-popover {
+      transition: opacity 0.2s, translate 0.2s, overlay 0.2s allow-discrete, display 0.2s allow-discrete;
+      transition-timing-function: var(--cubic-out);
+      opacity: 0;
+      translate: 10px -60%;
+      position: relative;
+    }
+
+    @supports (position-anchor: --anchor-volume) {
+      #volume-popover {
+        position-anchor: --anchor-volume;
+        top: anchor(--anchor-volume center);
+        left: anchor(--anchor-volume right);
+        translate: 10px -60%;
+      }
+    }
+
+    @supports not (position-anchor: --anchor-volume) {
+      #volume-popover {
+        left: calc(50% + 55px);
+        top: calc(clamp(3em, 30vh, 30em) + 50px);
+      }
+    }
+
+    #volume-popover:popover-open {
+      display: flex;
+      opacity: 1;
+      transition-duration: 0.5s;
+      transition-timing-function: var(--spring);
+      translate: 10px -50%;
+    }
+
+    #volume-popover {
+      gap: 16px;
+      border: 1px solid var(--bor);
+      border-radius: 2em;
+      padding: 2px 1em;
+      margin: 0;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--fg);
+      box-shadow: hsl(from var(--shadow-color) h s l / 0.01) 0px 1px 1px -0.5px, hsl(from var(--shadow-color) h s l / 0.02) 0px 2px 2px -1px, hsl(from var(--shadow-color) h s l / 0.02) 0px 3px 3px -1.5px, hsl(from var(--shadow-color) h s l / 0.01) 0px 5px 5px -2.5px;
+    }
+
+    @starting-style {
+      #volume-popover:popover-open {
+        opacity: 0;
+        translate: 10px -60%;
+      }
+    }
+
+    #volume-slider {
+      appearance: slider-vertical;
+      -webkit-appearance: slider-vertical;
+      width: 20px;
+      height: 200px;
+      margin: 0 auto;
+      display: block;
+      cursor: pointer;
+    }
+
+    .volume-buttons {
+      display: flex;
+      gap: 12px;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .volume-buttons button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border-radius: 100vw;
+      width: 30px;
+      aspect-ratio: 1;
+      background: #e9e9e9;
+      color: #000;
+      border: none;
+      outline: none;
+      box-shadow: inset 0 0 0 1px hsl(0 0% 0% / 0.1), inset 0 2px 0.5px -0.5px hsl(0 0% 100% / 1), inset 0 -2px 0.5px -0.5px hsl(0 0% 0% / 0.05), 0 2px 2px -0.5px hsl(0 0% 80% / 0.5);
+      cursor: pointer;
+    }
+
+    .volume-buttons button svg {
+      height: 14px;
+      width: auto;
+    }
+
+    .volume-buttons span {
+      font-family: system-ui, sans-serif;
+      font-size: 26px;
+      font-weight: 500;
+      text-align: center;
+      letter-spacing: 0.02em;
+      padding: 0;
+      width: 32px;
+    }
+
+    #app > button {
+      width: max-content;
+    }
+  </style>
+</head>
+<body>
+  <main id="app">
+    <button type="button" popovertarget="volume-popover" title="Ajustar contraste">
+      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
+        <g fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="4">
+          <path stroke-linecap="round" d="M24 4C12.954 4 4 12.954 4 24s8.954 20 20 20z" clip-rule="evenodd" />
+          <path d="M24 4c11.046 0 20 8.954 20 20s-8.954 20-20 20z" />
+          <path stroke-linecap="round" d="M24 36H9m15-8H5m19-8H5m19-8H9" />
+        </g>
+      </svg>
+    </button>
+
+    <div popover id="volume-popover">
+      <div class="volume-buttons">
+        <button type="button" id="up">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12">
+            <path fill="currentColor" d="M6 4c-.2 0-.4.1-.5.2L2.2 7.5c-.3.3-.3.8 0 1.1s.8.3 1.1 0L6 5.9l2.7 2.7c.3.3.8.3 1.1 0s.3-.8 0-1.1L6.6 4.3Q6.3 4 6 4" />
+          </svg>
+        </button>
+        <span id="value-display">0</span>
+        <button type="button" id="down">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12">
+            <path fill="currentColor" d="M6 8.825c-.2 0-.4-.1-.5-.2l-3.3-3.3c-.3-.3-.3-.8 0-1.1s.8-.3 1.1 0l2.7 2.7l2.7-2.7c.3-.3.8-.3 1.1 0s.3.8 0 1.1l-3.2 3.2q-.3.3-.6.3" />
+          </svg>
+        </button>
+      </div>
+      <input type="range" id="volume-slider" min="-50" max="50" step="5" value="0" />
+    </div>
+  </main>
+
+  <script>
+    let value = 0;
+    const min = -50;
+    const max = 50;
+
+    const volumeSlider = document.getElementById("volume-slider");
+    const $button = document.querySelector('button[popovertarget]');
+    const $valueDisplay = document.getElementById('value-display');
+    const $up = document.querySelector('#up');
+    const $down = document.querySelector('#down');
+
+    const updateValue = v => {
+      value = v;
+      setValue(v);
+      volumeSlider.value = v;
+    };
+
+    const setValue = v => {
+      $valueDisplay.innerText = v;
+      const html = document.body.parentElement;
+      html.style.filter = `contrast(${v / 300 + 1})`;
+    };
+
+    volumeSlider.addEventListener('input', (e) => {
+      value = parseInt(e.target.value, 10);
+      setValue(value);
+    });
+
+    const increase = () => {
+      value = Math.min(value + 5, max);
+      updateValue(value);
+    };
+
+    const decrease = () => {
+      value = Math.max(value - 5, min);
+      updateValue(value);
+    };
+
+    let intervalId;
+
+    const startFiring = cb => {
+      intervalId = setInterval(cb, 50);
+    };
+
+    const stopFiring = () => {
+      clearInterval(intervalId);
+    };
+
+    $up.addEventListener('pointerdown', () => {
+      stopFiring();
+      startFiring(increase);
+    });
+
+    $up.addEventListener('pointerup', stopFiring);
+    $up.addEventListener('pointerleave', stopFiring);
+
+    $down.addEventListener('pointerdown', () => {
+      stopFiring();
+      startFiring(decrease);
+    });
+
+    $down.addEventListener('pointerup', stopFiring);
+    $down.addEventListener('pointerleave', stopFiring);
+  </script>
+</body>
+</html>

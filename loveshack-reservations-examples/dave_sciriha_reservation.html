@@ -1,0 +1,527 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Loveshack - Reservation Form</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap");
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Montserrat", sans-serif;
+        display: flex;
+        justify-content: center;
+        padding: 30px 10px;
+      }
+      .page {
+        width: 800px;
+        padding: 28px 32px 24px;
+        font-size: 11px;
+        color: #222;
+      }
+
+      .header {
+        display: grid;
+        grid-template-columns: 150px 1fr auto;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .logo-box img {
+        width: 140px;
+        height: auto;
+        display: block;
+      }
+      .center-header {
+        text-align: center;
+      }
+      .tour-title {
+        font-size: 16px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        color: #222;
+      }
+      .right-header {
+        text-align: right;
+        font-size: 10.5px;
+        line-height: 1.7;
+      }
+      .reservation-number {
+        color: #c0392b;
+        font-weight: 700;
+        font-size: 13px;
+      }
+
+      .address-bar {
+        text-align: center;
+        font-size: 10px;
+        color: #444;
+        border-top: 1px solid #ddd;
+        border-bottom: 1px solid #ddd;
+        padding: 5px 0;
+        margin-bottom: 10px;
+        line-height: 1.8;
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: 90px 1fr 70px 1fr;
+        gap: 3px 8px;
+        margin-bottom: 6px;
+        align-items: center;
+      }
+      .info-label {
+        font-weight: 700;
+        font-size: 10.5px;
+      }
+      .info-value {
+        font-size: 10.5px;
+        border-bottom: 1px solid #bbb;
+        padding-bottom: 1px;
+        min-height: 16px;
+      }
+      .info-value.gold {
+        color: #b8a96a;
+        font-weight: 700;
+      }
+
+      .res-details {
+        display: grid;
+        grid-template-columns: 90px 1fr 90px 1fr;
+        gap: 4px 8px;
+        margin-bottom: 6px;
+        align-items: center;
+      }
+      .res-label {
+        font-weight: 700;
+        font-size: 10.5px;
+      }
+      .res-value {
+        font-size: 10.5px;
+        border-bottom: 1px solid #bbb;
+        min-height: 16px;
+        padding-bottom: 1px;
+      }
+
+      .passengers-row {
+        display: grid;
+        grid-template-columns: 90px 80px 1fr 1fr 1fr 80px;
+        align-items: center;
+        gap: 4px 8px;
+        margin-bottom: 6px;
+        font-size: 10.5px;
+      }
+      .pax-cell {
+        border-bottom: 1px solid #bbb;
+        text-align: center;
+        min-height: 16px;
+        padding: 2px 4px;
+        font-size: 9.5px;
+      }
+
+      .hotel-row {
+        font-size: 10.5px;
+        margin-bottom: 8px;
+      }
+
+      .notice-box {
+        border: 1px solid #222;
+        padding: 8px 12px;
+        text-align: center;
+        margin-bottom: 12px;
+        font-size: 10.5px;
+        line-height: 1.7;
+        background-color: #ffff79;
+      }
+      .crew {
+        font-weight: 800;
+        font-size: 11.5px;
+      }
+
+      .main-table {
+        display: grid;
+        grid-template-columns: 260px 1fr;
+        border: 1px solid #ccc;
+        margin-bottom: 10px;
+      }
+      .left-col {
+        border-right: 1px solid #ccc;
+        padding: 10px 12px;
+      }
+      .right-col {
+        padding: 10px 12px;
+      }
+      .col-title {
+        font-weight: 800;
+        text-decoration: underline;
+        font-size: 11px;
+        margin-bottom: 8px;
+        display: block;
+      }
+
+      .payment-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 4px;
+        font-size: 10.5px;
+      }
+      .amount {
+        color: #27ae60;
+        font-weight: 700;
+      }
+
+      .pricing-breakdown {
+        background: #f9f9f9;
+        border: 1px solid #e0e0e0;
+        border-radius: 3px;
+        padding: 7px 9px;
+        margin: 8px 0;
+        font-size: 9.5px;
+        line-height: 1.8;
+      }
+      .breakdown-title {
+        font-weight: 700;
+        font-size: 8.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #888;
+        margin-bottom: 4px;
+      }
+      .breakdown-row {
+        display: flex;
+        justify-content: space-between;
+      }
+      .breakdown-row.total {
+        border-top: 1px solid #ccc;
+        margin-top: 4px;
+        padding-top: 4px;
+        font-weight: 700;
+        font-size: 10.5px;
+      }
+
+      .balance-warning {
+        background: #e8e8e8;
+        border: 1px solid #bbb;
+        padding: 6px 8px;
+        font-size: 10px;
+        font-weight: 700;
+        text-align: center;
+        margin-top: 12px;
+        line-height: 1.5;
+      }
+
+      .include-text {
+        font-size: 10px;
+        line-height: 1.7;
+      }
+      .include-text p {
+        margin-bottom: 4px;
+      }
+      .no-show {
+        color: #c0392b;
+        font-weight: 700;
+      }
+
+      .extras-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        font-size: 10.5px;
+        margin-top: 8px;
+        border-top: 1px solid #eee;
+        padding-top: 8px;
+      }
+      .extra-item {
+        margin-bottom: 4px;
+      }
+      .extra-item span {
+        font-weight: 700;
+      }
+
+      .bottom-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        border: 1px solid #ccc;
+        font-size: 10.5px;
+        margin-bottom: 6px;
+      }
+      .bottom-cell {
+        padding: 6px 10px;
+        border-right: 1px solid #ccc;
+      }
+      .bottom-cell:last-child {
+        border-right: none;
+      }
+
+      .payment-method {
+        font-size: 10.5px;
+        margin-bottom: 10px;
+        padding: 4px 0;
+      }
+
+      .signature-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        padding: 10px;
+      }
+      .sig-label {
+        font-weight: 700;
+        margin-bottom: 14px;
+        display: block;
+        font-size: 10px;
+      }
+      .sig-field {
+        border-bottom: 1px solid #555;
+        min-height: 18px;
+      }
+
+      .footer {
+        text-align: center;
+        font-size: 9.5px;
+        color: #444;
+        line-height: 1.8;
+        border-top: 1px solid #ddd;
+        padding-top: 8px;
+      }
+
+      @media print {
+        body {
+          background: white;
+          padding: 0;
+        }
+        .page {
+          box-shadow: none;
+          border: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <!-- HEADER -->
+      <div class="header">
+        <div class="logo-box">
+          <img
+            src="https://www.loveshackcruises.com/wp-content/uploads/2025/06/newLogo.png"
+            alt="Loveshack Cruises"
+          />
+        </div>
+        <div class="center-header">
+          <div class="tour-title">SNORKELING TOUR 🐚</div>
+        </div>
+        <div class="right-header">
+          <div class="reservation-number">Reservation: IG 2002-1304 11A</div>
+          Office México: 01-52- 624-105-1238<br />
+          Cell Phone: 011-52-624-157-2797
+        </div>
+      </div>
+
+      <!-- ADDRESS -->
+      <div class="address-bar">
+        Office Address: Plaza Náutica Loc. E1-B Cabo San Lucas CSL CP: 23450<br />
+        e-mail: booking@loveshackcruises.com &nbsp;&nbsp; website:
+        www.loveshackcruises.com
+      </div>
+
+      <!-- CLIENT INFO -->
+      <div class="info-grid">
+        <span class="info-label">Contact:</span>
+        <span class="info-value">Ivan Gonzalez</span>
+        <span></span><span></span>
+
+        <span class="info-label">Name:</span>
+        <span class="info-value gold">Dave Sciriha</span>
+        <span class="info-label" style="text-align: right; padding-right: 4px"
+          >Phone:</span
+        >
+        <span class="info-value"></span>
+
+        <span></span><span></span>
+        <span class="info-label" style="text-align: right; padding-right: 4px"
+          >Email:</span
+        >
+        <span class="info-value"></span>
+
+        <span class="info-label">Source:</span>
+        <span class="info-value">Contacto Directo</span>
+        <span></span><span></span>
+      </div>
+
+      <!-- RESERVATION DETAILS -->
+      <div class="res-details">
+        <span class="res-label">Reservation:</span>
+        <span class="res-value">IG 2002-1304 11A</span>
+        <span class="res-label">Food:</span>
+        <span class="res-value">MEXICAN BUFFET &amp; NATIONAL OPEN BAR</span>
+
+        <span class="res-label">Date:</span>
+        <span class="res-value">April 13, 2026</span>
+        <span class="res-label">Notes:</span>
+        <span class="res-value"></span>
+
+        <span class="res-label">Time:</span>
+        <span class="res-value">11:00A — 3:00P</span>
+        <span></span><span class="res-value"></span>
+
+        <span class="res-label">Hours:</span>
+        <span class="res-value" style="text-align: center">4 HOURS</span>
+        <span></span><span></span>
+
+        <span class="res-label">Tour Name:</span>
+        <span class="res-value">SNORKEL</span>
+        <span></span><span></span>
+      </div>
+
+      <!-- PASSENGERS -->
+      <div class="passengers-row">
+        <span class="res-label">Passengers:</span>
+        <span class="res-value" style="text-align: center">8 PPL</span>
+        <div class="pax-cell">8<br />ADULTS</div>
+        <div class="pax-cell">0<br />KIDS</div>
+        <div class="pax-cell">0<br />INFANTS</div>
+        <div class="pax-cell">—<br />EXTRA PP</div>
+      </div>
+
+      <div class="hotel-row"><strong>Hotel:</strong></div>
+
+      <!-- NOTICE -->
+      <div class="notice-box">
+        <div style="font-weight: 700;">
+          Please be at our dock 10 minutes before departure.
+        </div>
+        <div>
+          We are located at Blue Marlin Dock #3, next to Breathless Hotel, at the Marina
+          Fundadores
+        </div>
+        <div>
+          Don't forget to bring your swimwear, comfortable shoes, sandals, no
+          high heels, sun protection and towels. Wheelchair is not allowed,
+        </div>
+        <div>*This trip does not include transportation.</div>
+        <div class="crew">CREW TIPS ARE NOT INCLUDED.</div>
+        <div style="font-weight: 700">
+          15% to 20% of the total price is recommended.
+        </div>
+      </div>
+
+      <!-- MAIN TABLE -->
+      <div class="main-table">
+        <div class="left-col">
+          <span class="col-title">Reservation payments:</span>
+
+          <div class="payment-row">
+            <span style="color: #555">Rate (up to 14 pax):</span>
+            <span>US$600 / hr</span>
+          </div>
+          <div class="payment-row">
+            <span style="color: #555">Min. duration:</span>
+            <span>2 hours</span>
+          </div>
+
+          <div class="pricing-breakdown">
+            <div class="breakdown-title">Price Breakdown</div>
+            <div class="breakdown-row">
+              <span>Base trip — 4 hrs × $600</span><span>$2,400.00</span>
+            </div>
+            <div class="breakdown-row">
+              <span>Food &amp; Beverage (included)</span><span>—</span>
+            </div>
+            <div class="breakdown-row total">
+              <span>TOTAL</span>
+              <span class="amount">$2,400.00 USD</span>
+            </div>
+          </div>
+
+          <div class="payment-row">
+            <span>Amount:</span>
+            <span class="amount">$2,400.00 USD</span>
+          </div>
+          <div class="payment-row">
+            <span>Deposit 50%: </span>
+            <span class="amount"></span>
+          </div>
+          <div class="payment-row">
+            <span>Balance:</span>
+            <span class="amount">$2,400.00 USD</span>
+          </div>
+
+          <div class="balance-warning">
+            REMAINING BALANCE MUST BE PAID AT<br />THE CHECK-IN WITH CASH.
+          </div>
+        </div>
+
+        <div class="right-col">
+          <span class="col-title">THIS TRIP INCLUDE:</span>
+          <div class="include-text">
+            <p>
+              <strong>Mexican Buffet:</strong> Chicken and beef Skewers, rice, guacamole, chips, tortillas,
+              quesadillas, and salsas.
+            </p>
+            <p>
+              <strong>National Open Bar:</strong> Tequila, Rum, Vodka, light
+              canned Beer, Soft drinks, and bottled water.
+            </p>
+            <p>
+              We also include mixed snacks and muffins; professional fishing
+              gear, snorkeling equipment, 2 Paddle Boards. 
+            </p>
+            <p><strong>Cancellations:</strong></p>
+            <p class="no-show">NO SHOW, NO REFUND</p>
+            <p>Bad weather (closed port): 85% refund.</p>
+
+            <div class="extras-row">
+              <div>
+                <div class="extra-item">Extra Pax: <span>$150.00</span></div>
+                <div class="extra-item">
+                  Loss of equipment: <span>$40.00</span>
+                </div>
+              </div>
+              <div>
+                <div class="extra-item">Extra hour: <span>$600.00</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTTOM -->
+      <div class="bottom-row">
+        <div class="bottom-cell"><em>Amount:</em> &nbsp; $2,400.00 USD</div>
+        <div class="bottom-cell"><em>Deposit:</em> &nbsp; $1,200.00 USD</div>
+        <div class="bottom-cell"><em>Balance:</em> &nbsp; $1,200.00 USD</div>
+      </div>
+
+      <div class="payment-method">
+        Payment method of this charter: &nbsp;<strong>CASH</strong>
+      </div>
+
+      <!-- SIGNATURES -->
+      <div class="signature-row">
+        <div>
+          <span class="sig-label">CUSTOMER'S ID:</span>
+          <div class="sig-field">&nbsp;</div>
+        </div>
+        <div>
+          <span class="sig-label">CUSTOMER'S SIGNATURE:</span>
+          <div class="sig-field">&nbsp;</div>
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="footer">
+        I have read, understood and agree the terms and conditions of leasing
+        the ship LOVESHACK,<br />
+        and all the services related to it. Therefore, I express mi consent in
+        freedom,<br />
+        acknowledging the provided information as comprehensible and clear
+        enough<br />
+        for this purpose.
+      </div>
+    </div>
+  </body>
+</html>
