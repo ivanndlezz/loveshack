@@ -4,7 +4,63 @@
    ============================================= */
 
 :root {
-  /* ---- Colors ---- */
+  /* ---- Light Mode (Default) ---- */
+  --color-bg:             #f2f2f7;
+  --color-surface:        #ffffff;
+  --color-surface-alt:    #f2f2f7;
+  --color-surface-raised: #e5e5ea;
+  --color-border:         #d1d1d6;
+  --color-border-subtle:  #e5e5ea;
+
+  --color-text:           #000000;
+  --color-text-secondary: #6c6c70;
+  --color-text-tertiary:  #aeaeb2;
+  --color-text-inverted:  #ffffff;
+
+  --color-accent:         #007aff;
+  --color-accent-rgb:     0, 122, 255;
+  --color-accent-hover:   #0056b3;
+  --color-accent-muted:   rgba(0, 122, 255, 0.12);
+
+  --color-success:        #34c759;
+  --color-success-muted:  rgba(52, 199, 89, 0.12);
+  --color-warning:        #ff9500;
+  --color-warning-muted:  rgba(255, 149, 0, 0.12);
+  --color-danger:         #ff3b30;
+  --color-danger-muted:   rgba(255, 59, 48, 0.12);
+
+  /* Status colors */
+  --color-status-draft:       #8e8e93;
+  --color-status-draft-bg:    rgba(142, 142, 147, 0.12);
+  --color-status-reserved:    #34c759;
+  --color-status-reserved-bg: rgba(52, 199, 89, 0.12);
+  --color-status-tentative:   #ff9500;
+  --color-status-tentative-bg:rgba(255, 149, 0, 0.12);
+  --color-status-completed:   #007aff;
+  --color-status-completed-bg:rgba(0, 122, 255, 0.12);
+  --color-status-cancelled:   #ff3b30;
+  --color-status-cancelled-bg:rgba(255, 59, 48, 0.12);
+
+  /* Gold accent for customer names */
+  --color-gold:           #b8860b;
+
+  /* Layout specific */
+  --color-header-bg:      rgba(255, 255, 255, 0.8);
+  --color-nav-bg:         rgba(242, 242, 247, 0.85);
+  --color-island-bg:      rgba(255, 255, 255, 0.85);
+  --color-island-border:  rgba(0, 0, 0, 0.08);
+
+  /* Shadows */
+  --shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md:  0 4px 6px rgba(0, 0, 0, 0.05);
+  --shadow-lg:  0 10px 15px rgba(0, 0, 0, 0.05);
+  --shadow-xl:  0 20px 25px rgba(0, 0, 0, 0.05);
+  --shadow-fab: 0 4px 12px rgba(0, 122, 255, 0.3);
+  --color-wheel-shadow: rgba(255, 255, 255, 0.5);
+}
+
+.theme-dark {
+  /* ---- Dark Mode Overrides ---- */
   --color-bg:             #000000;
   --color-surface:        #1c1c1e;
   --color-surface-alt:    #2c2c2e;
@@ -18,6 +74,7 @@
   --color-text-inverted:  #000000;
 
   --color-accent:         #0a84ff;
+  --color-accent-rgb:     10, 132, 255;
   --color-accent-hover:   #409cff;
   --color-accent-muted:   rgba(10, 132, 255, 0.15);
 
@@ -40,8 +97,25 @@
   --color-status-cancelled:   #ff453a;
   --color-status-cancelled-bg:rgba(255, 69, 58, 0.15);
 
-  /* Gold accent for customer names (matching existing) */
+  /* Gold accent */
   --color-gold:           #d4a853;
+
+  /* Layout specific */
+  --color-header-bg:      rgba(0, 0, 0, 0.75);
+  --color-nav-bg:         rgba(28, 28, 30, 0.92);
+  --color-island-bg:      rgba(17, 17, 17, 0.92);
+  --color-island-border:  rgba(255, 255, 255, 0.08);
+
+  /* Shadows */
+  --shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md:  0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg:  0 10px 30px rgba(0, 0, 0, 0.6);
+  --shadow-xl:  0 20px 50px rgba(0, 0, 0, 0.7);
+  --shadow-fab: 0 6px 20px rgba(10, 132, 255, 0.4);
+  --color-wheel-shadow: rgba(0, 0, 0, 0.5);
+}
+
+:root {
 
   /* ---- Typography ---- */
   --font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", system-ui, sans-serif;
@@ -95,13 +169,8 @@
   --radius-2xl:  24px;
   --radius-full: 9999px;
 
-  /* ---- Shadows ---- */
-  --shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.4);
-  --shadow-md:  0 4px 12px rgba(0, 0, 0, 0.5);
-  --shadow-lg:  0 10px 30px rgba(0, 0, 0, 0.6);
-  --shadow-xl:  0 20px 50px rgba(0, 0, 0, 0.7);
-  --shadow-fab: 0 6px 20px rgba(10, 132, 255, 0.4);
-  --shadow-glow:0 0 20px rgba(10, 132, 255, 0.3);
+  --island-radius: 36px;
+  --sheet-radius: 32px;
 
   /* ---- Z-Index Scale ---- */
   --z-base:       1;
@@ -119,12 +188,16 @@
   --ease-smooth:   cubic-bezier(0.4, 0, 0.2, 1);
   --ease-in:       cubic-bezier(0.4, 0, 1, 1);
   --ease-out:      cubic-bezier(0, 0, 0.2, 1);
+  --ease-island:   cubic-bezier(0.32, 0.72, 0, 1);
 
   --duration-instant: 0.1s;
   --duration-fast:    0.15s;
   --duration-normal:  0.25s;
   --duration-slow:    0.35s;
   --duration-slower:  0.5s;
+
+  --transition-main: all 0.5s var(--ease-island);
+  --transition-fast: all 0.2s ease;
 
   /* ---- Sizing ---- */
   --header-height:     56px;

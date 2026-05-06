@@ -6,6 +6,8 @@
 const DashboardScreen = {
   container: null,
   showPast: false,
+  searchTerm: "",
+  searchActive: false,
 
   render(container) {
     this.container = container;
@@ -36,23 +38,48 @@ const DashboardScreen = {
           </div>
         </div>
 
-        <!-- Filter Tabs -->
-        <div class="filter-tabs" id="filterTabs">
-          <button class="filter-tab ${activeFilter === "all" ? "active" : ""}" data-filter="all">
-            All <span class="count">${counts.total}</span>
-          </button>
-          <button class="filter-tab ${activeFilter === "draft" ? "active" : ""}" data-filter="draft">
-            Drafts <span class="count">${counts.draft}</span>
-          </button>
-          <button class="filter-tab ${activeFilter === "reservado" ? "active" : ""}" data-filter="reservado">
-            Reserved <span class="count">${counts.reservado}</span>
-          </button>
-          <button class="filter-tab ${activeFilter === "completado" ? "active" : ""}" data-filter="completado">
-            Done <span class="count">${counts.completado}</span>
-          </button>
-          <button class="filter-tab toggle-past ${this.showPast ? "active" : ""}" id="togglePastBtn">
-            ${this.showPast ? "Hide Past" : "Show Past"}
-          </button>
+        <!-- Sticky Header with Filter Tabs & Search -->
+        <div class="dashboard-sticky-header">
+          <div class="filter-tabs ${this.searchActive ? 'searching' : ''}" id="filterTabs">
+            <button class="filter-tab-back" id="filterBackBtn" aria-label="Back to Filters">
+              <svg class="icon"><use href="#icon-arrow-left" /></svg>
+            </button>
+
+            <button class="filter-tab ${activeFilter === "all" ? "active" : ""}" data-filter="all">
+              All <span class="count">${counts.total}</span>
+            </button>
+            <button class="filter-tab ${activeFilter === "draft" ? "active" : ""}" data-filter="draft">
+              Drafts <span class="count">${counts.draft}</span>
+            </button>
+            <button class="filter-tab ${activeFilter === "reservado" ? "active" : ""}" data-filter="reservado">
+              Reserved <span class="count">${counts.reservado}</span>
+            </button>
+            <button class="filter-tab ${activeFilter === "completado" ? "active" : ""}" data-filter="completado">
+              Done <span class="count">${counts.completado}</span>
+            </button>
+            <button class="filter-tab toggle-past ${this.showPast ? "active" : ""}" id="togglePastBtn">
+              ${this.showPast ? "Hide Past" : "Show Past"}
+            </button>
+
+            <!-- Inline Search -->
+            <div class="search-tab-wrapper ${this.searchActive ? 'active' : ''}" id="searchTabWrapper">
+              <button class="search-toggle-btn" id="searchToggleBtn" aria-label="Toggle Search">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+              </button>
+              <div class="search-input-container">
+                <input 
+                  type="text" 
+                  id="resSearchInput" 
+                  placeholder="Search..." 
+                  value="${this.searchTerm}"
+                  autocomplete="off"
+                >
+                ${this.searchTerm ? `<button id="clearSearch" class="clear-search-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>` : ""}
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Reservation List with active filter reflected -->
@@ -67,6 +94,7 @@ const DashboardScreen = {
 
   renderList(reservations, filter) {
     const now = new Date();
+    const search = this.searchTerm.toLowerCase().trim();
 
     // Filter
     let filtered = reservations.filter((r) => {
@@ -79,6 +107,29 @@ const DashboardScreen = {
         const isPast = new Date(tripDate + "T23:59:59") < now;
         if (isPast && !this.showPast) return false;
       }
+
+      // 3. Search filter
+      if (search) {
+        const s2 = r.data?.step2_details || {};
+        const s3 = r.data?.step3_adjustments || {};
+        const customer = (s2.customerName || "").toLowerCase();
+        const date = (s2.tripDate || "").toLowerCase();
+        const code = (r.id || "").toLowerCase();
+        const sourceId = (s3.bookingSource || "").toLowerCase();
+        const sourceLabel = this.getSourceLabel(s3.bookingSource || "direct").toLowerCase();
+        const legacySource = (r.reservationSource || "").toLowerCase();
+
+        const matches = 
+          customer.includes(search) || 
+          date.includes(search) || 
+          code.includes(search) || 
+          sourceId.includes(search) || 
+          sourceLabel.includes(search) ||
+          legacySource.includes(search);
+
+        if (!matches) return false;
+      }
+
       return true;
     });
 
@@ -108,11 +159,16 @@ const DashboardScreen = {
 
     // Group by month
     const groups = {};
-    const noDate = [];
+    const draftsGroup = []; // Renamed from noDate for clarity
 
     filtered.forEach((r) => {
       const tripDate = r.data.step2_details?.tripDate;
-      if (tripDate) {
+      const isDraft = r.status === 'draft';
+
+      // Always put drafts in the drafts group, regardless of date
+      if (isDraft || !tripDate) {
+        draftsGroup.push(r);
+      } else {
         const d = new Date(tripDate + "T00:00:00");
         const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
         const label = d.toLocaleDateString("en-US", {
@@ -121,17 +177,15 @@ const DashboardScreen = {
         });
         if (!groups[key]) groups[key] = { label, items: [] };
         groups[key].items.push(r);
-      } else {
-        noDate.push(r);
       }
     });
 
     let html = "";
 
-    // Undated drafts first
-    if (noDate.length > 0) {
+    // Drafts group first
+    if (draftsGroup.length > 0) {
       html += `<div class="month-header">Drafts</div>`;
-      noDate.forEach((r) => {
+      draftsGroup.forEach((r) => {
         html += this.renderCard(r);
       });
     }
@@ -192,7 +246,23 @@ const DashboardScreen = {
 
     // Status badge
     const badgeClass = `badge badge-${r.status}`;
-    const statusLabel = isDraft ? `Step ${r.currentStep}/3` : r.status;
+    const statusLabel = isDraft ? `Draft` : r.status;
+
+    // Sync Alert Icon (if not backed up)
+    let syncAlertHtml = "";
+    const syncStatus = window.AppState?.syncStatus;
+    if (syncStatus && syncStatus.onlyInLocal) {
+      const isUnsynced = syncStatus.onlyInLocal.some(item => item.id === r.id);
+      if (isUnsynced) {
+        syncAlertHtml = `
+          <div class="card-sync-alert" title="Not backed up to JSON file" style="color: var(--color-warning); display: flex; align-items: center;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </div>
+        `;
+      }
+    }
 
     // Step progress for drafts
     let progressHtml = "";
@@ -238,7 +308,10 @@ const DashboardScreen = {
               <span class="res-card-tour-icon">${tourIcon}</span>
               <span>${tourType}</span>
             </div>
-            ${!isDraft ? `<span class="${badgeClass}">${statusLabel}</span>` : ""}
+            <div style="display: flex; align-items: center; gap: var(--space-2);">
+              ${syncAlertHtml}
+              <span class="${badgeClass}">${statusLabel}</span>
+            </div>
           </div>
 
           <div class="res-card-customer">${this.escapeHtml(customerName)}</div>
@@ -330,6 +403,76 @@ const DashboardScreen = {
     }
 
     this.bindCardEvents();
+
+    // Search events
+    const searchToggleBtn = this.container.querySelector("#searchToggleBtn");
+    const searchTabWrapper = this.container.querySelector("#searchTabWrapper");
+    const searchInput = this.container.querySelector("#resSearchInput");
+    const filterTabs = this.container.querySelector("#filterTabs");
+    const filterBackBtn = this.container.querySelector("#filterBackBtn");
+
+    if (searchToggleBtn && searchTabWrapper && searchInput && filterTabs) {
+      const toggleSearch = (active) => {
+        this.searchActive = active;
+        searchTabWrapper.classList.toggle("active", active);
+        filterTabs.classList.toggle("searching", active);
+        if (active) {
+          searchInput.focus();
+        }
+      };
+
+      searchToggleBtn.addEventListener("click", () => {
+        toggleSearch(!this.searchActive);
+      });
+
+      if (filterBackBtn) {
+        filterBackBtn.addEventListener("click", () => {
+          toggleSearch(false);
+        });
+      }
+
+      searchInput.addEventListener("input", (e) => {
+        this.searchTerm = e.target.value;
+        const reservations = window.Storage.getAllReservations();
+        const listEl = document.getElementById("reservationList");
+        const currentFilter = listEl.getAttribute("data-active-filter") || "all";
+        listEl.innerHTML = this.renderList(reservations, currentFilter);
+        this.bindCardEvents();
+
+        // Toggle clear button
+        const clearBtn = this.container.querySelector("#clearSearch");
+        if (this.searchTerm && !clearBtn) {
+          const inputContainer = this.container.querySelector(".search-input-container");
+          inputContainer.insertAdjacentHTML('beforeend', `<button id="clearSearch" class="clear-search-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>`);
+          this.bindSearchClear();
+        } else if (!this.searchTerm && clearBtn) {
+          clearBtn.remove();
+        }
+      });
+    }
+
+    this.bindSearchClear();
+  },
+
+  bindSearchClear() {
+    const clearBtn = this.container.querySelector("#clearSearch");
+    if (clearBtn) {
+      clearBtn.addEventListener("click", () => {
+        this.searchTerm = "";
+        const searchInput = this.container.querySelector("#resSearchInput");
+        if (searchInput) {
+          searchInput.value = "";
+          searchInput.focus();
+        }
+        clearBtn.remove();
+
+        const reservations = window.Storage.getAllReservations();
+        const listEl = document.getElementById("reservationList");
+        const currentFilter = listEl.getAttribute("data-active-filter") || "all";
+        listEl.innerHTML = this.renderList(reservations, currentFilter);
+        this.bindCardEvents();
+      });
+    }
   },
 
   bindCardEvents() {

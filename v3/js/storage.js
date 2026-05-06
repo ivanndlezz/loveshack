@@ -4,6 +4,7 @@
  */
 
 const STORAGE_KEY = 'loveshack_v3_reservations';
+const CLIENTS_KEY = 'loveshack_v3_clients';
 const JSON_URL = '../reservations/data/loveshack_reservations.json'; // Legacy data source
 const SAVE_SERVER_URL = 'http://localhost:8765/save_v3';
 
@@ -70,114 +71,6 @@ async function checkSyncStatus() {
   };
 }
 
-/**
- * Normalize a reservation record to v3 nested format
- * Legacy records have flat fields; v3 records have data.step1_pricing, etc.
- * @param {Object} r - Raw reservation object
- * @returns {Object} Normalized reservation with nested data structure
- */
-function normalizeReservation(r) {
-  // If already normalized (has data.step1_pricing), return as-is
-  if (r.data && r.data.step1_pricing) return r;
-
-  // Legacy flat format → convert to nested
-  const duration = parseInt(r.hours || r.reservationHours || 3);
-  const passengers = parseInt(r.adults || 1);
-  const extraPassengers = parseInt(r.extraPassengers || r.extraPax || 0);
-  const hourlyRate = parseFloat(r.hourlyRate || 600);
-  const baseTripCost = parseFloat(r.basePrice || (duration * hourlyRate));
-  const extraPassengerCharge = parseFloat(r.extraPassengerCost || r.extraCostAmount || (extraPassengers * 100));
-  const estimatedSubtotal = baseTripCost + extraPassengerCharge;
-
-  // Infer pricing type from hourlyRate (heuristic)
-  let pricingType = 'regular';
-  if (hourlyRate < 550) pricingType = 'snack';
-
-  // Build nested structure
-  const normalized = {
-    ...r,
-    data: {
-      step1_pricing: {
-        pricingType: r.pricingType || pricingType,
-        durationHours: duration,
-        passengers: passengers,
-        extraPassengers: extraPassengers,
-        hourlyRate: hourlyRate,
-        baseTripCost: baseTripCost,
-        extraPassengerCharge: extraPassengerCharge,
-        estimatedSubtotal: estimatedSubtotal,
-      },
-      step2_details: {
-        tourType: r.tourName || r.tourType || '',
-        tripDate: r.reservationDate || r.tripDate || '',
-        startTime: r.reservationTime || r.startTime || '',
-        endTime: r.endTime || (r.reservationTime ? addHours(r.reservationTime, duration) : ''),
-        customerName: r.guestName || r.customerName || '',
-        customerPhone: r.contactPhone || r.customerPhone || '',
-        customerEmail: r.contactEmail || r.customerEmail || '',
-        notes: r.notes || '',
-      },
-      step3_adjustments: {
-        bookingSource: mapLegacySource(r.reservationSource || r.bookingSource || 'direct'),
-        repriceType: '',
-        repriceDiscount: 0,
-        extrasAmount: parseFloat(r.extraCostAmount || r.extrasAmount || 0),
-        fishingLicenses: 0,
-        finalBusinessPrice: estimatedSubtotal,
-        finalCustomerPrice: estimatedSubtotal,
-        feeAmount: parseFloat(r.extraCostAmount || 0),
-        deposit: parseFloat(r.deposit || 0),
-        balance: parseFloat(r.balance || estimatedSubtotal),
-      },
-    },
-  };
-
-  // Set currentStep based on status
-  if (r.status === 'draft') {
-    normalized.currentStep = r.currentStep || 1;
-  } else {
-    normalized.currentStep = 3;
-  }
-
-  return normalized;
-}
-
-/**
- * Map legacy source names to v3 source IDs
- */
-function mapLegacySource(source) {
-  if (!source) return 'direct';
-  const s = source.toLowerCase();
-  if (s.includes('get my boat') || s.includes('gmb')) return 'get-my-boat';
-  if (s.includes('viator')) return 'viator';
-  if (s.includes('fareharbor')) return 'fareharbor';
-  if (s.includes('travel cabo') || s.includes('tct')) return 'travel-cabo-tours';
-  if (s.includes('referido') || s.includes('directo') || s.includes('direct')) return 'direct';
-  return 'direct';
-}
-
-/**
- * Add hours to a time string (HH:MM) — used during normalization
- */
-function addHours(timeStr, hours) {
-  if (!timeStr) return '';
-  const [h, m] = timeStr.split(':').map(Number);
-  const total = h * 60 + m + hours * 60;
-  const nh = Math.floor(total / 60) % 24;
-  const nm = total % 60;
-  return `${String(nh).padStart(2, '0')}:${String(nm).padStart(2, '0')}`;
-}
-function generateUUID() {
-  if (crypto && crypto.randomUUID) {
-    return crypto.randomUUID();
-  }
-  // Fallback
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-}
 
 /**
  * Get all reservations from localStorage
@@ -209,6 +102,68 @@ function getAllReservations() {
     console.error('Storage: Failed to read reservations', e);
     return [];
   }
+}
+
+/**
+ * Get all registered clients
+ * @returns {Array}
+ */
+function getAllClients() {
+  try {
+    const data = localStorage.getItem(CLIENTS_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch (e) {
+    console.error('Storage: Failed to read clients', e);
+    return [];
+  }
+}
+
+/**
+ * Find or create a client in the registry
+ * @param {Object} data - { customerName, customerEmail, customerPhone }
+ * @returns {string} The clientId (e.g. CLI-001)
+ */
+function getOrRegisterClient(data) {
+  const name = (data.customerName || '').trim();
+  if (!name) return 'CLI-UNKNOWN';
+
+  const clients = getAllClients();
+  const email = (data.customerEmail || '').toLowerCase().trim();
+  
+  // Try to find by email first (more unique), then by name
+  let client = null;
+  if (email) {
+    client = clients.find(c => c.email === email);
+  }
+  
+  if (!client) {
+    client = clients.find(c => c.name.toLowerCase() === name.toLowerCase());
+  }
+
+  if (client) {
+    // Optional: update info if missing
+    let updated = false;
+    if (!client.email && email) { client.email = email; updated = true; }
+    if (!client.phone && data.customerPhone) { client.phone = data.customerPhone; updated = true; }
+    if (updated) {
+      localStorage.setItem(CLIENTS_KEY, JSON.stringify(clients));
+    }
+    return client.id;
+  }
+
+  // Create new client
+  const newId = `CLI-${String(clients.length + 1).padStart(3, '0')}`;
+  const newClient = {
+    id: newId,
+    name: name,
+    email: email,
+    phone: data.customerPhone || '',
+    createdAt: new Date().toISOString()
+  };
+  
+  clients.push(newClient);
+  localStorage.setItem(CLIENTS_KEY, JSON.stringify(clients));
+  return newId;
 }
 
 /**
@@ -304,6 +259,17 @@ function updateReservation(id, stepKey, stepData) {
     ...all[idx].data[stepKey],
     ...stepData,
   };
+  
+  // If updating customer details, ensure clientId is updated/assigned
+  if (stepKey === 'step2_details') {
+    const s2 = all[idx].data.step2_details;
+    all[idx].clientId = getOrRegisterClient({
+      customerName: s2.customerName,
+      customerEmail: s2.customerEmail,
+      customerPhone: s2.customerPhone
+    });
+  }
+
   all[idx].updatedAt = new Date().toISOString();
 
   saveAll(all);
@@ -432,6 +398,11 @@ function normalizeReservation(r) {
   // Build nested structure
   const normalized = {
     ...r,
+    clientId: r.clientId || getOrRegisterClient({
+      customerName: r.guestName || r.contactName || r.customerName || '',
+      customerEmail: r.contactEmail || r.customerEmail || '',
+      customerPhone: r.contactPhone || r.customerPhone || ''
+    }),
     status: mapLegacyStatus(r.status),
     currentStep: r.status === 'draft' ? (r.currentStep || 1) : 3,
     data: {
@@ -612,7 +583,6 @@ window.Storage = {
   updateReservation,
   updateCurrentStep,
   promoteToBooking,
-  updateStatus,
   deleteReservation,
   exportJSON,
   importJSON,
@@ -621,5 +591,7 @@ window.Storage = {
   saveToJSON,
   checkSyncStatus,
   saveAll,
-  autoImportLegacy, // new
+  autoImportLegacy,
+  getAllClients,
+  getOrRegisterClient,
 };

@@ -15,7 +15,6 @@
      */
     init() {
       // Initialize components
-      window.BottomNav.init();
       window.FAB.init();
 
       // Listen for hash changes
@@ -96,7 +95,32 @@
         showFab = false;
         showBottomNav = true;
         headerHTML = this.renderDefaultHeader();
-       } else {
+      } else if (hash === '#/source-list') {
+        screen = window.SourceListScreen;
+        showFab = false;
+        showBottomNav = true;
+        headerHTML = this.renderDefaultHeader();
+      } else if (hash === '#/clients-list') {
+        screen = window.ClientsListScreen;
+        showFab = false;
+        showBottomNav = true;
+        headerHTML = this.renderDefaultHeader();
+      } else if (hash === '#/food-menu') {
+        screen = window.FoodMenuScreen;
+        showFab = false;
+        showBottomNav = true;
+        headerHTML = this.renderDefaultHeader();
+      } else if (hash === '#/filter') {
+        screen = window.FilterScreen;
+        showFab = false;
+        showBottomNav = true;
+        headerHTML = this.renderDefaultHeader();
+      } else if (hash === '#/settings') {
+        screen = window.SettingsScreen;
+        showFab = false;
+        showBottomNav = true;
+        headerHTML = this.renderDefaultHeader();
+      } else {
          // Dashboard: #/dashboard or #/
          screen = window.DashboardScreen;
          showFab = true;
@@ -113,29 +137,75 @@
                this.route();
              }
            });
-         } else {
-           // Check sync status on dashboard load
-           window.Storage.checkSyncStatus().then(status => {
-             window.AppState = window.AppState || {};
-             window.AppState.syncStatus = status;
-             if (status.hasWarnings && window.location.hash.includes('dashboard')) {
-               this.showSyncWarning(status);
-             }
-           });
          }
-       }
+      }
 
       // Update header
       document.getElementById('app-header').innerHTML = headerHTML;
 
-      // Update bottom nav
-      if (showBottomNav) {
-        const activeTab = hash.includes('data') ? 'settings' : hash.includes('completado') ? 'history' : 'dashboard';
-        window.BottomNav.renderDefault(activeTab);
-        window.BottomNav.show();
-      } else {
-        window.BottomNav.hide();
+      // Check sync status on dashboard load (after header render)
+      if (hash === '#/dashboard' || hash === '' || hash === '#/') {
+        window.Storage.checkSyncStatus().then(status => {
+          window.AppState = window.AppState || {};
+          window.AppState.syncStatus = status;
+          if (status.hasWarnings) {
+            this.showSyncWarning(status);
+          }
+          // Refresh dashboard list to show sync icons on cards
+          if (hash === '#/dashboard' || hash === '' || hash === '#/') {
+            const listEl = document.getElementById('reservationList');
+            if (listEl && window.DashboardScreen) {
+              const currentFilter = listEl.getAttribute('data-active-filter') || 'all';
+              const reservations = window.Storage.getAllReservations();
+              listEl.innerHTML = window.DashboardScreen.renderList(reservations, currentFilter);
+              window.DashboardScreen.bindCardEvents();
+            }
+          }
+        });
       }
+
+      // Attach theme toggle
+      const initThemeToggle = () => {
+        const toggles = document.querySelectorAll("#theme-toggle, #header-theme-toggle");
+        if (toggles.length === 0) return;
+
+        const updateUI = (isDark) => {
+          document.body.classList.toggle("theme-dark", isDark);
+          document.documentElement.classList.toggle("theme-dark", isDark);
+          
+          toggles.forEach(toggle => {
+            const iconUse = toggle.querySelector("use");
+            if (iconUse) {
+              iconUse.setAttribute("href", isDark ? "#icon-moon" : "#icon-sun");
+            }
+            toggle.setAttribute("aria-checked", isDark.toString());
+            toggle.setAttribute("aria-label", isDark ? "Activate light mode" : "Activate dark mode");
+            
+            // If it's the island toggle, update the label text
+            const label = toggle.querySelector("#theme-label");
+            if (label) {
+              label.textContent = isDark ? "Dark Mode" : "Light Mode";
+            }
+          });
+          
+          // Persistence
+          localStorage.setItem("theme", isDark ? "dark" : "light");
+        };
+
+        const isDark = document.body.classList.contains("theme-dark") || localStorage.getItem("theme") === "dark";
+        updateUI(isDark);
+
+        toggles.forEach(toggle => {
+          toggle.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const currentlyDark = document.body.classList.contains("theme-dark");
+            updateUI(!currentlyDark);
+          });
+        });
+      };
+      
+      initThemeToggle();
 
       // Update FAB
       if (showFab) {
@@ -182,23 +252,20 @@
         : 'Data out of sync';
 
       const warningHtml = `
-        <div id="sync-warning" class="sync-warning-bar animate-jump-in">
-          <div class="sync-warning-content">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px">
-              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-            </svg>
-            <span>${msg}</span>
-          </div>
-          <button class="btn btn-xs btn-outline" onclick="window.App.navigate('#/data')" style="font-size: 10px; padding: 4px 8px; border: 1px solid rgba(255,255,255,0.3);">
-            Sync Now
-          </button>
-        </div>
+        <button id="sync-warning" class="header-action-btn sync-warning-icon animate-jump-in" 
+                onclick="window.App.navigate('#/data')" 
+                title="${msg}"
+                style="color: var(--color-warning); background: var(--color-warning-muted); border-radius: 50%; padding: 4px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:18px;height:18px">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </button>
       `;
 
-      // Insert at top of main container
-      const container = document.getElementById('app');
-      if (container) {
-        container.insertAdjacentHTML('afterbegin', warningHtml);
+      // Insert into header-actions
+      const headerActions = document.querySelector('.header-actions');
+      if (headerActions) {
+        headerActions.insertAdjacentHTML('afterbegin', warningHtml);
       }
     },
 
@@ -207,13 +274,22 @@
      */
     renderDefaultHeader() {
       return `
-        <span class="header-title">⛵ Love Shack</span>
-        <div class="header-actions">
-          <button class="header-action-btn" onclick="window.App.navigate('#/data')" title="Manage Data">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:22px;height:22px">
-              <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-            </svg>
-          </button>
+        <span class="header-title"><img src="https://www.loveshackcruises.com/wp-content/uploads/2025/06/newLogo.png" alt="Love Shack Cruises"></span>
+        <div class="header-right">
+          <div class="header-actions">
+            <button class="header-theme-toggle" id="header-theme-toggle" aria-label="Activate dark mode" role="switch" aria-checked="false">
+              <div class="toggle-theme-left">
+                <svg class="icon" aria-hidden="true">
+                  <use id="theme-icon-use" href="#icon-sun"></use>
+                </svg>
+              </div>
+            </button>
+            <button class="header-action-btn" onclick="window.App.navigate('#/data')" title="Manage Data">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:22px;height:22px">
+                <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+            </button>
+          </div>
         </div>
       `;
     },

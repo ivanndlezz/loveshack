@@ -29,6 +29,7 @@ body {
   min-height: 100dvh;
   overflow-x: hidden;
   -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--duration-slow), color var(--duration-slow);
 }
 
 body.scroll-locked {
