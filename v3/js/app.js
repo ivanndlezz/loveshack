@@ -222,11 +222,8 @@
      * Render stepper header with back button + progress bar
      */
     renderStepperHeader(step, id, isViewOnly = false) {
-      const backHash = step === 1
-        ? '#/dashboard'
-        : step === 2
-        ? `#/new/${id}`
-        : `#/new/${id}/details`;
+      const backHash = '#/dashboard';
+      const saveExitAction = step === 1 ? 'window.Step1Screen.autoSave()' : step === 2 ? 'window.Step2Screen.autoSave()' : 'window.Step3Screen.autoSave()';
 
       return `
         <a href="${backHash}" class="header-back">
@@ -235,8 +232,13 @@
           </svg>
           Back
         </a>
-        ${isViewOnly ? '<span class="header-title" style="font-size: var(--font-md);">Reservation</span>' : window.StepperBar.render(step)}
-        <div style="width: 60px;"></div>
+        ${isViewOnly ? '<span class="header-title" style="font-size: var(--font-md);">Reservation</span>' : window.StepperBar.render(step, id)}
+        <button class="header-save-exit" onclick="${saveExitAction}; window.App.navigate('#/dashboard')">
+          Save
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </button>
       `;
     },
 
@@ -257,27 +259,21 @@
        let footerHtml = '<div class="step-footer" id="step-footer"><div class="step-footer-inner">';
 
        if (step === 1) {
-         // Step 1: Save & Exit + Continue (no back button needed)
+         // Step 1: Continue
          footerHtml += `
-           <button class="btn btn-secondary" onclick="window.App.navigate('#/dashboard')">
-             Save & Exit
-           </button>
-           <button class="btn btn-primary" onclick="window.Storage.updateCurrentStep('${id}', 2); window.App.navigate('#/new/${id}/details')">
-             Continue
+           <button class="btn btn-primary btn-full" onclick="window.Storage.updateCurrentStep('${id}', 2); window.App.navigate('#/new/${id}/details')">
+             Continue to Details
              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><polyline points="9 18 15 12 9 6"/></svg>
            </button>
          `;
        } else if (step === 2) {
-         // Step 2: Back (icon) + Save & Exit + Continue
+         // Step 2: Back (icon) + Continue
          footerHtml += `
-           <button class="btn btn-secondary" onclick="window.App.navigate('#/new/${id}')" aria-label="Back">
+           <button class="btn btn-secondary" style="flex: 0 0 60px;" onclick="window.App.navigate('#/new/${id}')" aria-label="Back">
              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><polyline points="15 18 9 12 15 6"/></svg>
            </button>
-           <button class="btn btn-secondary" onclick="window.Step2Screen.autoSave(); window.App.navigate('#/dashboard')">
-             Save & Exit
-           </button>
            <button class="btn btn-primary" onclick="window.Step2Screen.autoSave(); window.Storage.updateCurrentStep('${id}', 3); window.App.navigate('#/new/${id}/adjustments')">
-             Continue
+             Continue to Pricing
              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><polyline points="9 18 15 12 9 6"/></svg>
            </button>
          `;
@@ -290,13 +286,10 @@
              </button>
            `;
          } else {
-           // Step 3: Back (icon) + Save & Exit + Confirm Booking
+           // Step 3: Back (icon) + Confirm Booking
            footerHtml += `
-             <button class="btn btn-secondary" onclick="window.App.navigate('#/new/${id}/details')" aria-label="Back">
+             <button class="btn btn-secondary" style="flex: 0 0 60px;" onclick="window.App.navigate('#/new/${id}/details')" aria-label="Back">
                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><polyline points="15 18 9 12 15 6"/></svg>
-             </button>
-             <button class="btn btn-secondary" onclick="window.Step3Screen.autoSave(); window.App.navigate('#/dashboard')">
-               Save & Exit
              </button>
              <button class="btn btn-primary" onclick="window.Step3Screen.confirmBooking()" style="background: var(--color-success);">
                ✓ Confirm Booking

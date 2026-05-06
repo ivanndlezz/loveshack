@@ -7,9 +7,10 @@ const StepperBar = {
   /**
    * Render the stepper bar into the header area
    * @param {number} currentStep - 1, 2, or 3
+   * @param {string} id - Reservation ID
    * @returns {string} HTML string
    */
-  render(currentStep) {
+  render(currentStep, id) {
     const steps = [
       { num: 1, label: 'Pricing' },
       { num: 2, label: 'Details' },
@@ -32,7 +33,7 @@ const StepperBar = {
         : step.num;
 
       html += `<div class="stepper-step">`;
-      html += `<div class="${dotClass}">${dotContent}</div>`;
+      html += `<div class="${dotClass}" onclick="window.StepperBar.handleStepClick(${step.num}, '${id}')">${dotContent}</div>`;
 
       // Line (not after last step)
       if (i < steps.length - 1) {
@@ -45,6 +46,30 @@ const StepperBar = {
 
     html += '</div>';
     return html;
+  },
+
+  /**
+   * Handle click on a stepper dot
+   * @param {number} stepNum
+   * @param {string} id
+   */
+  handleStepClick(stepNum, id) {
+    if (!id) return;
+
+    // Auto-save current screen before navigating
+    if (window.App && window.App.currentScreen && typeof window.App.currentScreen.autoSave === 'function') {
+      window.App.currentScreen.autoSave();
+    }
+
+    const routes = {
+      1: `#/new/${id}`,
+      2: `#/new/${id}/details`,
+      3: `#/new/${id}/adjustments`,
+    };
+
+    if (routes[stepNum]) {
+      window.App.navigate(routes[stepNum]);
+    }
   },
 
   /**

@@ -50,32 +50,8 @@ const Step1Screen = {
     container.innerHTML = `
       <div class="step-content stagger-children" style="padding-bottom: 300px;">
         
-        <!-- Pricing Type Toggle -->
-        <div class="step-section">
-          <div class="pricing-type-toggle-container">
-            <button class="pricing-type-tab ${pricingType === "regular" ? "active" : ""}" data-value="regular">Regular</button>
-            <button class="pricing-type-tab ${pricingType === "snack" ? "active" : ""}" data-value="snack">Snack</button>
-          </div>
-        </div>
-
-        <!-- Source Selector -->
-        <div class="step-section" style="z-index: 50; position: relative;">
-          <div class="custom-select-wrapper" id="sourceSelect">
-            <input type="hidden" id="source" data-field="source" value="${source}">
-            <div class="custom-select-trigger" id="sourceTrigger">
-              <input type="text" class="custom-select-input" id="sourceInput" placeholder="Select Source" value="${this.getSourceLabel(source)}" autocomplete="off" autocapitalize="none">
-              <svg class="custom-select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-            </div>
-            <div class="custom-select-dropdown">
-              <div class="custom-select-options" id="sourceOptions">
-                ${this.renderSourceOptions(source)}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Trip Summary & Breakdown -->
-        <div class="trip-summary" data-duration="${duration}" data-passengers="${passengers}" style="position: relative; margin-top: 20px;">
+        <!-- Trip Summary & Breakdown (NOW AT TOP) -->
+        <div class="trip-summary" data-duration="${duration}" data-passengers="${passengers}" style="position: relative; margin-top: 10px; margin-bottom: 20px;">
           <input type="checkbox" role="status" id="pricingDisplay" hide style="display: none;">
           <label for="pricingDisplay" class="pricing-display">
             <div class="pricing-row">
@@ -107,6 +83,32 @@ const Step1Screen = {
                <span class="pricing-total" id="customerTotal">${this.formatCurrency(price.subtotal)}</span>
              </div>
           </label>
+        </div>
+
+      </div>
+
+      <!-- Thumb Zone: Pinned controls (Source, Pricing Type, Duration/Pax) -->
+      <div class="thumb-zone">
+        <div class="thumb-zone-controls">
+          <!-- Source Selector -->
+          <div class="custom-select-wrapper" id="sourceSelect" style="margin-bottom: 12px;">
+            <input type="hidden" id="source" data-field="source" value="${source}">
+            <div class="custom-select-trigger" id="sourceTrigger">
+              <input type="text" class="custom-select-input" id="sourceInput" placeholder="Select Source" value="${this.getSourceLabel(source)}" autocomplete="off" autocapitalize="none">
+              <svg class="custom-select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+            <div class="custom-select-dropdown">
+              <div class="custom-select-options" id="sourceOptions">
+                ${this.renderSourceOptions(source)}
+              </div>
+            </div>
+          </div>
+
+          <!-- Pricing Type Toggle -->
+          <div class="pricing-type-toggle-container" style="margin-bottom: 12px;">
+            <button class="pricing-type-tab ${pricingType === "regular" ? "active" : ""}" data-value="regular">Regular Price</button>
+            <button class="pricing-type-tab ${pricingType === "snack" ? "active" : ""}" data-value="snack">Snack Price</button>
+          </div>
 
           <div class="summary-details">
             <div class="summary-item" data-trigger="duration">
@@ -125,6 +127,7 @@ const Step1Screen = {
             </div>
           </div>
         </div>
+      </div>
 
       </div>
 
@@ -530,7 +533,27 @@ const Step1Screen = {
       price.subtotal,
     ); // Update logic if fee applies
 
+    this.autoSave();
+  },
+
+  autoSave() {
+    const duration =
+      parseInt(document.getElementById("summaryDuration")?.textContent) || 3;
+    const passengers =
+      parseInt(document.getElementById("summaryPassengers")?.textContent) || 14;
+    const activeType = this.container.querySelector(".pricing-type-tab.active");
+    const pricingType = activeType?.dataset.value || "regular";
+    const source = document.getElementById("source")?.value || "direct";
+
+    const price = this.calculatePrice(
+      duration,
+      passengers,
+      pricingType,
+      source,
+    );
+
     this.saveStep(duration, passengers, pricingType, source, price);
+    window.Storage.updateCurrentStep(this.reservationId, 1);
   },
 
   calculatePrice(duration, passengers, pricingType, source) {

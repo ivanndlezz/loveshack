@@ -33,6 +33,12 @@
   color: var(--color-text-tertiary);
   transition: all var(--duration-normal) var(--ease-default);
   flex-shrink: 0;
+  cursor: pointer;
+}
+
+.stepper-dot:hover {
+  border-color: var(--color-accent-subtle);
+  transform: scale(1.05);
 }
 
 .stepper-dot.active {
