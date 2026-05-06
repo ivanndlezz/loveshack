@@ -19,7 +19,7 @@ const SettingsScreen = {
             </div>
             <div class="input-group-row">
               <span class="input-group-label">Desarrollado por</span>
-              <div class="input-group-value">DeepMind Coding Assistant</div>
+              <div class="input-group-value">Ivan Gonzalez | Klef Agency</div>
             </div>
           </div>
         </div>
@@ -39,7 +39,7 @@ const SettingsScreen = {
 
   destroy() {
     this.container = null;
-  }
+  },
 };
 
 window.SettingsScreen = SettingsScreen;
