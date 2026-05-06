@@ -784,10 +784,9 @@ input[type="range"].form-slider::-moz-range-thumb {
   background: var(--color-island-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  padding: var(--space-3);
   border-radius: 24px;
   border: 1px solid var(--color-island-border);
-  box-shadow: var(--shadow-lg);
+
 }
 
 .summary-item {
@@ -1107,6 +1106,10 @@ input[type="range"].form-slider::-moz-range-thumb {
 .pricing-row:first-child {
   border-radius: 16px 16px 0 0;
 }
+.picker-container {
+  position: relative;
+  height: calc(54px * 5);
+  overflow: hidden;
   mask-image: linear-gradient(
     to bottom,
     transparent 0%,
@@ -1122,6 +1125,7 @@ input[type="range"].form-slider::-moz-range-thumb {
     transparent 100%
   );
 }
+
 
 .visor {
   position: absolute;
@@ -1434,7 +1438,7 @@ input[type="range"].form-slider::-moz-range-thumb {
 }
 
 .pricing-type-toggle-container {
-  background: var(--color-surface-alt);
+  background: var(--color-toggle-bg);
   border-radius: 12px;
   padding: 4px;
   display: flex;

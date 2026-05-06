@@ -11,6 +11,7 @@
   --color-surface-raised: #e5e5ea;
   --color-border:         #d1d1d6;
   --color-border-subtle:  #e5e5ea;
+  --color-toggle-bg:      #d1d1de;
 
   --color-text:           #000000;
   --color-text-secondary: #6c6c70;
@@ -67,6 +68,7 @@
   --color-surface-raised: #3a3a3c;
   --color-border:         #38383a;
   --color-border-subtle:  #2c2c2e;
+  --color-toggle-bg:      #000000;
 
   --color-text:           #ffffff;
   --color-text-secondary: #8e8e93;

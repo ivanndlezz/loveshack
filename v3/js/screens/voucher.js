@@ -7,6 +7,7 @@
 const VoucherScreen = {
   container: null,
   reservationId: null,
+  _originalTitle: document.title,
 
   render(container, params) {
     this.container = container;
@@ -37,20 +38,31 @@ const VoucherScreen = {
     const adults = parseInt(s1.adults || s1.passengers) || 0;
     const kids = parseInt(s1.kids) || 0;
     const infants = parseInt(s1.infants) || 0;
-    const extraPax = parseInt(s3.extraPax) || 0;
+    const extraPaxCount = parseInt(s1.extraPassengers || 0);
     const totalPax = adults + kids + infants;
 
+    // Pricing components (Focus on Business Revenue)
     const rate = parseFloat(s1.hourlyRate) || 0;
-    const totalHoursPrice = rate * duration;
-    const customerTotal = parseFloat(s3.finalCustomerPrice) || 0;
+    const basePrice = parseFloat(s1.baseTripCost || (rate * duration));
+    const extraPaxCost = parseFloat(s1.extraPassengerCharge || 0);
+    const adjustment = parseFloat(s3.priceAdjustment || 0);
+    const extrasAmount = parseFloat(s3.extrasAmount || 0);
+    
+    // "Business Receives" matches Step 3 logic
+    const businessReceives = basePrice + extraPaxCost + adjustment + extrasAmount;
+    
     const deposit = parseFloat(s3.deposit) || 0;
-    const balance = customerTotal - deposit;
+    const balance = businessReceives - deposit;
 
     const foodName = s2.foodType || "MEXICAN BUFFET & NATIONAL OPEN BAR";
     const foodIncludeHtml = this.getFoodIncludeHtml(foodName);
 
     // Generate Business Folio (Nomenclature: IG MMDD-MMDD TIME)
     const businessFolio = this.generateBusinessFolio(reservation);
+
+    // Dynamic Title for Print/Tab identification
+    const guestName = s2.customerName || 'Guest';
+    document.title = `${guestName} - Reserva: ${businessFolio}`;
 
     container.innerHTML = `
       <div class="voucher-screen">
@@ -131,7 +143,7 @@ const VoucherScreen = {
             <div class="v-pax-cell">${adults}<br>ADULTS</div>
             <div class="v-pax-cell">${kids}<br>KIDS</div>
             <div class="v-pax-cell">${infants}<br>INFANTS</div>
-            <div class="v-pax-cell">${extraPax > 0 ? extraPax : '--'}<br>EXTRA PP</div>
+            <div class="v-pax-cell">${extraPaxCount > 0 ? extraPaxCount : '--'}<br>EXTRA PP</div>
           </div>
 
           <div class="v-hotel-row"><strong>Hotel:</strong> ${this.escapeHtml(s2.hotel || 'Not specified')}</div>
@@ -161,23 +173,42 @@ const VoucherScreen = {
 
               <div class="v-pricing-breakdown">
                 <div class="v-breakdown-title" style="font-weight: 700; margin-bottom: 8px;">Price Breakdown</div>
-                <div class="v-breakdown-row">
-                  <span>Total hours — ${duration} hrs × ${rate}</span>
-                  <span>${totalHoursPrice.toFixed(2)}</span>
-                </div>
                 
                 <div class="v-breakdown-row">
-                  <span>Food &amp; Beverage (included)</span><span>—</span>
+                  <span>Base trip — ${duration} hrs × ${rate}</span>
+                  <span>${basePrice.toFixed(2)}</span>
                 </div>
+
+                ${extraPaxCost > 0 ? `
+                <div class="v-breakdown-row">
+                  <span>Extra passengers (${extraPaxCount} pax)</span>
+                  <span>${extraPaxCost.toFixed(2)}</span>
+                </div>
+                ` : ''}
+
+                ${extrasAmount > 0 ? `
+                <div class="v-breakdown-row">
+                  <span>Extra services</span>
+                  <span>${extrasAmount.toFixed(2)}</span>
+                </div>
+                ` : ''}
+
+                ${adjustment !== 0 ? `
+                <div class="v-breakdown-row">
+                  <span>Price Adjustment</span>
+                  <span>${adjustment > 0 ? '+' : ''}${adjustment.toFixed(2)}</span>
+                </div>
+                ` : ''}
+                
                 <div class="v-breakdown-row total">
-                  <span>TOTAL</span>
-                  <span class="amount">${customerTotal.toFixed(2)} USD</span>
+                  <span>Business Receives</span>
+                  <span class="amount">${businessReceives.toFixed(2)} USD</span>
                 </div>
               </div>
 
               <div class="v-payment-row">
                 <span>Amount:</span>
-                <span class="v-amount">$${customerTotal.toFixed(2)} USD</span>
+                <span class="v-amount">$${businessReceives.toFixed(2)} USD</span>
               </div>
               <div class="v-payment-row">
                 <span>Deposit: </span>
@@ -220,7 +251,7 @@ const VoucherScreen = {
 
           <!-- BOTTOM -->
           <div class="v-bottom-row">
-            <div class="v-bottom-cell"><em>Amount:</em> &nbsp; $${customerTotal.toFixed(2)} USD</div>
+            <div class="v-bottom-cell"><em>Amount:</em> &nbsp; $${businessReceives.toFixed(2)} USD</div>
             <div class="v-bottom-cell"><em>Balance:</em> &nbsp; $${balance.toFixed(2)} USD</div>
           </div>
 
@@ -350,6 +381,9 @@ const VoucherScreen = {
   },
 
   destroy() {
+    // Restore title
+    document.title = this._originalTitle;
+    
     // Restore header if we saved it
     if (this._originalHeader) {
       const header = document.querySelector('.app-header');
