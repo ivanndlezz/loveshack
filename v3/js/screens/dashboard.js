@@ -294,6 +294,10 @@ const DashboardScreen = {
             <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
           </button>
           <div class="res-menu-dropdown hidden" id="menu-${r.id}" style="position: absolute; right: 0; top: 100%; margin-top: 8px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 20; min-width: max-content; padding: 4px; display: none;">
+            <button class="res-menu-item" data-action="print-voucher" data-id="${r.id}" style="display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 12px; background: transparent; border: none; cursor: pointer; color: var(--color-text); font-size: 14px; text-align: left; border-radius: 4px;" onmouseover="this.style.background='var(--color-surface-alt)'" onmouseout="this.style.background='transparent'">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+              Print Voucher
+            </button>
             <button class="res-menu-item text-danger" data-action="delete-res" data-id="${r.id}" style="display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 12px; background: transparent; border: none; cursor: pointer; color: #ef4444; font-size: 14px; text-align: left; border-radius: 4px;" onmouseover="this.style.background='rgba(239,68,68,0.1)'" onmouseout="this.style.background='transparent'">
               <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
               Delete Quote
@@ -322,8 +326,8 @@ const DashboardScreen = {
               ${dateDisplay}
             </span>
             <span class="res-card-meta-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              ${s1.durationHours || 0}h · ${s1.passengers || 0} pax
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" /><path d="M7 2v20" /><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" /></svg>
+              ${this.truncate(s2.foodType || "No food", 18)}
             </span>
             <span class="res-card-meta-item">${sourceName}</span>
           </div>
@@ -545,6 +549,17 @@ const DashboardScreen = {
       });
     });
 
+    const printBtns = this.container.querySelectorAll(
+      '[data-action="print-voucher"]',
+    );
+    printBtns.forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        window.App.navigate(`#/voucher/${id}`);
+      });
+    });
+
     if (!this._menuCloseBound) {
       document.addEventListener("click", (e) => {
         if (!e.target.closest(".res-menu-wrapper") && this.container) {
@@ -603,6 +618,10 @@ const DashboardScreen = {
     const div = document.createElement("div");
     div.textContent = str;
     return div.innerHTML;
+  },
+
+  truncate(str, n) {
+    return str.length > n ? str.substr(0, n - 1) + "..." : str;
   },
 
   destroy() {

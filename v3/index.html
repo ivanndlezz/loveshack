@@ -40,6 +40,7 @@
     <link rel="stylesheet" href="css/screens/clients.css" />
     <link rel="stylesheet" href="css/screens/sources.css" />
     <link rel="stylesheet" href="css/screens/menu.css" />
+    <link rel="stylesheet" href="css/voucher.css" />
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"
@@ -362,6 +363,38 @@
         margin-top: 10px;
       }
 
+      .custom-select-wrapper {
+        position: relative;
+        width: 100%;
+        z-index: 1; /* Base level */
+      }
+
+      .custom-select-wrapper.open {
+        z-index: 9999 !important;
+      }
+
+      /* If a step-section contains an open select, it must also go on top */
+      .step-section:has(.custom-select-wrapper.open) {
+        position: relative;
+        z-index: 9999;
+      }
+
+      .custom-select-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        margin-top: 4px;
+        max-height: 250px;
+        overflow-y: auto;
+        z-index: 9999 !important;
+        display: none;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+      }
+
       .menu-item {
         background: var(--color-surface);
         border: 1px solid var(--color-border);
@@ -563,6 +596,7 @@
     <script src="js/screens/food-menu.js"></script>
     <script src="js/screens/filter.js"></script>
     <script src="js/screens/settings.js"></script>
+    <script src="js/screens/voucher.js"></script>
 
     <!-- App Orchestrator (must be last) -->
     <script src="js/app.js"></script>

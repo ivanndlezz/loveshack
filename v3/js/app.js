@@ -115,6 +115,13 @@
         showFab = false;
         showBottomNav = true;
         headerHTML = this.renderDefaultHeader();
+      } else if (hash.match(/^#\/voucher\/([^/]+)/)) {
+        const id = hash.match(/^#\/voucher\/([^/]+)/)[1];
+        screen = window.VoucherScreen;
+        params = { id };
+        showFab = false;
+        showBottomNav = false;
+        headerHTML = ''; // Custom header inside screen
       } else if (hash === '#/settings') {
         screen = window.SettingsScreen;
         showFab = false;

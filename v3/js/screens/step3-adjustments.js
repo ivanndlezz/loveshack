@@ -26,26 +26,27 @@ const Step3Screen = {
      const s2 = reservation.data.step2_details;
      const s3 = reservation.data.step3_adjustments || {};
      
-     // SOURCE SYNCHRONIZATION: Read source from step1_pricing (canonical source)
-     // Fallback to legacy step3_adjustments.bookingSource for backwards compatibility
      let source = s1?.source || s3.bookingSource || 'direct';
      
-     // Migrate legacy source to step1_pricing if needed
      if (s1 && !s1.source && s3.bookingSource) {
        s1.source = s3.bookingSource;
        window.Storage.updateReservation(this.reservationId, 'step1_pricing', s1);
      }
 
      const isBooked = reservation.status !== 'draft';
-
-     // Get sources from pricing rules
      const sources = window.PRICING_RULES?.sources || [
        { id: 'direct', name: '📞 Direct - Call' },
        { id: 'get-my-boat', name: '🐬 Get My Boat' },
        { id: 'viator', name: '✈️ Viator' },
      ];
 
-    // Reprice types
+     const foodOptions = window.PRICING_RULES?.foodOptions || [
+       { name: "MEXICAN BUFFET & NATIONAL OPEN BAR" },
+       { name: "CHICKEN & VEGETARIAN MENU WITH NATIONAL OPEN BAR" },
+       { name: "TACOS & NATIONAL OPEN BAR" },
+       { name: "SNACKS & NATIONAL OPEN BAR" }
+     ];
+
     const repriceTypes = [
       { code: '', label: 'None' },
       { code: '%', label: '% Percentage' },
@@ -54,7 +55,6 @@ const Step3Screen = {
       { code: 'coupon', label: 'Coupon' },
     ];
 
-    // Show fishing licenses only for Fishing tours
     const isFishing = s2.tourType === 'Fishing';
 
     container.innerHTML = `
@@ -95,6 +95,34 @@ const Step3Screen = {
                  <div class="custom-select-option ${s.id === source ? 'selected' : ''}"
                       data-value="${s.id}">
                    ${s.name}
+                 </div>
+               `
+                 )
+                 .join('')}
+             </div>
+           </div>
+         </div>
+
+         <!-- Food Option -->
+         <div class="step-section">
+           <div class="step-section-title">Food Option</div>
+           <div class="custom-select-wrapper" id="foodSelect">
+             <div class="custom-select-trigger" id="foodTrigger">
+               <input type="text" class="custom-select-input" id="foodInput"
+                      placeholder="Search food menus..."
+                      value="${s2.foodType || 'No food selected'}"
+                      autocomplete="off">
+               <svg class="custom-select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                 <polyline points="6 9 12 15 18 9"/>
+               </svg>
+             </div>
+             <div class="custom-select-dropdown" id="foodDropdown">
+               ${foodOptions
+                 .map(
+                   (f) => `
+                 <div class="custom-select-option ${f.name === s2.foodType ? 'selected' : ''}"
+                      data-value="${this.escapeHtml(f.name)}">
+                   ${f.name}
                  </div>
                `
                  )
@@ -161,17 +189,23 @@ const Step3Screen = {
           </div>
         </div>
 
-        ${isBooked ? `
-          <!-- Delete button for booked reservations -->
-          <div style="padding: var(--space-4) 0;">
+        <!-- Action Buttons -->
+        <div style="display: flex; flex-direction: column; gap: var(--space-3); margin-top: var(--space-4);">
+          <button class="btn btn-secondary btn-full" onclick="window.App.navigate('#/voucher/${this.reservationId}')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 6 2 18 2 18 9"></polyline>
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+              <rect x="6" y="14" width="12" height="8"></rect>
+            </svg>
+            Print Voucher
+          </button>
+
+          ${isBooked ? `
             <button class="btn btn-danger btn-full" id="deleteBtn">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px">
-                <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-              </svg>
-              Delete Reservation
+              <i class="ti ti-trash"></i> Delete Reservation
             </button>
-          </div>
-        ` : ''}
+          ` : ''}
+        </div>
       </div>
     `;
 
@@ -181,63 +215,44 @@ const Step3Screen = {
 
   bindEvents() {
     // Source select
-    const wrapper = document.getElementById('sourceSelect');
-    const trigger = document.getElementById('sourceTrigger');
-    const input = document.getElementById('sourceInput');
-    const dropdown = document.getElementById('sourceDropdown');
+    const srcWrapper = document.getElementById('sourceSelect');
+    const srcInput = document.getElementById('sourceInput');
+    const srcDropdown = document.getElementById('sourceDropdown');
 
-    input?.addEventListener('focus', () => {
-      wrapper.classList.add('open');
-      input.value = '';
-      this.filterSourceOptions('');
-    });
-
-    input?.addEventListener('input', () => {
-      this.filterSourceOptions(input.value);
-    });
-
-    dropdown?.addEventListener('click', (e) => {
-      const option = e.target.closest('.custom-select-option');
-      if (!option) return;
-
-      const value = option.dataset.value;
-      dropdown.querySelectorAll('.custom-select-option').forEach((o) => o.classList.remove('selected'));
-      option.classList.add('selected');
-
+    this.setupSelect(srcWrapper, srcInput, srcDropdown, (val) => {
       const sources = window.PRICING_RULES?.sources || [];
-      input.value = this.getSourceName(value, sources);
-      wrapper.classList.remove('open');
+      srcInput.value = this.getSourceName(val, sources);
       this.recalculate();
     });
 
-    // Close dropdown on outside click
-    document.addEventListener('click', (e) => {
-      if (!wrapper?.contains(e.target)) {
-        wrapper?.classList.remove('open');
-        // Restore selected value
-        const selected = dropdown?.querySelector('.selected');
-        if (selected) {
-          const sources = window.PRICING_RULES?.sources || [];
-          input.value = this.getSourceName(selected.dataset.value, sources);
-        }
+    // Food select
+    const foodWrapper = document.getElementById('foodSelect');
+    const foodInput = document.getElementById('foodInput');
+    const foodDropdown = document.getElementById('foodDropdown');
+
+    this.setupSelect(foodWrapper, foodInput, foodDropdown, (val) => {
+      foodInput.value = val;
+      // Update s2.foodType immediately in storage
+      const reservation = window.Storage.getReservation(this.reservationId);
+      if (reservation) {
+        const s2 = { ...reservation.data.step2_details, foodType: val };
+        window.Storage.updateReservation(this.reservationId, 'step2_details', s2);
       }
+      this.recalculate();
     });
 
-    // Reprice type toggle
     const repriceType = document.getElementById('repriceType');
     repriceType?.addEventListener('change', () => {
       const row = document.getElementById('repriceValueRow');
-      row.style.display = repriceType.value ? '' : 'none';
+      if(row) row.style.display = repriceType.value ? '' : 'none';
       this.recalculate();
     });
 
-    // All inputs auto-recalculate
     this.container.querySelectorAll('input[type="number"], select').forEach((el) => {
       el.addEventListener('input', () => this.recalculate());
       el.addEventListener('change', () => this.recalculate());
     });
 
-    // Delete button
     document.getElementById('deleteBtn')?.addEventListener('click', () => {
       if (confirm('Are you sure you want to delete this reservation?')) {
         window.Storage.deleteReservation(this.reservationId);
@@ -247,9 +262,41 @@ const Step3Screen = {
     });
   },
 
-  filterSourceOptions(query) {
-    const dropdown = document.getElementById('sourceDropdown');
-    if (!dropdown) return;
+  setupSelect(wrapper, input, dropdown, onSelect) {
+    if (!wrapper || !input || !dropdown) return;
+
+    input.addEventListener('focus', () => {
+      wrapper.classList.add('open');
+      input.value = '';
+      this.filterOptions(dropdown, '');
+    });
+
+    input.addEventListener('input', () => {
+      this.filterOptions(dropdown, input.value);
+    });
+
+    dropdown.addEventListener('click', (e) => {
+      const option = e.target.closest('.custom-select-option');
+      if (!option) return;
+      const value = option.dataset.value;
+      dropdown.querySelectorAll('.custom-select-option').forEach((o) => o.classList.remove('selected'));
+      option.classList.add('selected');
+      wrapper.classList.remove('open');
+      onSelect(value);
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!wrapper.contains(e.target)) {
+        wrapper.classList.remove('open');
+        const selected = dropdown.querySelector('.selected');
+        if (selected && !input.value) {
+          input.value = selected.textContent.trim();
+        }
+      }
+    });
+  },
+
+  filterOptions(dropdown, query) {
     const q = query.toLowerCase();
     dropdown.querySelectorAll('.custom-select-option').forEach((opt) => {
       const text = opt.textContent.toLowerCase();
@@ -264,8 +311,7 @@ const Step3Screen = {
     const s1 = reservation.data.step1_pricing;
     const s2 = reservation.data.step2_details;
 
-    // Get current form values
-    const selectedSource = this.container.querySelector('.custom-select-option.selected');
+    const selectedSource = this.container.querySelector('#sourceSelect .custom-select-option.selected');
     const sourceId = selectedSource?.dataset.value || 'direct';
     const repriceType = document.getElementById('repriceType')?.value || '';
     const repriceDiscount = parseFloat(document.getElementById('repriceDiscount')?.value) || 0;
@@ -273,7 +319,6 @@ const Step3Screen = {
     const fishingLicenses = parseInt(document.getElementById('fishingLicenses')?.value) || 0;
     const deposit = parseFloat(document.getElementById('deposit')?.value) || 0;
 
-    // Use PricingCalculator for full calculation
     let result;
     if (this.calculator) {
       result = this.calculator.calculate({
@@ -294,17 +339,8 @@ const Step3Screen = {
         },
       });
     } else {
-      // Fallback
       result = {
-        summary: {
-          basePrice: s1.estimatedSubtotal || 0,
-          extras: extrasAmount,
-          subtotal: (s1.estimatedSubtotal || 0) + extrasAmount,
-          discount: 0,
-          businessPrice: (s1.estimatedSubtotal || 0) + extrasAmount,
-          fee: 0,
-          customerPrice: (s1.estimatedSubtotal || 0) + extrasAmount,
-        },
+        summary: { basePrice: s1.estimatedSubtotal || 0, extras: extrasAmount, subtotal: (s1.estimatedSubtotal || 0) + extrasAmount, discount: 0, businessPrice: (s1.estimatedSubtotal || 0) + extrasAmount, fee: 0, customerPrice: (s1.estimatedSubtotal || 0) + extrasAmount },
         basePricing: s1,
         fee: { hasFee: false, sourceName: 'Direct', feeNote: '' },
       };
@@ -313,56 +349,26 @@ const Step3Screen = {
     const s = result.summary;
     const balance = s.customerPrice - deposit;
 
-    // Render breakdown
     const breakdown = document.getElementById('fullBreakdown');
+    if(!breakdown) return;
     let html = '';
 
     html += this.breakdownRow('Base trip', `${s1.durationHours}h × $${s1.hourlyRate}`, this.fmt(s.basePrice));
-
-    if (s1.extraPassengers > 0) {
-      html += this.breakdownRow('Extra passengers', `${s1.extraPassengers} pax`, this.fmt(s1.extraPassengerCharge));
-    }
-
-    if (s.extras > 0) {
-      html += this.breakdownRow('Extra services', '', this.fmt(s.extras));
-    }
-
+    if (s1.extraPassengers > 0) html += this.breakdownRow('Extra passengers', `${s1.extraPassengers} pax`, this.fmt(s1.extraPassengerCharge));
+    if (s.extras > 0) html += this.breakdownRow('Extra services', '', this.fmt(s.extras));
     html += this.breakdownRow('Subtotal', '', this.fmt(s.subtotal), 'subtotal');
-
-    if (s.discount > 0) {
-      html += this.breakdownRow(`Discount (${repriceType})`, '', '-' + this.fmt(s.discount), 'discount');
-    }
-
+    if (s.discount > 0) html += this.breakdownRow(`Discount (${repriceType})`, '', '-' + this.fmt(s.discount), 'discount');
     html += this.breakdownRow('Business receives', '', this.fmt(s.businessPrice));
-
-    if (result.fee?.hasFee) {
-      html += this.breakdownRow(`Fee (${result.fee.feeNote || ''})`, '', this.fmt(s.fee), 'fee');
-    }
-
-    html += `
-      <div class="breakdown-row total">
-        <span class="breakdown-label">Customer Pays</span>
-        <span class="breakdown-value">${this.fmt(s.customerPrice)}</span>
-      </div>
-    `;
-
+    if (result.fee?.hasFee) html += this.breakdownRow(`Fee (${result.fee.feeNote || ''})`, '', this.fmt(s.fee), 'fee');
+    html += `<div class="breakdown-row total"><span class="breakdown-label">Customer Pays</span><span class="breakdown-value">${this.fmt(s.customerPrice)}</span></div>`;
     if (deposit > 0) {
       html += this.breakdownRow('Deposit paid', '', '-' + this.fmt(deposit), 'discount');
-      html += `
-        <div class="breakdown-row total">
-          <span class="breakdown-label">Balance Due</span>
-          <span class="breakdown-value" style="color: ${balance > 0 ? 'var(--color-warning)' : 'var(--color-success)'}">
-            ${this.fmt(balance)}
-          </span>
-        </div>
-      `;
+      html += `<div class="breakdown-row total"><span class="breakdown-label">Balance Due</span><span class="breakdown-value" style="color: ${balance > 0 ? 'var(--color-warning)' : 'var(--color-success)'}">${this.fmt(balance)}</span></div>`;
     }
 
     breakdown.innerHTML = html;
 
-     // Auto-save only if reservation is still in draft status (prevents overwriting confirmed bookings)
      if (reservation.status === 'draft') {
-       // Update step3_adjustments (keep legacy field for compatibility)
        window.Storage.updateReservation(this.reservationId, 'step3_adjustments', {
          bookingSource: sourceId,
          repriceType,
@@ -374,41 +380,26 @@ const Step3Screen = {
          feeAmount: s.fee,
          deposit,
          balance,
+         paymentMethod: document.getElementById('paymentMethod')?.value || 'cash'
        });
        
-       // Also update step1_pricing.source to keep all steps synchronized (mirror)
        const s1Data = { ...s1, source: sourceId };
        window.Storage.updateReservation(this.reservationId, 'step1_pricing', s1Data);
-       
-      window.Storage.updateCurrentStep(this.reservationId, 3);
+       window.Storage.updateCurrentStep(this.reservationId, 3);
     }
   },
 
-  autoSave() {
-    // Simply trigger recalculate which persists all step3 data + syncs source to step1
-    this.recalculate();
-  },
+  autoSave() { this.recalculate(); },
 
   breakdownRow(label, detail, value, cls = '') {
-    return `
-      <div class="breakdown-row ${cls}">
-        <span class="breakdown-label">${label} ${detail ? `<span style="font-size: var(--font-xs); opacity: 0.6;">${detail}</span>` : ''}</span>
-        <span class="breakdown-value">${value}</span>
-      </div>
-    `;
+    return `<div class="breakdown-row ${cls}"><span class="breakdown-label">${label} ${detail ? `<span style="font-size: var(--font-xs); opacity: 0.6;">${detail}</span>` : ''}</span><span class="breakdown-value">${value}</span></div>`;
   },
 
   confirmBooking() {
     const reservation = window.Storage.getReservation(this.reservationId);
     if (!reservation) return;
-
-    // Validate minimum data
     const s2 = reservation.data.step2_details;
-    if (!s2.customerName) {
-      window.Toast.warning('Please add a customer name in Step 2');
-      return;
-    }
-
+    if (!s2.customerName) { window.Toast.warning('Please add a customer name in Step 2'); return; }
     window.Storage.promoteToBooking(this.reservationId);
     window.Toast.success('Booking confirmed! 🎉');
     window.App.navigate('#/dashboard');
@@ -420,10 +411,7 @@ const Step3Screen = {
   },
 
   fmt(amount) {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency', currency: 'USD',
-      minimumFractionDigits: 2, maximumFractionDigits: 2,
-    }).format(amount || 0);
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount || 0);
   },
 
   escapeHtml(str) {
