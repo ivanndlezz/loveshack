@@ -8,31 +8,42 @@ const Step3Screen = {
   reservationId: null,
   calculator: null,
 
-  render(container, params) {
-    this.container = container;
-    this.reservationId = params.id;
+   render(container, params) {
+     this.container = container;
+     this.reservationId = params.id;
 
-    if (!this.calculator && window.PricingCalculator && window.PRICING_RULES) {
-      this.calculator = new window.PricingCalculator(window.PRICING_RULES);
-    }
+     if (!this.calculator && window.PricingCalculator && window.PRICING_RULES) {
+       this.calculator = new window.PricingCalculator(window.PRICING_RULES);
+     }
 
-    const reservation = window.Storage.getReservation(this.reservationId);
-    if (!reservation) {
-      window.App.navigate('#/dashboard');
-      return;
-    }
+     const reservation = window.Storage.getReservation(this.reservationId);
+     if (!reservation) {
+       window.App.navigate('#/dashboard');
+       return;
+     }
 
-    const s1 = reservation.data.step1_pricing;
-    const s2 = reservation.data.step2_details;
-    const s3 = reservation.data.step3_adjustments;
-    const isBooked = reservation.status !== 'draft';
+     const s1 = reservation.data.step1_pricing;
+     const s2 = reservation.data.step2_details;
+     const s3 = reservation.data.step3_adjustments || {};
+     
+     // SOURCE SYNCHRONIZATION: Read source from step1_pricing (canonical source)
+     // Fallback to legacy step3_adjustments.bookingSource for backwards compatibility
+     let source = s1?.source || s3.bookingSource || 'direct';
+     
+     // Migrate legacy source to step1_pricing if needed
+     if (s1 && !s1.source && s3.bookingSource) {
+       s1.source = s3.bookingSource;
+       window.Storage.updateReservation(this.reservationId, 'step1_pricing', s1);
+     }
 
-    // Get sources from pricing rules
-    const sources = window.PRICING_RULES?.sources || [
-      { id: 'direct', name: '📞 Direct - Call' },
-      { id: 'get-my-boat', name: '🐬 Get My Boat' },
-      { id: 'viator', name: '✈️ Viator' },
-    ];
+     const isBooked = reservation.status !== 'draft';
+
+     // Get sources from pricing rules
+     const sources = window.PRICING_RULES?.sources || [
+       { id: 'direct', name: '📞 Direct - Call' },
+       { id: 'get-my-boat', name: '🐬 Get My Boat' },
+       { id: 'viator', name: '✈️ Viator' },
+     ];
 
     // Reprice types
     const repriceTypes = [
@@ -64,33 +75,33 @@ const Step3Screen = {
           </div>
         </div>
 
-        <!-- Booking Source -->
-        <div class="step-section">
-          <div class="step-section-title">Booking Source</div>
-          <div class="custom-select-wrapper" id="sourceSelect">
-            <div class="custom-select-trigger" id="sourceTrigger">
-              <input type="text" class="custom-select-input" id="sourceInput"
-                     placeholder="Search sources..."
-                     value="${this.getSourceName(s3.bookingSource, sources)}"
-                     autocomplete="off">
-              <svg class="custom-select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="6 9 12 15 18 9"/>
-              </svg>
-            </div>
-            <div class="custom-select-dropdown" id="sourceDropdown">
-              ${sources
-                .map(
-                  (s) => `
-                <div class="custom-select-option ${s.id === s3.bookingSource ? 'selected' : ''}"
-                     data-value="${s.id}">
-                  ${s.name}
-                </div>
-              `
-                )
-                .join('')}
-            </div>
-          </div>
-        </div>
+         <!-- Booking Source -->
+         <div class="step-section">
+           <div class="step-section-title">Booking Source</div>
+           <div class="custom-select-wrapper" id="sourceSelect">
+             <div class="custom-select-trigger" id="sourceTrigger">
+               <input type="text" class="custom-select-input" id="sourceInput"
+                      placeholder="Search sources..."
+                      value="${this.getSourceName(source, sources)}"
+                      autocomplete="off">
+               <svg class="custom-select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                 <polyline points="6 9 12 15 18 9"/>
+               </svg>
+             </div>
+             <div class="custom-select-dropdown" id="sourceDropdown">
+               ${sources
+                 .map(
+                   (s) => `
+                 <div class="custom-select-option ${s.id === source ? 'selected' : ''}"
+                      data-value="${s.id}">
+                   ${s.name}
+                 </div>
+               `
+                 )
+                 .join('')}
+             </div>
+           </div>
+         </div>
 
         <!-- Adjustments -->
         <div class="step-section">
@@ -349,22 +360,33 @@ const Step3Screen = {
 
     breakdown.innerHTML = html;
 
-    // Auto-save only if reservation is still in draft status (prevents overwriting confirmed bookings)
-    if (reservation.status === 'draft') {
-      window.Storage.updateReservation(this.reservationId, 'step3_adjustments', {
-        bookingSource: sourceId,
-        repriceType,
-        repriceDiscount,
-        extrasAmount,
-        fishingLicenses,
-        finalBusinessPrice: s.businessPrice,
-        finalCustomerPrice: s.customerPrice,
-        feeAmount: s.fee,
-        deposit,
-        balance,
-      });
+     // Auto-save only if reservation is still in draft status (prevents overwriting confirmed bookings)
+     if (reservation.status === 'draft') {
+       // Update step3_adjustments (keep legacy field for compatibility)
+       window.Storage.updateReservation(this.reservationId, 'step3_adjustments', {
+         bookingSource: sourceId,
+         repriceType,
+         repriceDiscount,
+         extrasAmount,
+         fishingLicenses,
+         finalBusinessPrice: s.businessPrice,
+         finalCustomerPrice: s.customerPrice,
+         feeAmount: s.fee,
+         deposit,
+         balance,
+       });
+       
+       // Also update step1_pricing.source to keep all steps synchronized (mirror)
+       const s1Data = { ...s1, source: sourceId };
+       window.Storage.updateReservation(this.reservationId, 'step1_pricing', s1Data);
+       
       window.Storage.updateCurrentStep(this.reservationId, 3);
     }
+  },
+
+  autoSave() {
+    // Simply trigger recalculate which persists all step3 data + syncs source to step1
+    this.recalculate();
   },
 
   breakdownRow(label, detail, value, cls = '') {

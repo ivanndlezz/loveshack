@@ -4,7 +4,7 @@
  */
 
 const STORAGE_KEY = 'loveshack_v3_reservations';
-const JSON_URL = 'data/reservations.json';
+const JSON_URL = '../reservations/data/loveshack_reservations.json'; // Legacy data source
 const SAVE_SERVER_URL = 'http://localhost:8765/save_v3';
 
 /**
@@ -14,7 +14,9 @@ async function loadFromJSON() {
   try {
     const response = await fetch(JSON_URL + '?t=' + Date.now());
     if (!response.ok) return [];
-    return await response.json();
+    const raw = await response.json();
+    // Normalize legacy records to v3 format
+    return raw.map(normalizeReservation);
   } catch (e) {
     console.warn('Storage: Could not load JSON file', e);
     return [];
@@ -397,10 +399,29 @@ function normalizeReservation(r) {
   const duration = parseInt(r.hours || r.reservationHours || 3);
   const passengers = parseInt(r.adults || 1);
   const extraPassengers = parseInt(r.extraPassengers || r.extraPax || 0);
-  const hourlyRate = parseFloat(r.hourlyRate || 600);
+  
+  // Hourly rate inference
+  let hourlyRate = parseFloat(r.hourlyRate);
+  if (isNaN(hourlyRate) || hourlyRate <= 0) {
+    // Estimate from basePrice/duration or default
+    hourlyRate = duration > 0 ? (parseFloat(r.basePrice) || 0) / duration : 600;
+    if (hourlyRate <= 0) hourlyRate = 600;
+  }
+
+  // Base trip cost
   const baseTripCost = parseFloat(r.basePrice) || (duration * hourlyRate);
-  const extraPassengerCharge = parseFloat(r.extraPassengerCost) || (extraPassengers * 100);
-  const finalBusinessPrice = baseTripCost + extraPassengerCharge;
+
+  // Extra passenger charge (unitario) — prioritize explicit fee, else derive from total
+  let extraPassengerCharge = 100; // default
+  if (r.extraPassengerFee && !isNaN(parseFloat(r.extraPassengerFee))) {
+    extraPassengerCharge = parseFloat(r.extraPassengerFee);
+  } else if (extraPassengers > 0 && r.extraPassengerCost && !isNaN(parseFloat(r.extraPassengerCost))) {
+    // extraPassengerCost is total, divide to get unit rate
+    extraPassengerCharge = parseFloat(r.extraPassengerCost) / extraPassengers;
+  }
+
+  const extraPassengerTotal = extraPassengers * extraPassengerCharge;
+  const finalBusinessPrice = baseTripCost + extraPassengerTotal;
   const finalCustomerPrice = parseFloat(r.totalPrice) || finalBusinessPrice;
   const extrasAmount = finalCustomerPrice - finalBusinessPrice;
 
@@ -429,7 +450,7 @@ function normalizeReservation(r) {
         tripDate: r.reservationDate || r.tripDate || '',
         startTime: r.reservationTime || r.startTime || '',
         endTime: r.endTime || (r.reservationTime ? addHours(r.reservationTime, duration) : ''),
-        customerName: r.guestName || r.customerName || '',
+        customerName: r.guestName || r.contactName || r.customerName || '',
         customerPhone: r.contactPhone || r.customerPhone || '',
         customerEmail: r.contactEmail || r.customerEmail || '',
         notes: r.notes || '',
@@ -566,6 +587,22 @@ function getCounts() {
   return counts;
 }
 
+/**
+ * Auto-import legacy reservations from JSON file if localStorage is empty
+ */
+async function autoImportLegacy() {
+  const existing = getAllReservations();
+  if (existing.length > 0) {
+    return { imported: 0, reason: 'already_has_data' };
+  }
+  const raw = await loadFromJSON();
+  if (raw.length === 0) return { imported: 0, reason: 'no_remote_data' };
+  
+  // Save normalized reservations to localStorage
+  saveAll(raw);
+  return { imported: raw.length };
+}
+
 // Export as global module
 window.Storage = {
   generateUUID,
@@ -584,4 +621,5 @@ window.Storage = {
   saveToJSON,
   checkSyncStatus,
   saveAll,
+  autoImportLegacy, // new
 };

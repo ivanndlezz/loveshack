@@ -96,22 +96,34 @@
         showFab = false;
         showBottomNav = true;
         headerHTML = this.renderDefaultHeader();
-      } else {
-        // Dashboard: #/dashboard or #/
-        screen = window.DashboardScreen;
-        showFab = true;
-        showBottomNav = true;
-        headerHTML = this.renderDefaultHeader();
+       } else {
+         // Dashboard: #/dashboard or #/
+         screen = window.DashboardScreen;
+         showFab = true;
+         showBottomNav = true;
+         headerHTML = this.renderDefaultHeader();
 
-        // Check sync status on dashboard load
-        window.Storage.checkSyncStatus().then(status => {
-          window.AppState = window.AppState || {};
-          window.AppState.syncStatus = status;
-          if (status.hasWarnings && window.location.hash.includes('dashboard')) {
-            this.showSyncWarning(status);
-          }
-        });
-      }
+         // Auto-import legacy reservations if localStorage is empty
+         const existingCount = window.Storage.getAllReservations().length;
+         if (existingCount === 0) {
+           window.Storage.autoImportLegacy().then(result => {
+             if (result.imported > 0) {
+               window.Toast.success(`Imported ${result.imported} historical reservations`);
+               // Refresh dashboard to show new data
+               this.route();
+             }
+           });
+         } else {
+           // Check sync status on dashboard load
+           window.Storage.checkSyncStatus().then(status => {
+             window.AppState = window.AppState || {};
+             window.AppState.syncStatus = status;
+             if (status.hasWarnings && window.location.hash.includes('dashboard')) {
+               this.showSyncWarning(status);
+             }
+           });
+         }
+       }
 
       // Update header
       document.getElementById('app-header').innerHTML = headerHTML;
@@ -141,10 +153,15 @@
 
       // Render screen
       if (screen) {
+        // Set data-step attribute for hydration/debugging (e.g., "step1", "step2", "step3")
+        container.dataset.step = `step${stepNumber}`;
         screen.render(container, params);
         this.currentScreen = screen;
       } else if (hash.match(/^#\/data/)) {
+        container.dataset.step = 'data';
         this.renderDataScreen(container);
+      } else {
+        container.dataset.step = 'dashboard';
       }
 
       // Render step footer for stepper mode
@@ -223,65 +240,74 @@
       `;
     },
 
-    /**
-     * Render step footer with navigation buttons
-     */
-    renderStepFooter(step, id) {
-      // Remove existing footer
-      const existing = document.getElementById('step-footer');
-      if (existing) existing.remove();
+     /**
+      * Render step footer with navigation buttons
+      * Footer order: [Back (icon-only)] [Save & Exit] [Continue/Confirm]
+      */
+     renderStepFooter(step, id) {
+       // Remove existing footer
+       const existing = document.getElementById('step-footer');
+       if (existing) existing.remove();
 
-      if (step === 0) return; // Not in stepper
+       if (step === 0) return; // Not in stepper
 
-      const reservation = id ? window.Storage.getReservation(id) : null;
-      const isBooked = reservation && reservation.status !== 'draft';
+       const reservation = id ? window.Storage.getReservation(id) : null;
+       const isBooked = reservation && reservation.status !== 'draft';
 
-      let footerHtml = '<div class="step-footer" id="step-footer"><div class="step-footer-inner">';
+       let footerHtml = '<div class="step-footer" id="step-footer"><div class="step-footer-inner">';
 
-      if (step === 1) {
-        footerHtml += `
-          <button class="btn btn-secondary" onclick="window.App.navigate('#/dashboard')">
-            Save & Exit
-          </button>
-          <button class="btn btn-primary" onclick="window.Storage.updateCurrentStep('${id}', 2); window.App.navigate('#/new/${id}/details')">
-            Continue
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-        `;
-      } else if (step === 2) {
-        footerHtml += `
-          <button class="btn btn-secondary" onclick="window.App.navigate('#/new/${id}')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><polyline points="15 18 9 12 15 6"/></svg>
-            Back
-          </button>
-          <button class="btn btn-primary" onclick="window.Step2Screen.autoSave(); window.Storage.updateCurrentStep('${id}', 3); window.App.navigate('#/new/${id}/adjustments')">
-            Continue
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-        `;
-      } else if (step === 3) {
-        if (isBooked) {
-          footerHtml += `
-            <button class="btn btn-secondary btn-full" onclick="window.App.navigate('#/dashboard')">
-              ← Back to Dashboard
-            </button>
-          `;
-        } else {
-          footerHtml += `
-            <button class="btn btn-secondary" onclick="window.App.navigate('#/new/${id}/details')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><polyline points="15 18 9 12 15 6"/></svg>
-              Back
-            </button>
-            <button class="btn btn-primary" onclick="window.Step3Screen.confirmBooking()" style="background: var(--color-success);">
-              ✓ Confirm Booking
-            </button>
-          `;
-        }
-      }
+       if (step === 1) {
+         // Step 1: Save & Exit + Continue (no back button needed)
+         footerHtml += `
+           <button class="btn btn-secondary" onclick="window.App.navigate('#/dashboard')">
+             Save & Exit
+           </button>
+           <button class="btn btn-primary" onclick="window.Storage.updateCurrentStep('${id}', 2); window.App.navigate('#/new/${id}/details')">
+             Continue
+             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><polyline points="9 18 15 12 9 6"/></svg>
+           </button>
+         `;
+       } else if (step === 2) {
+         // Step 2: Back (icon) + Save & Exit + Continue
+         footerHtml += `
+           <button class="btn btn-secondary" onclick="window.App.navigate('#/new/${id}')" aria-label="Back">
+             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><polyline points="15 18 9 12 15 6"/></svg>
+           </button>
+           <button class="btn btn-secondary" onclick="window.Step2Screen.autoSave(); window.App.navigate('#/dashboard')">
+             Save & Exit
+           </button>
+           <button class="btn btn-primary" onclick="window.Step2Screen.autoSave(); window.Storage.updateCurrentStep('${id}', 3); window.App.navigate('#/new/${id}/adjustments')">
+             Continue
+             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><polyline points="9 18 15 12 9 6"/></svg>
+           </button>
+         `;
+       } else if (step === 3) {
+         if (isBooked) {
+           // Booked: single button back to dashboard
+           footerHtml += `
+             <button class="btn btn-secondary btn-full" onclick="window.App.navigate('#/dashboard')">
+               ← Back to Dashboard
+             </button>
+           `;
+         } else {
+           // Step 3: Back (icon) + Save & Exit + Confirm Booking
+           footerHtml += `
+             <button class="btn btn-secondary" onclick="window.App.navigate('#/new/${id}/details')" aria-label="Back">
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><polyline points="15 18 9 12 15 6"/></svg>
+             </button>
+             <button class="btn btn-secondary" onclick="window.Step3Screen.autoSave(); window.App.navigate('#/dashboard')">
+               Save & Exit
+             </button>
+             <button class="btn btn-primary" onclick="window.Step3Screen.confirmBooking()" style="background: var(--color-success);">
+               ✓ Confirm Booking
+             </button>
+           `;
+         }
+       }
 
-      footerHtml += '</div></div>';
-      document.body.insertAdjacentHTML('beforeend', footerHtml);
-    },
+       footerHtml += '</div></div>';
+       document.body.insertAdjacentHTML('beforeend', footerHtml);
+     },
 
     /**
      * Render a simple data management screen
@@ -425,14 +451,14 @@
         window.Toast.success('Drafts cleared');
         this.route();
       });
-    },
-  };
+     },
+   };
 
-  // Export globally
-  window.App = App;
+   // Export globally
+   window.App = App;
 
-  // Boot when DOM ready
-  document.addEventListener('DOMContentLoaded', () => {
-    App.init();
-  });
-})();
+   // Boot when DOM ready
+   document.addEventListener('DOMContentLoaded', () => {
+     App.init();
+   });
+ })();
