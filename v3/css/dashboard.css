@@ -78,8 +78,14 @@
 }
 
 @keyframes slideInLeft {
-  from { opacity: 0; transform: translateX(-10px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .search-toggle-btn {
@@ -425,6 +431,70 @@
 }
 
 @keyframes jumpIn {
-  0% { transform: scale(0); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* */
+button.icon-btn.res-menu-toggle:after {
+  content: "";
+  --wh: 55px;
+  width: var(--wh);
+  height: var(--wh);
+  position: absolute;
+  background-color: #00000000;
+  --trxy: 4px;
+  transform: translate(var(--trxy), calc(var(--trxy) * -1));
+}
+
+* {
+  font-family: "Google Sans", sans-serif;
+}
+
+.res-card-customer {
+  font-family: "Libre Baskerville";
+  letter-spacing: 0.2px;
+  font-style: italic;
+  font-size: 20px;
+}
+
+.res-card-tour span,
+.res-card-meta span {
+  font-family: "Google Sans Code";
+}
+
+.res-card-action {
+  background-color: aliceblue;
+  padding: 2px 8px 2px 12px;
+  border-radius: 100px;
+}
+
+:root {
+  --color-accent: #004085;
+}
+
+span.res-card-meta-item:nth-child(2) {
+  font-family: "Google Sans" !important;
+  font-weight: 700;
+}
+
+span.res-card-meta-item:last-child {
+  font-style: Italic;
+}
+
+.res-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  font-size: var(--font-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-3);
+  flex-direction: row-reverse;
+  justify-content: space-between;
 }

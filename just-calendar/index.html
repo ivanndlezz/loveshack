@@ -1,0 +1,729 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistema de Reservación - Calendario</title>
+    <style>
+      * {
+        font-family: sans-serif;
+      }
+
+      /* Variables CSS */
+      :root {
+        --primary: hsl(145, 45%, 45%);
+        --primary-light: hsl(145, 45%, 95%);
+        --border: hsl(0deg 1.82% 86.42%);
+        --muted: hsl(0, 0%, 45%);
+        --radius: 0.75rem;
+      }
+
+      /* Estilos del calendario */
+      .calendar {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 0px 0px var(--radius) var(--radius);
+      }
+
+      .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+      }
+
+      .calendar-nav {
+        background: none;
+        border: 1px solid var(--border);
+        padding: 0.5rem;
+        border-radius: var(--radius);
+        cursor: pointer;
+      }
+
+      .calendar-title {
+        font-weight: 600;
+      }
+
+      .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 0.5rem;
+      }
+
+      .calendar-day-name {
+        text-align: center;
+        font-size: 0.875rem;
+        font-weight: 600;
+        padding: 0.5rem;
+      }
+
+      .calendar-day {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius);
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: all 0.2s;
+        --wh: 10vw;
+        width: var(--wh);
+        height: var(--wh);
+        --mw: 40px;
+        max-width: var(--mw);
+        max-height: var(--mw);
+      }
+
+      .calendar-day:hover:not(.disabled):not(.other-month) {
+        border-color: var(--primary);
+      }
+
+      .calendar-day.selected {
+        background: var(--primary);
+        color: white;
+      }
+
+      .calendar-day.today {
+        border-color: var(--primary);
+      }
+
+      .calendar-day.disabled {
+        color: var(--muted);
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+
+      .calendar-day.other-month {
+        color: var(--muted);
+        opacity: 0.3;
+      }
+
+      .calendar-day.past-day:not(.disabled) {
+        color: var(--muted);
+        opacity: 0.6;
+        background: rgba(0, 0, 0, 0.05);
+      }
+
+      .calendar-container {
+        max-width: 450px;
+        margin: 0 auto;
+      }
+
+      /* Month view styles */
+      .month-view {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+        padding: 1rem;
+        max-width: 400px;
+        margin: 0 auto;
+      }
+
+      .month-button {
+        padding: 1rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: white;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
+        font-size: 0.9rem;
+        font-weight: 500;
+      }
+
+      .month-button:hover:not(.disabled) {
+        border-color: var(--primary);
+        background: var(--primary-light);
+      }
+
+      .month-button.current-month {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+      }
+
+      .month-button.disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      /* Year view styles */
+      .year-view {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+        padding: 1rem;
+        max-width: 400px;
+        margin: 0 auto;
+      }
+
+      .year-button {
+        padding: 1rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: white;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
+        font-size: 0.9rem;
+        font-weight: 500;
+      }
+
+      .year-button:hover {
+        border-color: var(--primary);
+        background: var(--primary-light);
+      }
+
+      .year-button.current-year {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+      }
+
+      /* Calendar title becomes clickable */
+      .calendar-title {
+        cursor: pointer;
+        user-select: none;
+        transition: color 0.2s;
+      }
+
+      .calendar-title:hover {
+        color: var(--primary);
+      }
+
+      /* Hide navigation in month view */
+      .calendar.month-view-mode .calendar-nav {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+      }
+
+      /* Smooth transitions for view changes */
+      .calendar-grid,
+      .month-view {
+        transition: opacity 0.3s ease;
+      }
+
+      /* Loading skeleton */
+      .calendar-loading {
+        opacity: 0.7;
+        pointer-events: none;
+      }
+
+      .skeleton {
+        background: linear-gradient(
+          90deg,
+          #f0f0f0 25%,
+          #e0e0e0 50%,
+          #f0f0f0 75%
+        );
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+        border-radius: var(--radius);
+      }
+
+      @keyframes shimmer {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="calendar-container">
+      <div id="calendar" class="calendar"></div>
+    </div>
+
+    <script>
+      // ========================================
+      // CONSTANTES Y DATOS
+      // ========================================
+      const CALENDAR_CONFIG = {
+        DAYS_IN_GRID: 42,
+      };
+
+      // Sistema de reglas de disponibilidad (toggles configurables)
+      const DISABLED_RULES = {
+        allow_past_days: true, // Permitir selección de días pasados
+        allow_past_months: true, // Permitir selección de meses pasados
+        allow_past_years: true, // Permitir selección de años pasados
+        allow_weekends: true, // Permitir selección de fines de semana
+        allow_occupied_slots: false, // Permitir reservar slots ocupados
+        allow_same_day: true, // Permitir reservas el mismo día
+        allow_future_limit: null, // Límite de días futuros (null = ilimitado)
+      };
+
+      // Datos de ejemplo (en producción vendrían de la base de datos)
+      const appointments = [
+        { date: "2026-05-15", startTime: "10:00", status: "confirmed" },
+        { date: "2026-05-16", startTime: "14:00", status: "confirmed" },
+      ];
+
+      const config = {
+        timeSlots: ["09:00", "10:00", "11:00", "14:00", "15:00", "16:00"],
+        workingDays: [1, 2, 3, 4, 5, 6], // Lunes a sábado
+        months: [
+          "Enero",
+          "Febrero",
+          "Marzo",
+          "Abril",
+          "Mayo",
+          "Junio",
+          "Julio",
+          "Agosto",
+          "Septiembre",
+          "Octubre",
+          "Noviembre",
+          "Diciembre",
+        ],
+        dayNames: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
+      };
+
+      let currentMonth = new Date();
+      let selectedDate = null;
+      let viewMode = "day"; // 'day', 'month', or 'year'
+      let currentYear = new Date().getFullYear();
+
+      // Initialize year range (12 years, centered around current year)
+      function initializeYearRange() {
+        const rangeSize = 12;
+        const startYear = Math.floor(currentYear / rangeSize) * rangeSize;
+        return {
+          start: startYear,
+          end: startYear + rangeSize - 1,
+        };
+      }
+
+      let currentYearRange = initializeYearRange();
+
+      // ========================================
+      // FUNCIONES UTILITARIAS
+      // ========================================
+      function getElement(id) {
+        return document.getElementById(id);
+      }
+
+      function getOccupiedSlotsForDate(date) {
+        if (!date) return [];
+        const dateStr = date.toISOString().split("T")[0];
+        return appointments
+          .filter((apt) => apt.date === dateStr && apt.status !== "cancelled")
+          .map((apt) => apt.startTime);
+      }
+
+      // ========================================
+      // FUNCIONES DE REGLAS DE DISPONIBILIDAD
+      // ========================================
+      function isPastDayAllowed(date) {
+        if (DISABLED_RULES.allow_past_days) {
+          console.log(
+            `Rule: allow_past_days = true, allowing past date: ${date.toDateString()}`,
+          );
+          return true;
+        }
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const allowed = date >= today;
+        console.log(
+          `Rule: allow_past_days = false, date ${date.toDateString()} allowed: ${allowed}`,
+        );
+        return allowed;
+      }
+
+      function isPastMonthAllowed(monthIndex, year) {
+        if (DISABLED_RULES.allow_past_months) return true;
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth();
+
+        if (year > currentYear) return true;
+        if (year < currentYear) return false;
+        return monthIndex >= currentMonth;
+      }
+
+      function isPastYearAllowed(year) {
+        if (DISABLED_RULES.allow_past_years) return true;
+        const currentYear = new Date().getFullYear();
+        return year >= currentYear;
+      }
+
+      function isWeekendAllowed(dayOfWeek) {
+        if (DISABLED_RULES.allow_weekends) return true;
+        return config.workingDays.includes(dayOfWeek);
+      }
+
+      function isOccupiedSlotAllowed() {
+        return DISABLED_RULES.allow_occupied_slots;
+      }
+
+      function isSameDayAllowed() {
+        return DISABLED_RULES.allow_same_day;
+      }
+
+      function isWithinFutureLimit(date) {
+        if (!DISABLED_RULES.allow_future_limit) return true;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const maxFutureDate = new Date(today);
+        maxFutureDate.setDate(
+          today.getDate() + DISABLED_RULES.allow_future_limit,
+        );
+        return date <= maxFutureDate;
+      }
+
+      // ========================================
+      // FUNCIONES DE RENDERIZADO
+      // ========================================
+      function renderCalendarView() {
+        const calendar = getElement("calendar");
+
+        // Add loading class for smooth transition
+        calendar.classList.add("calendar-loading");
+
+        // Small delay for smooth transition effect
+        setTimeout(() => {
+          calendar.className = `calendar`;
+          calendar.setAttribute(
+            "data-screen",
+            viewMode === "day"
+              ? "days"
+              : viewMode === "month"
+                ? "months"
+                : "years",
+          );
+
+          if (viewMode === "year") {
+            renderYearView();
+          } else if (viewMode === "month") {
+            renderMonthView();
+          } else {
+            renderDayView();
+          }
+
+          // Remove loading class after render
+          setTimeout(() => {
+            calendar.classList.remove("calendar-loading");
+          }, 50);
+        }, 50);
+      }
+
+      function renderMonthView() {
+        const calendar = getElement("calendar");
+
+        calendar.innerHTML = `
+          <div class="calendar-header">
+            <button class="calendar-nav" onclick="changeYear(-1)">←</button>
+            <div class="calendar-title" onclick="toggleViewMode()">${currentYear}</div>
+            <button class="calendar-nav" onclick="changeYear(1)">→</button>
+          </div>
+          <div class="month-view">
+            ${config.months
+              .map((monthName, index) => {
+                const isCurrentMonth =
+                  index === currentMonth.getMonth() &&
+                  currentYear === new Date().getFullYear();
+                const isAllowed = isPastMonthAllowed(index, currentYear);
+
+                return `
+                <button class="month-button ${isCurrentMonth ? "current-month" : ""} ${!isAllowed ? "disabled" : ""}"
+                        onclick="${!isAllowed ? "" : `selectMonth(${index})`}"
+                        ${!isAllowed ? "disabled" : ""}>
+                  ${monthName}
+                </button>
+              `;
+              })
+              .join("")}
+          </div>
+        `;
+      }
+
+      function renderYearView() {
+        const calendar = getElement("calendar");
+        const years = [];
+        for (let i = currentYearRange.start; i <= currentYearRange.end; i++) {
+          years.push(i);
+        }
+
+        calendar.innerHTML = `
+          <div class="calendar-header">
+            <button class="calendar-nav" onclick="changeYearRange(-1)">←</button>
+            <div class="calendar-title" onclick="toggleViewMode()">${currentYearRange.start} - ${currentYearRange.end}</div>
+            <button class="calendar-nav" onclick="changeYearRange(1)">→</button>
+          </div>
+          <div class="year-view">
+            ${years
+              .map((year) => {
+                const isCurrentYear = year === new Date().getFullYear();
+                const isAllowed = isPastYearAllowed(year);
+
+                return `
+                <button class="year-button ${isCurrentYear ? "current-year" : ""} ${!isAllowed ? "disabled" : ""}"
+                        onclick="${!isAllowed ? "" : `selectYear(${year})`}"
+                        ${!isAllowed ? "disabled" : ""}>
+                  ${year}
+                </button>
+              `;
+              })
+              .join("")}
+          </div>
+        `;
+      }
+
+      function renderDayView() {
+        const calendar = getElement("calendar");
+        const month = currentMonth;
+        const year = month.getFullYear();
+        const monthIndex = month.getMonth();
+
+        const firstDay = new Date(year, monthIndex, 1);
+        const lastDay = new Date(year, monthIndex + 1, 0);
+        const prevLastDay = new Date(year, monthIndex, 0);
+
+        const firstDayOfWeek = firstDay.getDay();
+        const daysInMonth = lastDay.getDate();
+        const daysInPrevMonth = prevLastDay.getDate();
+
+        let days = [];
+
+        // Días del mes anterior
+        for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+          days.push({
+            day: daysInPrevMonth - i,
+            isCurrentMonth: false,
+            date: new Date(year, monthIndex - 1, daysInPrevMonth - i),
+          });
+        }
+
+        // Días del mes actual
+        for (let i = 1; i <= daysInMonth; i++) {
+          days.push({
+            day: i,
+            isCurrentMonth: true,
+            date: new Date(year, monthIndex, i),
+          });
+        }
+
+        // Días del mes siguiente
+        const remainingDays = CALENDAR_CONFIG.DAYS_IN_GRID - days.length;
+        for (let i = 1; i <= remainingDays; i++) {
+          days.push({
+            day: i,
+            isCurrentMonth: false,
+            date: new Date(year, monthIndex + 1, i),
+          });
+        }
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        calendar.innerHTML = `
+                <div class="calendar-header">
+                    <button class="calendar-nav" onclick="changeMonth(-1)">←</button>
+                    <div class="calendar-title" onclick="toggleViewMode()">${config.months[monthIndex]} ${year}</div>
+                    <button class="calendar-nav" onclick="changeMonth(1)">→</button>
+                </div>
+                <div class="calendar-grid">
+                    ${config.dayNames.map((d) => `<div class="calendar-day-name">${d}</div>`).join("")}
+                    ${days
+                      .map(({ day, isCurrentMonth, date }) => {
+                        const isToday = date.getTime() === today.getTime();
+                        const isSelected =
+                          selectedDate &&
+                          date.getTime() === selectedDate.getTime();
+                        const dayOfWeek = date.getDay();
+
+                        // Verificar si es una fecha pasada (para styling visual)
+                        const isPastDate = date < today;
+
+                        // Aplicar reglas de disponibilidad usando DISABLED_RULES
+                        const pastDayAllowed = isPastDayAllowed(date);
+                        const weekendAllowed = isWeekendAllowed(dayOfWeek);
+                        const withinFutureLimit = isWithinFutureLimit(date);
+
+                        // Verificar disponibilidad de slots
+                        const occupiedForDate = getOccupiedSlotsForDate(date);
+                        const hasAvailableSlot = config.timeSlots.some(
+                          (time) => {
+                            const [hh, mm] = time.split(":").map(Number);
+                            const slotDate = new Date(
+                              date.getFullYear(),
+                              date.getMonth(),
+                              date.getDate(),
+                              hh,
+                              mm,
+                              0,
+                              0,
+                            );
+
+                            const sameDay =
+                              slotDate.getFullYear() === today.getFullYear() &&
+                              slotDate.getMonth() === today.getMonth() &&
+                              slotDate.getDate() === today.getDate();
+
+                            // Aplicar regla de mismo día
+                            if (sameDay && !isSameDayAllowed()) return false;
+                            if (sameDay && slotDate <= today) return false;
+
+                            // Aplicar regla de slots ocupados
+                            if (
+                              !isOccupiedSlotAllowed() &&
+                              occupiedForDate.includes(time)
+                            )
+                              return false;
+
+                            return true;
+                          },
+                        );
+
+                        const isDisabled =
+                          !pastDayAllowed ||
+                          !isCurrentMonth ||
+                          !weekendAllowed ||
+                          !hasAvailableSlot ||
+                          !withinFutureLimit;
+
+                        return `
+                            <div class="calendar-day ${!isCurrentMonth ? "other-month" : ""}
+                                 ${isDisabled ? "disabled" : ""} ${isToday ? "today" : ""}
+                                 ${isSelected ? "selected" : ""}
+                                 ${isPastDate && !isDisabled ? "past-day" : ""}"
+                                 data-timestamp="${!isDisabled ? date.getTime() : ""}"
+                                 onclick="${!isDisabled ? `selectDate(${date.getTime()})` : ""}">
+                                ${day}
+                            </div>
+                        `;
+                      })
+                      .join("")}
+                </div>
+            `;
+      }
+
+      function changeMonth(delta) {
+        currentMonth = new Date(
+          currentMonth.getFullYear(),
+          currentMonth.getMonth() + delta,
+          1,
+        );
+        renderCalendarView();
+      }
+
+      function changeYear(delta) {
+        currentYear += delta;
+        renderCalendarView();
+      }
+
+      // Three-level navigation: day → month → year → day
+      function toggleViewMode() {
+        if (viewMode === "day") {
+          viewMode = "month";
+        } else if (viewMode === "month") {
+          viewMode = "year";
+        } else {
+          viewMode = "day";
+        }
+        console.log(
+          "View mode changed to:",
+          viewMode,
+          "- data-screen:",
+          viewMode === "day"
+            ? "days"
+            : viewMode === "month"
+              ? "months"
+              : "years",
+        );
+        renderCalendarView();
+      }
+
+      function selectMonth(monthIndex) {
+        currentMonth = new Date(currentYear, monthIndex, 1);
+        viewMode = "day";
+        console.log("Month selected:", config.months[monthIndex], currentYear);
+        renderCalendarView();
+      }
+
+      function changeYearRange(delta) {
+        const rangeSize = 12;
+        let newStart = currentYearRange.start + delta * rangeSize;
+        let newEnd = currentYearRange.end + delta * rangeSize;
+
+        // Si no se permiten años pasados, ajustar el rango
+        if (!DISABLED_RULES.allow_past_years) {
+          const currentYear = new Date().getFullYear();
+          if (newStart < currentYear) {
+            newStart = currentYear;
+            newEnd = currentYear + rangeSize - 1;
+          }
+        }
+
+        currentYearRange.start = newStart;
+        currentYearRange.end = newEnd;
+        console.log(
+          "Year range changed to:",
+          `${currentYearRange.start}-${currentYearRange.end}`,
+        );
+        renderCalendarView();
+      }
+
+      function selectYear(year) {
+        currentYear = year;
+        viewMode = "month";
+        console.log("Year selected:", year, "- switching to month view");
+        renderCalendarView();
+      }
+
+      // Función para actualizar reglas desde la UI de debug
+      function updateRule(ruleName, value) {
+        DISABLED_RULES[ruleName] = value;
+        console.log(`Rule updated: ${ruleName} = ${value}`);
+        console.log("Current DISABLED_RULES:", DISABLED_RULES);
+
+        // Actualizar indicador de estado
+        const statusEl = document.getElementById("rules-status");
+        if (statusEl) {
+          statusEl.textContent = `Regla actualizada: ${ruleName} = ${value}`;
+          setTimeout(() => {
+            statusEl.textContent = "Calendario actualizado";
+          }, 3000);
+        }
+      }
+
+      // Inicializar checkboxes con valores actuales
+      function initializeRuleCheckboxes() {
+        Object.keys(DISABLED_RULES).forEach((rule) => {
+          const checkbox = document.getElementById(rule);
+          if (checkbox) {
+            checkbox.checked = DISABLED_RULES[rule];
+          }
+        });
+      }
+
+      function selectDate(timestamp) {
+        selectedDate = new Date(timestamp);
+        console.log("Fecha seleccionada:", selectedDate);
+        renderCalendarView();
+
+        // Aquí puedes agregar lógica para mostrar slots de tiempo disponibles
+        // o notificar a otros componentes de la app
+      }
+
+      // ========================================
+      // EVENT LISTENERS
+      // ========================================
+      document.addEventListener("click", function (e) {
+        const dayEl = e.target.closest(".calendar-day");
+        if (dayEl && dayEl.hasAttribute("data-timestamp")) {
+          const timestamp = parseInt(dayEl.getAttribute("data-timestamp"));
+          selectDate(timestamp);
+        }
+      });
+
+      // ========================================
+      // INICIALIZACIÓN
+      // ========================================
+      initializeRuleCheckboxes();
+      renderCalendarView();
+    </script>
+  </body>
+</html>

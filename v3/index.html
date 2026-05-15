@@ -54,6 +54,17 @@
         }
       })();
     </script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=DM+Serif+Text:ital@0;1&display=swap");
+
+      @import url("https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap");
+
+      @import url("https://fonts.googleapis.com/css2?family=Google+Sans+Code:ital,wght,MONO@0,300..800,1;1,300..800,1&display=swap");
+
+      @import url("https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400..700;1,400..700&display=swap");
+
+      @import url("https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap");
+    </style>
   </head>
   <body>
     <div class="app-shell">
@@ -392,7 +403,9 @@
         overflow-y: auto;
         z-index: 9999 !important;
         display: none;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        box-shadow:
+          0 10px 25px -5px rgba(0, 0, 0, 0.2),
+          0 8px 10px -6px rgba(0, 0, 0, 0.1);
       }
 
       .menu-item {
@@ -676,36 +689,38 @@
       updateMenuIcon();
 
       // Menu Button Actions
-      document.getElementById('menu-share').addEventListener('click', async () => {
-        if (navigator.share) {
-          try {
-            await navigator.share({
-              title: 'Love Shack Cruises — Reservations',
-              text: 'Sistema de Reservas v3',
-              url: window.location.href
-            });
-          } catch (err) {
-            console.log('Error sharing:', err);
+      document
+        .getElementById("menu-share")
+        .addEventListener("click", async () => {
+          if (navigator.share) {
+            try {
+              await navigator.share({
+                title: "Love Shack Cruises — Reservations",
+                text: "Sistema de Reservas v3",
+                url: window.location.href,
+              });
+            } catch (err) {
+              console.log("Error sharing:", err);
+            }
+          } else {
+            alert("Tu navegador no soporta la función de compartir.");
           }
-        } else {
-          alert('Tu navegador no soporta la función de compartir.');
-        }
-      });
+        });
 
-      document.getElementById('menu-reload').addEventListener('click', () => {
+      document.getElementById("menu-reload").addEventListener("click", () => {
         location.reload();
       });
 
-      document.getElementById('menu-settings').addEventListener('click', () => {
-        island.dataset.sheetState = 'closed';
+      document.getElementById("menu-settings").addEventListener("click", () => {
+        island.dataset.sheetState = "closed";
         updateMenuIcon();
-        window.App.navigate('#/settings');
+        window.App.navigate("#/settings");
       });
 
-      document.getElementById('menu-stats').addEventListener('click', () => {
-        island.dataset.sheetState = 'closed';
+      document.getElementById("menu-stats").addEventListener("click", () => {
+        island.dataset.sheetState = "closed";
         updateMenuIcon();
-        window.App.navigate('#/filter');
+        window.App.navigate("#/filter");
       });
     </script>
   </body>
