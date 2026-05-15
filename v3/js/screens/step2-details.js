@@ -1,11 +1,12 @@
 /**
  * Step 2 — Trip Details Screen — Love Shack v3
- * Tour type, date, times, customer info
+ * Tour type, date/time (via DateTimePicker), customer info
  */
 
 const Step2Screen = {
   container: null,
   reservationId: null,
+  picker: null,
 
   render(container, params) {
     this.container = container;
@@ -21,12 +22,6 @@ const Step2Screen = {
     const s2 = reservation.data.step2_details;
     const duration = s1.durationHours || 3;
 
-    // Auto-calculate end time from start time + duration
-    let endTime = s2.endTime || '';
-    if (s2.startTime && !endTime) {
-      endTime = this.addHours(s2.startTime, duration);
-    }
-
     container.innerHTML = `
       <div class="step-content stagger-children">
         <!-- Tour Type -->
@@ -37,32 +32,10 @@ const Step2Screen = {
           </div>
         </div>
 
-        <!-- Date & Time -->
+        <!-- Date & Time — DateTimePicker -->
         <div class="step-section">
           <div class="step-section-title">Schedule</div>
-          <div class="input-group">
-            <div class="input-group-row">
-              <span class="input-group-label">📅 Trip Date</span>
-              <div class="input-group-value">
-                <input type="date" id="tripDate" value="${s2.tripDate || ''}" data-field="tripDate">
-              </div>
-            </div>
-            <div class="input-group-row">
-              <span class="input-group-label">🕐 Departure</span>
-              <div class="input-group-value">
-                <input type="time" id="startTime" value="${s2.startTime || ''}" data-field="startTime">
-              </div>
-            </div>
-            <div class="input-group-row">
-              <span class="input-group-label">🕓 Return</span>
-              <div class="input-group-value">
-                <input type="time" id="endTime" value="${endTime}" data-field="endTime">
-              </div>
-            </div>
-          </div>
-          <div style="padding: var(--space-2) var(--space-4); font-size: var(--font-xs); color: var(--color-text-tertiary);">
-            Duration: ${duration} hours (from Step 1)
-          </div>
+          <div id="datetime-picker-mount"></div>
         </div>
 
         <!-- Customer Info -->
@@ -104,7 +77,7 @@ const Step2Screen = {
       </div>
     `;
 
-    this.bindEvents();
+    this.bindEvents(s2, duration);
   },
 
   renderTourCards(selectedType) {
@@ -128,7 +101,7 @@ const Step2Screen = {
       .join('');
   },
 
-  bindEvents() {
+  bindEvents(s2, duration) {
     // Tour type cards
     this.container.querySelectorAll('.tour-card').forEach((card) => {
       card.addEventListener('click', () => {
@@ -138,19 +111,19 @@ const Step2Screen = {
       });
     });
 
-    // Auto-calculate end time when start time changes
-    const startTimeInput = document.getElementById('startTime');
-    startTimeInput?.addEventListener('change', () => {
-      const reservation = window.Storage.getReservation(this.reservationId);
-      const duration = reservation?.data.step1_pricing?.durationHours || 3;
-      const startTime = startTimeInput.value;
-      if (startTime) {
-        document.getElementById('endTime').value = this.addHours(startTime, duration);
-      }
-      this.autoSave();
-    });
+    // Initialize DateTimePicker
+    const mountEl = document.getElementById('datetime-picker-mount');
+    if (mountEl && window.DateTimePicker) {
+      this.picker = new DateTimePicker(mountEl, {
+        initialDate: s2.tripDate || '',
+        initialFrom: s2.startTime || '',
+        initialTo: s2.endTime || '',
+        duration: duration,
+        onChange: () => this.autoSave()
+      });
+    }
 
-    // Auto-save on all input changes
+    // Auto-save on all input changes (customer info + notes)
     this.container.querySelectorAll('input, textarea').forEach((input) => {
       input.addEventListener('input', () => this.autoSave());
       input.addEventListener('change', () => this.autoSave());
@@ -159,11 +132,13 @@ const Step2Screen = {
 
   autoSave() {
     const selectedTour = this.container.querySelector('.tour-card.selected');
+    const pickerValues = this.picker ? this.picker.getValue() : {};
+
     const data = {
       tourType: selectedTour?.dataset.tour || '',
-      tripDate: document.getElementById('tripDate')?.value || '',
-      startTime: document.getElementById('startTime')?.value || '',
-      endTime: document.getElementById('endTime')?.value || '',
+      tripDate: pickerValues.tripDate || '',
+      startTime: pickerValues.startTime || '',
+      endTime: pickerValues.endTime || '',
       customerName: document.getElementById('customerName')?.value || '',
       customerPhone: document.getElementById('customerPhone')?.value || '',
       customerEmail: document.getElementById('customerEmail')?.value || '',
@@ -174,19 +149,12 @@ const Step2Screen = {
     window.Storage.updateCurrentStep(this.reservationId, 2);
   },
 
-  addHours(time, hours) {
-    const [h, m] = time.split(':').map(Number);
-    const totalMinutes = h * 60 + m + hours * 60;
-    const newH = Math.floor(totalMinutes / 60) % 24;
-    const newM = totalMinutes % 60;
-    return `${String(newH).padStart(2, '0')}:${String(newM).padStart(2, '0')}`;
-  },
-
   escapeAttr(str) {
     return str.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   },
 
   destroy() {
+    if (this.picker) { this.picker.destroy(); this.picker = null; }
     this.container = null;
     this.reservationId = null;
   },
