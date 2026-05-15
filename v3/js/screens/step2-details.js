@@ -27,8 +27,8 @@ const Step2Screen = {
         <!-- Tour Type -->
         <div class="step-section">
           <div class="step-section-title">Tour Type</div>
-          <div class="tour-cards" id="tourTypeCards">
-            ${this.renderTourCards(s2.tourType)}
+          <div id="tourTypeToggleContainer">
+            ${this.renderTourToggle(s2.tourType)}
           </div>
         </div>
 
@@ -77,10 +77,11 @@ const Step2Screen = {
       </div>
     `;
 
+    this.buildTourSheet();
     this.bindEvents(s2, duration);
   },
 
-  renderTourCards(selectedType) {
+  renderTourToggle(selectedType) {
     const tours = [
       { id: 'Bay Trip', emoji: '🌊', label: 'Bay Trip' },
       { id: 'Whale Watching', emoji: '🐋', label: 'Whale Watch' },
@@ -89,27 +90,34 @@ const Step2Screen = {
       { id: 'Fishing', emoji: '🎣', label: 'Fishing' },
     ];
 
-    return tours
-      .map(
-        (t) => `
-        <div class="tour-card ${selectedType === t.id ? 'selected' : ''}" data-tour="${t.id}">
-          <span class="tour-card-icon">${t.emoji}</span>
-          <span class="tour-card-name">${t.label}</span>
+    const selected = tours.find(t => t.id === selectedType);
+    
+    const icon = selected ? selected.emoji : '📍';
+    const title = selected ? selected.label : 'Elige un tour';
+    const note = selected ? 'Tour Type' : 'Toca para seleccionar el tipo de paseo';
+    const color = selected ? 'var(--color-text)' : 'var(--color-text-tertiary)';
+    const titleStyle = selected ? 'font-style: normal; font-weight: 500;' : 'font-style: italic; font-weight: 400;';
+
+    return `
+      <div class="gmb-toggle" style="cursor: pointer; background: var(--color-surface-alt); border: 1px solid var(--color-border); border-radius: 16px; padding: 16px; display: flex; align-items: center; gap: 12px; transition: background 0.2s;">
+        <div style="width: 50px; height: 50px; background: var(--color-surface); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid var(--color-border);">
+          <span style="font-size: 24px; filter: ${selected ? 'none' : 'grayscale(1) opacity(0.5)'}">${icon}</span>
         </div>
-      `
-      )
-      .join('');
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 16px; color: ${color}; ${titleStyle} white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${title}</div>
+          <div style="font-size: 12px; color: var(--color-text-tertiary); margin-top: 4px;">${note}</div>
+        </div>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-tertiary)" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </div>
+    `;
   },
 
   bindEvents(s2, duration) {
-    // Tour type cards
-    this.container.querySelectorAll('.tour-card').forEach((card) => {
-      card.addEventListener('click', () => {
-        this.container.querySelectorAll('.tour-card').forEach((c) => c.classList.remove('selected'));
-        card.classList.add('selected');
-        this.autoSave();
-      });
-    });
+    // Tour type toggle
+    const toggleContainer = document.getElementById('tourTypeToggleContainer');
+    if (toggleContainer) {
+      toggleContainer.addEventListener('click', () => this.openTourSheet());
+    }
 
     // Initialize DateTimePicker
     const mountEl = document.getElementById('datetime-picker-mount');
@@ -131,11 +139,13 @@ const Step2Screen = {
   },
 
   autoSave() {
-    const selectedTour = this.container.querySelector('.tour-card.selected');
+    const reservation = window.Storage.getReservation(this.reservationId);
+    const existingS2 = reservation?.data?.step2_details || {};
+    
     const pickerValues = this.picker ? this.picker.getValue() : {};
 
     const data = {
-      tourType: selectedTour?.dataset.tour || '',
+      tourType: existingS2.tourType || '',
       tripDate: pickerValues.tripDate || '',
       startTime: pickerValues.startTime || '',
       endTime: pickerValues.endTime || '',
@@ -153,8 +163,92 @@ const Step2Screen = {
     return str.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   },
 
+  buildTourSheet() {
+    this.sheetContainer = document.createElement('div');
+    this.sheetContainer.innerHTML = `
+      <div class="dtp-backdrop" id="s2-tour-backdrop"></div>
+      <div class="dtp-sheet" id="s2-tour-sheet">
+        <div class="dtp-sheet-handle-row"><div class="dtp-handle"></div></div>
+        <div class="dtp-sheet-header">
+          <div style="width:34px"></div>
+          <span class="dtp-sheet-title">Select Tour Type</span>
+          <button class="dtp-btn-cancel" id="s2-tour-cancel">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+        <div class="dtp-tour-options" style="padding: 0 20px 20px; display: flex; flex-direction: column; gap: 8px;">
+          <!-- Options injected here -->
+        </div>
+      </div>
+    `;
+    document.body.appendChild(this.sheetContainer);
+    
+    const backdrop = document.getElementById('s2-tour-backdrop');
+    const cancelBtn = document.getElementById('s2-tour-cancel');
+    
+    backdrop?.addEventListener('click', () => this.closeTourSheet());
+    cancelBtn?.addEventListener('click', () => this.closeTourSheet());
+  },
+
+  openTourSheet() {
+    const optionsContainer = this.sheetContainer.querySelector('.dtp-tour-options');
+    const tours = [
+      { id: 'Bay Trip', emoji: '🌊', label: 'Bay Trip' },
+      { id: 'Whale Watching', emoji: '🐋', label: 'Whale Watch' },
+      { id: 'Snorkeling Tour', emoji: '🤿', label: 'Snorkel' },
+      { id: 'Sunset Cruise', emoji: '🌅', label: 'Sunset' },
+      { id: 'Fishing', emoji: '🎣', label: 'Fishing' },
+    ];
+    
+    const reservation = window.Storage.getReservation(this.reservationId);
+    const selectedType = reservation?.data?.step2_details?.tourType;
+
+    optionsContainer.innerHTML = tours.map(t => `
+      <div class="tour-option-item ${selectedType === t.id ? 'selected' : ''}" data-tour="${t.id}" style="display: flex; align-items: center; padding: 16px; background: var(--color-surface-alt); border: 1px solid ${selectedType === t.id ? 'var(--color-accent, #1a6ef5)' : 'var(--color-border)'}; border-radius: 14px; cursor: pointer; transition: all 0.2s;">
+        <span style="font-size: 24px; margin-right: 12px; filter: ${selectedType === t.id ? 'none' : 'grayscale(1) opacity(0.8)'}">${t.emoji}</span>
+        <span style="font-size: 16px; font-weight: ${selectedType === t.id ? '600' : '500'}; color: ${selectedType === t.id ? 'var(--color-text)' : 'var(--color-text-secondary)'}; flex: 1;">${t.label}</span>
+        ${selectedType === t.id ? `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent, #1a6ef5)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>` : ''}
+      </div>
+    `).join('');
+
+    optionsContainer.querySelectorAll('.tour-option-item').forEach(item => {
+      item.addEventListener('click', () => {
+        this.selectTour(item.dataset.tour);
+      });
+    });
+
+    document.getElementById('s2-tour-backdrop').setAttribute('data-state', 'open');
+    document.getElementById('s2-tour-sheet').setAttribute('data-state', 'open');
+  },
+
+  closeTourSheet() {
+    document.getElementById('s2-tour-backdrop')?.removeAttribute('data-state');
+    document.getElementById('s2-tour-sheet')?.removeAttribute('data-state');
+  },
+
+  selectTour(tourId) {
+    this.closeTourSheet();
+    
+    const reservation = window.Storage.getReservation(this.reservationId);
+    const s2 = reservation.data.step2_details || {};
+    s2.tourType = tourId;
+    window.Storage.updateReservation(this.reservationId, 'step2_details', s2);
+    
+    // Re-render toggle
+    const toggleContainer = document.getElementById('tourTypeToggleContainer');
+    if (toggleContainer) {
+      toggleContainer.innerHTML = this.renderTourToggle(tourId);
+    }
+    
+    this.autoSave();
+  },
+
   destroy() {
     if (this.picker) { this.picker.destroy(); this.picker = null; }
+    if (this.sheetContainer && this.sheetContainer.parentNode) {
+      this.sheetContainer.parentNode.removeChild(this.sheetContainer);
+    }
+    this.sheetContainer = null;
     this.container = null;
     this.reservationId = null;
   },

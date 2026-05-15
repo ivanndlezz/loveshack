@@ -10,15 +10,14 @@ const Step1Screen = {
 
   // Picker state
   picker: {
-    mode: "duration", // 'duration' or 'passengers'
     isSyncing: false,
-    itemHeight: 54,
-    stepAngle: 22, // Matches pricing-calculator STEP_ANGLE
+    STEP: 48,
     config: {
       duration: { min: 2, max: 8 },
       passengers: { min: 1, max: 55 },
     },
   },
+  sheetContainer: null,
 
   render(container, params) {
     this.container = container;
@@ -52,7 +51,7 @@ const Step1Screen = {
         
         <!-- Trip Summary & Breakdown (NOW AT TOP) -->
         <div class="trip-summary" data-duration="${duration}" data-passengers="${passengers}" style="position: relative; margin-top: 10px; margin-bottom: 20px;">
-          <input type="checkbox" role="status" id="pricingDisplay" hide style="display: none;">
+          <input type="checkbox" role="status" id="pricingDisplay" hide style="display: none;" checked>
           <label for="pricingDisplay" class="pricing-display">
             <div class="pricing-row">
               <span class="pricing-label">Base Rate</span>
@@ -84,13 +83,7 @@ const Step1Screen = {
              </div>
           </label>
         </div>
-
-      </div>
-
-      <!-- Thumb Zone: Pinned controls (Source, Pricing Type, Duration/Pax) -->
-      <div class="thumb-zone">
-        <div class="thumb-zone-controls">
-          <!-- Source Selector -->
+        <!-- Source Selector -->
           <div class="custom-select-wrapper" id="sourceSelect" style="margin-bottom: 12px;">
             <input type="hidden" id="source" data-field="source" value="${source}">
             <div class="custom-select-trigger" id="sourceTrigger">
@@ -103,6 +96,14 @@ const Step1Screen = {
               </div>
             </div>
           </div>
+<!-- -->
+      </div>
+      
+
+      <!-- Thumb Zone: Pinned controls (Source, Pricing Type, Duration/Pax) -->
+      <div class="thumb-zone">
+        <div class="thumb-zone-controls">
+          
 
           <!-- Pricing Type Toggle -->
           <div class="pricing-type-toggle-container" style="margin-bottom: 12px;">
@@ -130,366 +131,275 @@ const Step1Screen = {
       </div>
 
       </div>
+    `;
 
-      <!-- Bottom Sheet Picker -->
-      <div class="sheet-overlay" id="sheetOverlay"></div>
-      <div class="bottom-sheet" id="bottomSheet" data-open="false">
-        <div class="sheet-header">
-          <div class="drag-handle"></div>
-          <button class="close-sheet-btn" id="closeSheetBtn">×</button>
-          <div class="sheet-title" id="sheetTitle">Select</div>
+    // Render dual-wheel sheet directly to document.body
+    this.sheetContainer = document.createElement("div");
+    this.sheetContainer.innerHTML = `
+      <div class="dtp-backdrop" id="s1-backdrop"></div>
+      <div class="dtp-sheet" id="s1-sheet">
+        <div class="dtp-sheet-handle-row"><div class="dtp-handle"></div></div>
+        <div class="dtp-sheet-header">
+          <div style="width:34px"></div>
+          <span class="dtp-sheet-title">Trip Details</span>
+          <button class="dtp-btn-cancel" id="s1-btn-cancel">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
         </div>
-        
-           <div class="picker-container" id="pickerContainer">
-           <div class="visor"></div>
-           <input type="number" id="manualInput" class="manual-input" inputmode="numeric" autocomplete="off">
-           <div class="input-trigger" onclick="manualInput.focus()"></div>
-           <div class="unit-label" id="unitLabel">hrs</div>
-          
-          <div class="wheel-3d" id="wheel3d">
-            <!-- Items injected by JS -->
+        <div class="dtp-wheels-row">
+          <div class="dtp-manual-input-container">
+            <div class="dtp-manual-field-wrapper"><input type="number" id="s1-inp-duration" class="dtp-manual-input-ghost" min="2" max="8" placeholder="3"></div>
+            <div style="font-size:22px;font-weight:600;padding-bottom:2px; opacity:0">:</div>
+            <div class="dtp-manual-field-wrapper"><input type="number" id="s1-inp-passengers" class="dtp-manual-input-ghost" min="1" max="55" placeholder="14"></div>
           </div>
-          
-          <div class="scroll-wrapper" id="scrollWrapper">
-            <div class="scroll-list" id="scrollList">
-              <!-- Spacer items injected by JS -->
+          <div class="dtp-wheel-col">
+            <div class="dtp-wheel-heading" style="display:flex; align-items:center; gap:4px;">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              <span>horas</span>
+            </div>
+            <div class="dtp-wheel-wrap">
+              <div class="dtp-wheel-track" id="s1-trk-duration">
+                ${Array.from({ length: 8 - 2 + 1 }, (_, i) => `<div class="dtp-wheel-item">${2 + i}</div>`).join("")}
+              </div>
+              <div class="dtp-wheel-cursor"></div>
+            </div>
+          </div>
+          <div class="dtp-colon-spacer" style="opacity:0">:</div>
+          <div class="dtp-wheel-col">
+            <div class="dtp-wheel-heading" style="display:flex; align-items:center; gap:4px;">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              <span>pax</span>
+            </div>
+            <div class="dtp-wheel-wrap">
+              <div class="dtp-wheel-track" id="s1-trk-passengers">
+                ${Array.from({ length: 55 - 1 + 1 }, (_, i) => `<div class="dtp-wheel-item">${1 + i}</div>`).join("")}
+              </div>
+              <div class="dtp-wheel-cursor"></div>
             </div>
           </div>
         </div>
-
-        <button class="done-btn" id="doneBtn">Confirm</button>
+        <div style="height: 16px;"></div>
+        <button class="dtp-btn-confirm" id="s1-btn-ok">confirmar</button>
       </div>
     `;
+    document.body.appendChild(this.sheetContainer);
 
     this.bindEvents();
     this.recalculate();
   },
 
-   bindEvents() {
-     const self = this; // Capture component instance
-     
-     // Expose manualInput globally for inline onclick (matches pricing-calculator pattern)
-     window.manualInput = document.getElementById('manualInput');
-     console.log('[Step1] window.manualInput set:', !!window.manualInput);
-     
-     // Pricing Type
-     this.container.querySelectorAll('.pricing-type-tab').forEach(tab => {
-       tab.addEventListener('click', () => {
-         self.container.querySelectorAll('.pricing-type-tab').forEach(t => t.classList.remove('active'));
-         tab.classList.add('active');
-         self.recalculate();
-       });
-     });
+  bindEvents() {
+    const self = this; // Capture component instance
 
-     const sourceTrigger = document.getElementById('sourceTrigger');
-     const sourceSelect = document.getElementById('sourceSelect');
-     const sourceInput = document.getElementById('sourceInput');
+    // Expose manualInput globally for inline onclick (matches pricing-calculator pattern)
+    window.manualInput = document.getElementById("manualInput");
+    console.log("[Step1] window.manualInput set:", !!window.manualInput);
 
-     sourceTrigger?.addEventListener('click', (e) => {
-       e.stopPropagation();
-       sourceSelect.classList.add('open');
-       sourceInput.focus();
-     });
-     
-     sourceInput?.addEventListener('focus', () => {
-       sourceSelect.classList.add('open');
-       sourceInput.value = '';
-       sourceInput.dispatchEvent(new Event('input'));
-     });
+    // Pricing Type
+    this.container.querySelectorAll(".pricing-type-tab").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        self.container
+          .querySelectorAll(".pricing-type-tab")
+          .forEach((t) => t.classList.remove("active"));
+        tab.classList.add("active");
+        self.recalculate();
+      });
+    });
 
-     sourceInput?.addEventListener('input', (e) => {
-       const val = e.target.value.toLowerCase();
-       self.container.querySelectorAll('.custom-select-option').forEach(opt => {
-         const text = opt.textContent.toLowerCase();
-         if (text.includes(val)) {
-           opt.style.display = 'flex';
-         } else {
-           opt.style.display = 'none';
-         }
-       });
-     });
+    const sourceTrigger = document.getElementById("sourceTrigger");
+    const sourceSelect = document.getElementById("sourceSelect");
+    const sourceInput = document.getElementById("sourceInput");
 
-     document.addEventListener('click', (e) => {
-       if (!e.target.closest('#sourceSelect') && sourceSelect?.classList.contains('open')) {
-         sourceSelect.classList.remove('open');
-         const currentVal = document.getElementById('source').value;
-         sourceInput.value = self.getSourceLabel(currentVal);
-         self.container.querySelectorAll('.custom-select-option').forEach(opt => opt.style.display = 'flex');
-       }
-     });
+    sourceTrigger?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      sourceSelect.classList.add("open");
+      sourceInput.focus();
+    });
 
-     self.container.querySelectorAll('.custom-select-option').forEach(opt => {
-       opt.addEventListener('click', () => {
-         const val = opt.dataset.value;
-         const text = opt.textContent.trim();
-         document.getElementById('source').value = val;
-         sourceInput.value = text;
-         
-         self.container.querySelectorAll('.custom-select-option').forEach(o => {
-           o.classList.remove('selected');
-           opt.style.display = 'flex';
-         });
-         opt.classList.add('selected');
-         sourceSelect.classList.remove('open');
-         self.recalculate();
-       });
-     });
+    sourceInput?.addEventListener("focus", () => {
+      sourceSelect.classList.add("open");
+      sourceInput.value = "";
+      sourceInput.dispatchEvent(new Event("input"));
+    });
 
-     // Picker Triggers
-     self.container.querySelector('[data-trigger="duration"]')?.addEventListener('click', () => self.openPicker('duration'));
-     self.container.querySelector('[data-trigger="passengers"]')?.addEventListener('click', () => self.openPicker('passengers'));
-
-     // Picker specific events
-     document.getElementById('sheetOverlay')?.addEventListener('click', () => self.closePicker());
-     document.getElementById('closeSheetBtn')?.addEventListener('click', () => self.closePicker());
-     document.getElementById('doneBtn')?.addEventListener('click', () => self.closePicker());
-
-     // Multi-digit number buffer state
-     let digitBuffer = '';
-     let digitBufferTimer = null;
-
-     // Keyboard support for bottom sheet
-     document.addEventListener('keydown', (e) => {
-       const isOpen = document.getElementById('bottomSheet')?.getAttribute('data-open') === 'true';
-       if (!isOpen) return;
-
-       // Escape closes the sheet and clears any pending buffer
-       if (e.key === 'Escape') {
-         if (digitBufferTimer) clearTimeout(digitBufferTimer);
-         digitBuffer = '';
-         self.closePicker();
-         return;
-       }
-
-       const conf = self.picker.config[self.picker.mode];
-       const summaryEl = document.getElementById(`summary${self.capitalize(self.picker.mode)}`);
-
-       // Number keys 0-9: multi-digit buffer input
-       if (e.key >= '0' && e.key <= '9') {
-         e.preventDefault();
-
-         // Append digit to buffer
-         digitBuffer += e.key;
-
-         // Parse provisional value
-         const provisional = parseInt(digitBuffer);
-
-         // Only apply if within valid range
-         if (provisional >= conf.min && provisional <= conf.max) {
-           summaryEl.textContent = provisional;
-           self.syncPickerToValue(provisional);
-           self.recalculate();
-         }
-
-         // Reset timer
-         if (digitBufferTimer) clearTimeout(digitBufferTimer);
-
-         // After 500ms of inactivity, commit the buffered value
-         digitBufferTimer = setTimeout(() => {
-           const finalVal = parseInt(digitBuffer);
-           if (finalVal >= conf.min && finalVal <= conf.max) {
-             summaryEl.textContent = finalVal;
-             self.syncPickerToValue(finalVal);
-             self.recalculate();
-           }
-           digitBuffer = '';
-         }, 500);
-
-         return;
-       }
-
-       // Arrow keys: increment/decrement (clear buffer first)
-       if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-         if (digitBufferTimer) clearTimeout(digitBufferTimer);
-         digitBuffer = '';
-
-         const currentVal = parseInt(summaryEl.textContent) || conf.min;
-         let newVal = currentVal;
-
-         if (e.key === 'ArrowUp') {
-           e.preventDefault();
-           newVal = Math.min(currentVal + 1, conf.max);
-         } else if (e.key === 'ArrowDown') {
-           e.preventDefault();
-           newVal = Math.max(currentVal - 1, conf.min);
-         }
-
-         if (newVal !== currentVal) {
-           summaryEl.textContent = newVal;
-           self.syncPickerToValue(newVal);
-           self.recalculate();
-         }
-         return;
-       }
-     });
-
-     const scrollWrapper = document.getElementById('scrollWrapper');
-     const manualInput = document.getElementById('manualInput');
-     window.manualInput = manualInput; // Expose globally for inline onclick
-     
-     // Haptic feedback for scroll
-     let lastScrollIdx = -1;
-     scrollWrapper?.addEventListener('scroll', () => {
-       if (self.picker.isSyncing) return;
-       const progress = scrollWrapper.scrollTop / self.picker.itemHeight;
-       const activeIndex = Math.round(progress);
-       const conf = self.picker.config[self.picker.mode];
-       const val = activeIndex + conf.min;
-
-       self.updateWheelRotation(progress);
-       self.updateActiveClasses(val);
-       
-       if (val >= conf.min && val <= conf.max) {
-         document.getElementById(`summary${self.capitalize(self.picker.mode)}`).textContent = val;
-         self.recalculate();
-       }
-
-       if (activeIndex !== lastScrollIdx && activeIndex >= 0 && activeIndex <= conf.max - conf.min) {
-         if (navigator.vibrate) navigator.vibrate(8);
-         lastScrollIdx = activeIndex;
-       }
-     });
-
-     if (manualInput) {
-       manualInput.addEventListener('focus', () => {
-         const val = document.getElementById(`summary${self.capitalize(self.picker.mode)}`).textContent;
-         manualInput.value = val;
-         document.getElementById('pickerContainer').setAttribute('data-input-state', 'typing');
-       });
-
-        manualInput.addEventListener('keydown', (e) => {
-          console.log('[Step1] manualInput keydown:', e.key, 'code:', e.code, 'keyCode:', e.keyCode);
-          if (e.key === 'Enter' || e.code === 'Enter' || e.keyCode === 13) {
-            e.preventDefault();
-            console.log('[Step1] Enter detected on manualInput, closing picker');
-            // Clear any pending buffer
-            if (digitBufferTimer) clearTimeout(digitBufferTimer);
-            digitBuffer = '';
-            manualInput.blur();
-            self.closePicker();
+    sourceInput?.addEventListener("input", (e) => {
+      const val = e.target.value.toLowerCase();
+      self.container
+        .querySelectorAll(".custom-select-option")
+        .forEach((opt) => {
+          const text = opt.textContent.toLowerCase();
+          if (text.includes(val)) {
+            opt.style.display = "flex";
+          } else {
+            opt.style.display = "none";
           }
         });
+    });
 
-       manualInput.addEventListener('blur', () => {
-         // Cancel any pending buffer commit
-         if (digitBufferTimer) clearTimeout(digitBufferTimer);
-         digitBuffer = '';
+    document.addEventListener("click", (e) => {
+      if (
+        !e.target.closest("#sourceSelect") &&
+        sourceSelect?.classList.contains("open")
+      ) {
+        sourceSelect.classList.remove("open");
+        const currentVal = document.getElementById("source").value;
+        sourceInput.value = self.getSourceLabel(currentVal);
+        self.container
+          .querySelectorAll(".custom-select-option")
+          .forEach((opt) => (opt.style.display = "flex"));
+      }
+    });
 
-         const summaryEl = document.getElementById(`summary${self.capitalize(self.picker.mode)}`);
-         let val = parseInt(summaryEl.textContent);
-         const conf = self.picker.config[self.picker.mode];
+    self.container.querySelectorAll(".custom-select-option").forEach((opt) => {
+      opt.addEventListener("click", () => {
+        const val = opt.dataset.value;
+        const text = opt.textContent.trim();
+        document.getElementById("source").value = val;
+        sourceInput.value = text;
 
-         if (isNaN(val)) val = conf.min;
-         if (val < conf.min) val = conf.min;
-         if (val > conf.max) val = conf.max;
+        self.container
+          .querySelectorAll(".custom-select-option")
+          .forEach((o) => {
+            o.classList.remove("selected");
+            opt.style.display = "flex";
+          });
+        opt.classList.add("selected");
+        sourceSelect.classList.remove("open");
+        self.recalculate();
+      });
+    });
 
-         document.getElementById('pickerContainer').removeAttribute('data-input-state');
-         self.syncPickerToValue(val);
-         summaryEl.textContent = val;
-         manualInput.value = val;
-         self.recalculate();
-       });
-     }
-   },
+    // Picker Triggers
+    self.container
+      .querySelector('[data-trigger="duration"]')
+      ?.addEventListener("click", () => self.openPicker());
+    self.container
+      .querySelector('[data-trigger="passengers"]')
+      ?.addEventListener("click", () => self.openPicker());
 
-  openPicker(mode) {
-    this.picker.mode = mode;
-    const isDuration = mode === "duration";
-    const conf = this.picker.config[mode];
-
-    document.getElementById("sheetTitle").textContent = isDuration
-      ? "Duration"
-      : "Passengers";
-    document.getElementById("unitLabel").textContent = isDuration
-      ? "hrs"
-      : "pax";
-
-    // Build wheel items
-    const wheel = document.getElementById("wheel3d");
-    const scrollList = document.getElementById("scrollList");
-    wheel.innerHTML = "";
-    scrollList.innerHTML = "";
-
-    const count = conf.max - conf.min + 1;
-    for (let i = 0; i < count; i++) {
-      const val = conf.min + i;
-      // Wheel item
-      const item = document.createElement("div");
-      item.className = "wheel-item";
-      item.setAttribute("data-wheel-value", val);
-      item.setAttribute("data-wheel-active", "false");
-      item.textContent = val;
-      item.style.setProperty("--angle", i * this.picker.stepAngle);
-      wheel.appendChild(item);
-
-      // Scroll item
-      const scroller = document.createElement("div");
-      scroller.className = "scroll-item";
-      scrollList.appendChild(scroller);
-    }
-
-    // Current val
-    const currentVal =
-      parseInt(
-        document.getElementById(`summary${this.capitalize(mode)}`).textContent,
-      ) || conf.min;
-
-    // Open sheet
+    // Sheet events
     document
-      .getElementById("sheetOverlay")
-      .setAttribute("data-visible", "true");
-    document.getElementById("bottomSheet").setAttribute("data-open", "true");
+      .getElementById("s1-backdrop")
+      ?.addEventListener("click", () => self.closePicker());
+    document
+      .getElementById("s1-btn-cancel")
+      ?.addEventListener("click", () => self.closePicker());
+    document
+      .getElementById("s1-btn-ok")
+      ?.addEventListener("click", () => self.closePicker());
 
-    // Sync to current val
-    setTimeout(() => {
-      this.syncPickerToValue(currentVal);
-    }, 10);
+    // Scroll Syncing
+    const trkDur = document.getElementById("s1-trk-duration");
+    const trkPax = document.getElementById("s1-trk-passengers");
+
+    const syncScroll = (track, key, conf) => {
+      if (self.picker.isSyncing) return;
+      const idx = Math.round(track.scrollTop / self.picker.STEP);
+      const val = conf.min + idx;
+      if (val >= conf.min && val <= conf.max) {
+        self.setWheelActive(track, idx);
+        document.getElementById(`summary${self.capitalize(key)}`).textContent =
+          val;
+        document.getElementById(`s1-inp-${key}`).value = val;
+        self.recalculate();
+      }
+    };
+
+    trkDur?.addEventListener("scroll", () =>
+      syncScroll(trkDur, "duration", self.picker.config.duration),
+    );
+    trkPax?.addEventListener("scroll", () =>
+      syncScroll(trkPax, "passengers", self.picker.config.passengers),
+    );
+
+    // Manual Input Syncing
+    const inpDur = document.getElementById("s1-inp-duration");
+    const inpPax = document.getElementById("s1-inp-passengers");
+
+    const syncInput = (input, track, key, conf) => {
+      let val = parseInt(input.value);
+      if (!isNaN(val)) {
+        val = Math.max(conf.min, Math.min(conf.max, val));
+        self.picker.isSyncing = true;
+        track.scrollTo({
+          top: (val - conf.min) * self.picker.STEP,
+          behavior: "smooth",
+        });
+        self.setWheelActive(track, val - conf.min);
+        document.getElementById(`summary${self.capitalize(key)}`).textContent =
+          val;
+        self.recalculate();
+        setTimeout(() => {
+          self.picker.isSyncing = false;
+        }, 300);
+      }
+    };
+
+    inpDur?.addEventListener("input", () =>
+      syncInput(inpDur, trkDur, "duration", self.picker.config.duration),
+    );
+    inpPax?.addEventListener("input", () =>
+      syncInput(inpPax, trkPax, "passengers", self.picker.config.passengers),
+    );
+
+    // Keyboard Enter
+    const handleKeyDown = (e, input, nextInput) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        if (nextInput) nextInput.focus();
+        else {
+          input.blur();
+          self.closePicker();
+        }
+      }
+    };
+    inpDur?.addEventListener("keydown", (e) =>
+      handleKeyDown(e, inpDur, inpPax),
+    );
+    inpPax?.addEventListener("keydown", (e) => handleKeyDown(e, inpPax, null));
   },
 
-  closePicker() {
-    document
-      .getElementById("sheetOverlay")
-      .setAttribute("data-visible", "false");
-    document.getElementById("bottomSheet").setAttribute("data-open", "false");
-  },
+  openPicker() {
+    document.getElementById("s1-backdrop").setAttribute("data-state", "open");
+    document.getElementById("s1-sheet").setAttribute("data-state", "open");
 
-  syncPickerToValue(val) {
-    this.picker.isSyncing = true;
-    const conf = this.picker.config[this.picker.mode];
-    const targetScroll = (val - conf.min) * this.picker.itemHeight;
-
-    document.getElementById("scrollWrapper").scrollTop = targetScroll;
-    this.updateWheelRotation(val - conf.min);
-    this.updateActiveClasses(val);
+    const curDur =
+      parseInt(document.getElementById("summaryDuration").textContent) || 3;
+    const curPax =
+      parseInt(document.getElementById("summaryPassengers").textContent) || 14;
 
     setTimeout(() => {
-      this.picker.isSyncing = false;
+      this.picker.isSyncing = true;
+      const trkDur = document.getElementById("s1-trk-duration");
+      const trkPax = document.getElementById("s1-trk-passengers");
+
+      const durIdx = curDur - this.picker.config.duration.min;
+      const paxIdx = curPax - this.picker.config.passengers.min;
+
+      trkDur.scrollTo({ top: durIdx * this.picker.STEP });
+      trkPax.scrollTo({ top: paxIdx * this.picker.STEP });
+
+      this.setWheelActive(trkDur, durIdx);
+      this.setWheelActive(trkPax, paxIdx);
+
+      document.getElementById("s1-inp-duration").value = curDur;
+      document.getElementById("s1-inp-passengers").value = curPax;
+
+      setTimeout(() => {
+        this.picker.isSyncing = false;
+      }, 50);
     }, 50);
   },
 
-  updateWheelRotation(progress) {
-    const wheel = document.getElementById("wheel3d");
-    if (wheel) {
-      wheel.style.transform = `rotateX(${progress * this.picker.stepAngle}deg)`;
-    }
+  closePicker() {
+    document.getElementById("s1-backdrop")?.removeAttribute("data-state");
+    document.getElementById("s1-sheet")?.removeAttribute("data-state");
   },
 
-  updateActiveClasses(activeVal) {
-    const items = document.querySelectorAll(".wheel-item");
-    const conf = this.picker.config[this.picker.mode];
-    items.forEach((item) => {
-      const val = parseInt(item.dataset.wheelValue);
-      item.removeAttribute("data-wheel-active");
-      item.removeAttribute("data-wheel-nearby");
-
-      const distance = Math.abs(val - activeVal);
-      if (distance === 0) {
-        item.setAttribute("data-wheel-active", "true");
-      } else if (distance === 1) {
-        item.setAttribute("data-wheel-nearby", "1");
-      } else if (distance === 2) {
-        item.setAttribute("data-wheel-nearby", "2");
-      }
+  setWheelActive(track, index) {
+    if (!track) return;
+    track.querySelectorAll(".dtp-wheel-item").forEach((it, i) => {
+      it.classList.toggle("active", i === index);
     });
   },
 
@@ -583,29 +493,37 @@ const Step1Screen = {
     };
   },
 
-   saveStep(duration, passengers, pricingType, source, price) {
-     const s1Data = {
-       pricingType,
-       source,
-       durationHours: duration,
-       passengers,
-       extraPassengers: price.extraPassengers,
-       hourlyRate: price.hourlyRate,
-       baseTripCost: price.baseTripCost,
-       extraPassengerCharge: price.extraPassengerCharge,
-       estimatedSubtotal: price.subtotal,
-     };
-     window.Storage.updateReservation(this.reservationId, "step1_pricing", s1Data);
-     
-     // Mirror source to step3_adjustments for cross-step sync
-     const reservation = window.Storage.getReservation(this.reservationId);
-     if (reservation && reservation.data.step3_adjustments) {
-       window.Storage.updateReservation(this.reservationId, "step3_adjustments", {
-         ...reservation.data.step3_adjustments,
-         bookingSource: source,
-       });
-     }
-   },
+  saveStep(duration, passengers, pricingType, source, price) {
+    const s1Data = {
+      pricingType,
+      source,
+      durationHours: duration,
+      passengers,
+      extraPassengers: price.extraPassengers,
+      hourlyRate: price.hourlyRate,
+      baseTripCost: price.baseTripCost,
+      extraPassengerCharge: price.extraPassengerCharge,
+      estimatedSubtotal: price.subtotal,
+    };
+    window.Storage.updateReservation(
+      this.reservationId,
+      "step1_pricing",
+      s1Data,
+    );
+
+    // Mirror source to step3_adjustments for cross-step sync
+    const reservation = window.Storage.getReservation(this.reservationId);
+    if (reservation && reservation.data.step3_adjustments) {
+      window.Storage.updateReservation(
+        this.reservationId,
+        "step3_adjustments",
+        {
+          ...reservation.data.step3_adjustments,
+          bookingSource: source,
+        },
+      );
+    }
+  },
 
   getSourceLabel(val) {
     const sources = {
@@ -669,6 +587,10 @@ const Step1Screen = {
   destroy() {
     this.container = null;
     this.reservationId = null;
+    if (this.sheetContainer && this.sheetContainer.parentNode) {
+      this.sheetContainer.parentNode.removeChild(this.sheetContainer);
+    }
+    this.sheetContainer = null;
   },
 };
 

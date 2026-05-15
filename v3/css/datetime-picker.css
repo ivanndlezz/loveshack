@@ -372,7 +372,7 @@
   transform: translateY(100%);
   transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
   box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.18);
-  max-width: 520px;
+  max-width: 620px;
   margin: 0 auto;
 }
 .dtp-sheet[data-state="open"] {
@@ -441,9 +441,10 @@
   flex: 1;
   position: relative;
 }
+
 .dtp-wheel-heading {
-  font-size: 10px;
-  color: var(--color-text-tertiary);
+  font-size: 15px;
+  color: #363659;
   margin-bottom: 7px;
   text-transform: lowercase;
   letter-spacing: 0.04em;
@@ -500,6 +501,7 @@
   gap: 8px;
   padding: 0 18px;
   z-index: 5;
+  transform: translate(0px, -14px);
 }
 .dtp-manual-field-wrapper {
   flex: 1;
@@ -605,12 +607,13 @@
   color: var(--color-surface);
   border: none;
   border-radius: 14px;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--font-md);
+  font-weight: var(--weight-semibold);
   font-family: inherit;
   cursor: pointer;
   letter-spacing: 0.01em;
   transition: opacity 0.15s;
+  text-transform: capitalize;
 }
 .dtp-btn-confirm:active {
   opacity: 0.8;
@@ -624,4 +627,30 @@
 }
 .dtp-manual-input-ghost[type="number"] {
   -moz-appearance: textfield;
+}
+
+.dtp-block:has(.dtp-cal-cell.selected) + .dtp-block {
+  transform: scale(1);
+}
+
+.dtp-root [id*="time"] {
+  transform: scale(0);
+}
+
+[id*="duration"] .dtp-wheel-item.active:after {
+  content: "HRS";
+  margin-left: 0.3ch;
+  position: absolute;
+  transform: translatex(30px);
+}
+
+[id*="passengers"] .dtp-wheel-item.active:after {
+  content: "PAX";
+  margin-left: 1ch;
+  position: absolute;
+  transform: translatex(30px);
+}
+
+.dtp-manual-field-wrapper + div {
+  transform: translateY(10px);
 }
