@@ -113,18 +113,112 @@
 
 .step-footer-inner {
   display: flex;
-  gap: var(--space-3);
+  align-items: center;
+  gap: var(--space-2);
   max-width: var(--max-content-width);
   margin: 0 auto;
 }
 
-.step-footer .btn {
+/* New Stepper Nav Buttons */
+.footer-nav-btn {
+  flex: 0 0 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  border: none;
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.footer-nav-btn:active {
+  transform: scale(0.95);
+  background: var(--color-border);
+}
+
+.footer-nav-btn.continue {
   flex: 1;
+  background: var(--color-accent);
+  color: white;
+  font-weight: var(--weight-semibold);
+  font-size: var(--font-md);
+  gap: 8px;
+  padding: 0 16px;
+}
+
+.footer-nav-btn.continue:active {
+  background: var(--color-accent-hover);
+}
+
+/* Stepper Tabs Group */
+.footer-tabs {
+  flex: 2;
+  display: flex;
+  background: var(--color-surface-raised);
+  padding: 4px;
+  border-radius: 16px;
+  gap: 4px;
+}
+
+.footer-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 0;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 0;
+}
+
+.footer-tab svg {
+  width: 18px;
+  height: 18px;
+  margin-bottom: 2px;
+  stroke-width: 2.5px;
+}
+
+.footer-tab span {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.footer-tab.active {
+  background: var(--color-surface);
+  color: var(--color-accent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.theme-dark .footer-tab.active {
+  background: var(--color-surface-raised);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Hide labels on very small screens if needed */
+@media screen and (max-width: 360px) {
+  .footer-tab span {
+    display: none;
+  }
+  .footer-tab svg {
+    margin-bottom: 0;
+    width: 22px;
+    height: 22px;
+  }
 }
 
 /* During stepper flow, increase bottom padding on main */
 .app-main.in-stepper {
-  padding-bottom: calc(80px + var(--safe-bottom) + var(--space-8));
+  padding-bottom: calc(100px + var(--safe-bottom) + var(--space-8));
 }
 
 /* ---- Step Section ---- */

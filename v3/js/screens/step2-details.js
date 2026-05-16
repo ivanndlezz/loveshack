@@ -158,7 +158,7 @@ const Step2Screen = {
       : "font-style: italic; font-weight: 400;";
 
     return `
-      <div class="gmb-toggle" style="cursor: pointer; background: #fff; border: 1px solid var(--color-border); border-radius: 16px; padding: 16px; display: flex; align-items: center; gap: 12px; transition: background 0.2s;">
+      <div class="gmb-toggle" style="cursor: pointer; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 16px; padding: 16px; display: flex; align-items: center; gap: 12px; transition: background 0.2s;">
         <div style="width: 50px; height: 50px; background: var(--color-surface); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid var(--color-border);">
           <span style="font-size: 24px; filter: ${selected ? "none" : "grayscale(1) opacity(0.5)"}">${icon}</span>
         </div>

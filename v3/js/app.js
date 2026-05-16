@@ -325,65 +325,95 @@
       `;
     },
 
-     /**
-      * Render step footer with navigation buttons
-      * Footer order: [Back (icon-only)] [Save & Exit] [Continue/Confirm]
-      */
-     renderStepFooter(step, id) {
-       // Remove existing footer
-       const existing = document.getElementById('step-footer');
-       if (existing) existing.remove();
+    /**
+     * Render step footer with navigation buttons
+     * Footer layout: [Back (icon)] [Tabs Group (Pricing, Trip, Resume)] [Continue (text+icon)]
+     */
+    renderStepFooter(step, id) {
+      // Remove existing footer
+      const existing = document.getElementById('step-footer');
+      if (existing) existing.remove();
 
-       if (step === 0) return; // Not in stepper
+      if (step === 0) return; // Not in stepper
 
-       const reservation = id ? window.Storage.getReservation(id) : null;
-       const isBooked = reservation && reservation.status !== 'draft';
+      const reservation = id ? window.Storage.getReservation(id) : null;
+      const isBooked = reservation && reservation.status !== 'draft';
 
-       let footerHtml = '<div class="step-footer" id="step-footer"><div class="step-footer-inner">';
+      // Actions
+      const pricingAction = `window.App.navigate('#/new/${id}')`;
+      const detailsAction = `window.App.navigate('#/new/${id}/details')`;
+      const resumeAction = `window.App.navigate('#/new/${id}/adjustments')`;
 
-       if (step === 1) {
-         // Step 1: Continue
-         footerHtml += `
-           <button class="btn btn-primary btn-full" onclick="window.Storage.updateCurrentStep('${id}', 2); window.App.navigate('#/new/${id}/details')">
-             Continue to Details
-             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><polyline points="9 18 15 12 9 6"/></svg>
-           </button>
-         `;
-       } else if (step === 2) {
-         // Step 2: Back (icon) + Continue
-         footerHtml += `
-           <button class="btn btn-secondary" style="flex: 0 0 60px;" onclick="window.App.navigate('#/new/${id}')" aria-label="Back">
-             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><polyline points="15 18 9 12 15 6"/></svg>
-           </button>
-           <button class="btn btn-primary" onclick="window.Step2Screen.autoSave(); window.Storage.updateCurrentStep('${id}', 3); window.App.navigate('#/new/${id}/adjustments')">
-             Continue to Pricing
-             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><polyline points="9 18 15 12 9 6"/></svg>
-           </button>
-         `;
-       } else if (step === 3) {
-         if (isBooked) {
-           // Booked: single button back to dashboard
-           footerHtml += `
-             <button class="btn btn-secondary btn-full" onclick="window.App.navigate('#/dashboard')">
-               ← Back to Dashboard
-             </button>
-           `;
-         } else {
-           // Step 3: Back (icon) + Confirm Booking
-           footerHtml += `
-             <button class="btn btn-secondary" style="flex: 0 0 60px;" onclick="window.App.navigate('#/new/${id}/details')" aria-label="Back">
-               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><polyline points="15 18 9 12 15 6"/></svg>
-             </button>
-             <button class="btn btn-primary" onclick="window.Step3Screen.confirmBooking()" style="background: var(--color-success);">
-               ✓ Confirm Booking
-             </button>
-           `;
-         }
-       }
+      // Back button logic
+      const backAction = step === 1 ? `window.App.navigate('#/dashboard')` : (step === 2 ? pricingAction : detailsAction);
+      
+      // Continue button logic
+      let continueAction = '';
+      let continueText = 'Continue';
+      let continueIcon = '<polyline points="9 18 15 12 9 6"/>';
 
-       footerHtml += '</div></div>';
-       document.body.insertAdjacentHTML('beforeend', footerHtml);
-     },
+      if (step === 1) {
+        continueAction = `window.Storage.updateCurrentStep('${id}', 2); ${detailsAction}`;
+      } else if (step === 2) {
+        continueAction = `window.Step2Screen.autoSave(); window.Storage.updateCurrentStep('${id}', 3); ${resumeAction}`;
+      } else if (step === 3) {
+        if (isBooked) {
+           continueAction = `window.App.navigate('#/dashboard')`;
+           continueText = 'Done';
+           continueIcon = '<polyline points="20 6 9 17 4 12"/>';
+        } else {
+           continueAction = `window.Step3Screen.confirmBooking()`;
+           continueText = 'Confirm';
+           continueIcon = '<polyline points="20 6 9 17 4 12"/>';
+        }
+      }
+
+      // SVGs for tabs
+      const iconPricing = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`;
+      const iconTrip = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+      const iconResume = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`;
+
+      let footerHtml = `
+        <div class="step-footer" id="step-footer">
+          <div class="step-footer-inner">
+            
+            <!-- Back Button -->
+            <button class="footer-nav-btn back" onclick="${backAction}" aria-label="Step back">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:20px;height:20px">
+                <polyline points="15 18 9 12 15 6"/>
+              </svg>
+            </button>
+
+            <!-- Middle Tabs Group -->
+            <div class="footer-tabs">
+              <button class="footer-tab ${step === 1 ? 'active' : ''}" onclick="${pricingAction}">
+                ${iconPricing}
+                <span>Pricing</span>
+              </button>
+              <button class="footer-tab ${step === 2 ? 'active' : ''}" onclick="${detailsAction}">
+                ${iconTrip}
+                <span>Trip</span>
+              </button>
+              <button class="footer-tab ${step === 3 ? 'active' : ''}" onclick="${resumeAction}">
+                ${iconResume}
+                <span>Resume</span>
+              </button>
+            </div>
+
+            <!-- Continue/Confirm Button -->
+            <button class="footer-nav-btn continue" onclick="${continueAction}">
+              <span>${continueText}</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:18px;height:18px">
+                ${continueIcon}
+              </svg>
+            </button>
+
+          </div>
+        </div>
+      `;
+
+      document.body.insertAdjacentHTML('beforeend', footerHtml);
+    },
 
     /**
      * Render a simple data management screen

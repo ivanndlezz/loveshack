@@ -320,6 +320,69 @@ body:has(.voucher-screen) .app-main {
   margin: 0 !important;
 }
 
+/* ==================== DARK MODE OVERRIDES ==================== */
+.theme-dark .voucher-screen {
+  background: var(--color-bg);
+}
+
+.theme-dark .voucher-page {
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-lg);
+}
+
+.theme-dark .v-tour-title,
+.theme-dark .v-right-header,
+.theme-dark .v-label,
+.theme-dark .v-value,
+.theme-dark .v-res-number {
+  color: var(--color-text);
+}
+
+.theme-dark .v-address-bar {
+  color: var(--color-text-secondary);
+  border-color: var(--color-border);
+}
+
+.theme-dark .v-value,
+.theme-dark .v-pax-cell {
+  border-color: var(--color-border);
+}
+
+.theme-dark .v-notice-box {
+  background-color: rgba(255, 149, 0, 0.15); /* Warning color with opacity */
+  border-color: var(--color-warning);
+  color: var(--color-warning);
+}
+
+.theme-dark .v-main-table,
+.theme-dark .v-left-col,
+.theme-dark .v-bottom-row,
+.theme-dark .v-bottom-cell,
+.theme-dark .v-main-table,
+.theme-dark .v-pricing-breakdown {
+  border-color: var(--color-border);
+}
+
+.theme-dark .v-pricing-breakdown {
+  background: var(--color-surface-alt);
+}
+
+.theme-dark .v-breakdown-title {
+  color: var(--color-text-tertiary);
+}
+
+.theme-dark .v-balance-warning {
+  background: var(--color-surface-alt);
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+
+.theme-dark .v-footer {
+  color: var(--color-text-secondary);
+  border-color: var(--color-border);
+}
+
 /* ==================== PRINT STYLES ==================== */
 @media print {
   @page {

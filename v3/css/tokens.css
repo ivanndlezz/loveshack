@@ -44,6 +44,8 @@
 
   /* Gold accent for customer names */
   --color-gold:           #b8860b;
+  --text-main:            #000000;
+  --text-secondary:       #6c6c70;
 
   /* Layout specific */
   --color-header-bg:      rgba(255, 255, 255, 0.8);
@@ -101,6 +103,8 @@
 
   /* Gold accent */
   --color-gold:           #d4a853;
+  --text-main:            #ffffff;
+  --text-secondary:       #8e8e93;
 
   /* Layout specific */
   --color-header-bg:      rgba(0, 0, 0, 0.75);
