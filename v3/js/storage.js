@@ -594,4 +594,5 @@ window.Storage = {
   autoImportLegacy,
   getAllClients,
   getOrRegisterClient,
+  addHours,
 };

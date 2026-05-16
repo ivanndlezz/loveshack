@@ -128,7 +128,9 @@
 }
 
 /* ---- Step Section ---- */
+/* En css/stepper.css o css/components.css */
 .step-section {
+  display: block; /* Esto hace que respete el margin-bottom */
   margin-bottom: var(--space-6);
 }
 

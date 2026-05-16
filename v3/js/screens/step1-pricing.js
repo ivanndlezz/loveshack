@@ -523,6 +523,21 @@ const Step1Screen = {
         },
       );
     }
+
+    // Sync endTime in Step 2 if startTime already exists
+    if (
+      reservation &&
+      reservation.data.step2_details &&
+      reservation.data.step2_details.startTime
+    ) {
+      const s2 = reservation.data.step2_details;
+      const newEndTime = window.Storage.addHours(s2.startTime, duration);
+
+      window.Storage.updateReservation(this.reservationId, "step2_details", {
+        ...s2,
+        endTime: newEndTime,
+      });
+    }
   },
 
   getSourceLabel(val) {

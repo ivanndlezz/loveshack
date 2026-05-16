@@ -537,6 +537,32 @@ class DateTimePicker {
 
   _confirmTime() {
     this.slots[this.activeSlot].confirmed = true;
+
+    // Auto-calculate "to" time if we just confirmed "from"
+    if (this.activeSlot === "from" && this.duration) {
+      const fromMins = this._to24(this.slots.from) * 60 + this.slots.from.m;
+      const toMins = (fromMins + this.duration * 60) % 1440;
+
+      const h24 = Math.floor(toMins / 60);
+      const m = toMins % 60;
+
+      const ampm = h24 >= 12 ? "PM" : "AM";
+      const h12 = h24 % 12;
+      const h_final = h12 === 0 ? (h24 >= 12 ? 12 : 0) : h12;
+
+      this.slots.to.h = h_final;
+      this.slots.to.m = m;
+      this.slots.to.ampm = ampm;
+      this.slots.to.confirmed = true;
+
+      // Update the "to" label in the UI immediately
+      const toValEl = this._el("to-val");
+      if (toValEl) {
+        toValEl.textContent = this._fmtSlot(this.slots.to);
+        toValEl.classList.remove("placeholder");
+      }
+    }
+
     const label = this._fmtSlot(this.slots[this.activeSlot]);
     if (this.activeSlot === "from") {
       this._el("from-val").textContent = label;

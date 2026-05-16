@@ -41,7 +41,7 @@ const Step2Screen = {
         </div>
 
         <!-- Customer Info — Contact Card -->
-        <div class="step-section">
+        <label class="step-section">
           <div class="step-section-title">Customer</div>
           <div class="input-group">
             <div class="s2-profile-header">
@@ -61,7 +61,7 @@ const Step2Screen = {
               </div>
             </label>
           </div>
-        </div>
+        </label>
 
         <!-- Phone (Optional) -->
         <div class="step-section">
@@ -240,7 +240,11 @@ const Step2Screen = {
 
     // Refresh suggestions
     const s1 = reservation.data.step1_pricing;
-    this.updateSuggestions(s1.durationHours || 3, data.startTime, data.tourType);
+    this.updateSuggestions(
+      s1.durationHours || 3,
+      data.startTime,
+      data.tourType,
+    );
   },
 
   escapeAttr(str) {
@@ -297,10 +301,16 @@ const Step2Screen = {
     const container = document.getElementById("tourSuggestionContainer");
     if (!container || !window.TourSuggestions) return;
 
-    const suggestion = window.TourSuggestions.getSuggestion(duration, startTime);
+    const suggestion = window.TourSuggestions.getSuggestion(
+      duration,
+      startTime,
+    );
     const isSelected = suggestion && suggestion.id === currentTourId;
 
-    container.innerHTML = window.TourSuggestions.renderPill(suggestion, isSelected);
+    container.innerHTML = window.TourSuggestions.renderPill(
+      suggestion,
+      isSelected,
+    );
 
     const pill = container.querySelector(".tour-suggestion-pill.active");
     if (pill) {
