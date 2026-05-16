@@ -635,6 +635,7 @@
 
 .dtp-root [id*="time"] {
   transform: scale(0);
+  height: 0px;
 }
 
 [id*="duration"] .dtp-wheel-item.active:after {
