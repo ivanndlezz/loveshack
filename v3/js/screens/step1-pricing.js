@@ -53,34 +53,39 @@ const Step1Screen = {
         <div class="trip-summary" data-duration="${duration}" data-passengers="${passengers}" style="position: relative; margin-top: 10px; margin-bottom: 20px;">
           <input type="checkbox" role="status" id="pricingDisplay" hide style="display: none;" checked>
           <label for="pricingDisplay" class="pricing-display">
-            <div class="pricing-row">
-              <span class="pricing-label">Base Rate</span>
-              <span class="pricing-value" id="baseRate">$${price.hourlyRate}/hr</span>
+            <div class="breakdown">
+              
+              <div class="breakdown-row">
+                <span class="breakdown-label">Base trip <span id="baseTripFormula" style="font-size: var(--font-xs); opacity: 0.6;">${duration}h × $${price.hourlyRate}</span></span>
+                <span class="breakdown-value" id="baseTripCost">${this.formatCurrency(price.baseTripCost)}</span>
+              </div>
+
+              <div class="breakdown-row state-managed" id="extraPassengersRow" data-state="${price.extraPassengers > 0 ? "visible" : "hidden"}">
+                <span class="breakdown-label">Extra pax (<span id="extraCount">${price.extraPassengers}</span>)</span>
+                <span class="breakdown-value" id="extraPassengerCost">+$${price.extraPassengerCharge}</span>
+              </div>
+
+              <div class="breakdown-row subtotal">
+                <span class="breakdown-label">Subtotal</span>
+                <span class="breakdown-value" id="subtotalVal">${this.formatCurrency(price.subtotal)}</span>
+              </div>
+
+              <div class="breakdown-row">
+                <span class="breakdown-label">Business receives</span>
+                <span class="breakdown-value" id="businessTotal">${this.formatCurrency(price.businessPrice)}</span>
+              </div>
+
+              <div class="breakdown-row fee state-managed" id="feeRow" data-state="${price.feeAmount > 0 ? "visible" : "hidden"}">
+                <span class="breakdown-label">Fee (<span id="feeLabel">${price.feeNote}</span>)</span>
+                <span class="breakdown-value" id="feeCost">${this.formatCurrency(price.feeAmount)}</span>
+              </div>
+
+              <div class="breakdown-row total">
+                <span class="breakdown-label">Customer Pays</span>
+                <span class="breakdown-value" id="customerTotal">${this.formatCurrency(price.customerPrice)}</span>
+              </div>
+
             </div>
-            <div class="pricing-row">
-              <span class="pricing-label">Duration</span>
-              <span class="pricing-value" id="displayDuration">${duration} hrs</span>
-            </div>
-            <div class="pricing-row">
-              <span class="pricing-label">Passengers</span>
-              <span class="pricing-value" id="displayPassengers">${passengers}</span>
-            </div>
-            <div class="pricing-row state-managed" id="extraPassengersRow" data-state="${price.extraPassengers > 0 ? "visible" : "hidden"}">
-              <span class="pricing-label">Extra pax (<span id="extraCount">${price.extraPassengers}</span>)</span>
-              <span class="pricing-value" id="extraPassengerCost">+$${price.extraPassengerCharge}</span>
-            </div>
-            <div class="pricing-row state-managed" id="feeRow" data-state="hidden">
-              <span class="pricing-label" id="feeLabel">Fee</span>
-              <span class="pricing-value" id="feeCost">+$0</span>
-            </div>
-            <div id="businessTotalRow" class="pricing-row" style="border-bottom: none; margin-top: 8px; padding-top: 12px">
-              <span class="pricing-label">Total Business</span>
-              <span class="pricing-value" id="businessTotal">${this.formatCurrency(price.subtotal)}</span>
-            </div>
-             <div class="pricing-row" id="customerTotalRow">
-               <span class="pricing-label">Total Customer</span>
-               <span class="pricing-total" id="customerTotal">${this.formatCurrency(price.subtotal)}</span>
-             </div>
           </label>
         </div>
         <!-- Source Selector -->
@@ -419,10 +424,13 @@ const Step1Screen = {
       source,
     );
 
-    // Update displays
-    document.getElementById("displayDuration").textContent = `${duration} hrs`;
-    document.getElementById("displayPassengers").textContent = passengers;
-    document.getElementById("baseRate").textContent = `$${price.hourlyRate}/hr`;
+    // Update breakdown formula and base cost
+    const formulaEl = document.getElementById("baseTripFormula");
+    if (formulaEl) formulaEl.textContent = `${duration}h × $${price.hourlyRate}`;
+
+    const baseCostEl = document.getElementById("baseTripCost");
+    if (baseCostEl)
+      baseCostEl.textContent = this.formatCurrency(price.baseTripCost);
 
     // Extra pax row
     const extraRow = document.getElementById("extraPassengersRow");
@@ -435,13 +443,32 @@ const Step1Screen = {
       extraRow.setAttribute("data-state", "hidden");
     }
 
-    // Totals
-    document.getElementById("businessTotal").textContent = this.formatCurrency(
-      price.subtotal,
-    );
-    document.getElementById("customerTotal").textContent = this.formatCurrency(
-      price.subtotal,
-    ); // Update logic if fee applies
+    // Subtotal
+    const subtotalEl = document.getElementById("subtotalVal");
+    if (subtotalEl)
+      subtotalEl.textContent = this.formatCurrency(price.subtotal);
+
+    // Business Total
+    const businessEl = document.getElementById("businessTotal");
+    if (businessEl)
+      businessEl.textContent = this.formatCurrency(price.businessPrice);
+
+    // Fee Row
+    const feeRow = document.getElementById("feeRow");
+    if (price.feeAmount > 0) {
+      feeRow.setAttribute("data-state", "visible");
+      document.getElementById("feeLabel").textContent = price.feeNote;
+      document.getElementById("feeCost").textContent = this.formatCurrency(
+        price.feeAmount,
+      );
+    } else {
+      feeRow.setAttribute("data-state", "hidden");
+    }
+
+    // Customer Total (Final)
+    const customerEl = document.getElementById("customerTotal");
+    if (customerEl)
+      customerEl.textContent = this.formatCurrency(price.customerPrice);
 
     this.autoSave();
   },
@@ -468,13 +495,20 @@ const Step1Screen = {
 
   calculatePrice(duration, passengers, pricingType, source) {
     if (this.calculator) {
-      // If we want full calculator support
-      const result = this.calculator.calculateBasePrice(
-        { duration, adults: passengers },
+      const result = this.calculator.calculate({
+        trip: { duration, adults: passengers },
         pricingType,
         source,
-      );
-      return result;
+      });
+      // Return a merged object compatible with the existing code but richer
+      return {
+        ...result.basePricing,
+        feeAmount: result.fee.feeAmount,
+        feeNote: result.fee.feeNote,
+        businessPrice: result.summary.businessPrice,
+        customerPrice: result.summary.customerPrice,
+        subtotal: result.summary.subtotal,
+      };
     }
     // Fallback
     const rate = pricingType === "snack" ? 450 : 600;
@@ -482,6 +516,7 @@ const Step1Screen = {
     const extraPax = Math.max(0, passengers - 14);
     const base = duration * rate;
     const extra = extraPax * extraRate;
+    const subtotal = base + extra;
     return {
       baseTripCost: base,
       hourlyRate: rate,
@@ -489,7 +524,11 @@ const Step1Screen = {
       passengers,
       extraPassengers: extraPax,
       extraPassengerCharge: extra,
-      subtotal: base + extra,
+      subtotal: subtotal,
+      feeAmount: 0,
+      feeNote: "0% fee",
+      businessPrice: subtotal,
+      customerPrice: subtotal,
     };
   },
 

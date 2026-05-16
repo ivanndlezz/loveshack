@@ -444,6 +444,7 @@ input[type="range"].form-slider::-moz-range-thumb {
   padding: 0 var(--space-3);
   cursor: pointer;
   transition: border-color var(--duration-fast) var(--ease-default);
+  height: 55px;
 }
 
 .custom-select-trigger:focus-within {
@@ -459,6 +460,7 @@ input[type="range"].form-slider::-moz-range-thumb {
   font-size: var(--font-md);
   outline: none;
   min-width: 0;
+  text-align: left;
 }
 
 .custom-select-chevron {
@@ -1285,36 +1287,47 @@ input[type="range"].form-slider::-moz-range-thumb {
 }
 
 /* Pricing Display */
+/* Pricing Display */
 .pricing-display {
   background: var(--color-surface);
   border-radius: 16px;
   margin-bottom: 25px;
   border: 1px solid var(--color-border);
   width: 100%;
-  display: table;
+  display: block;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.pricing-row {
+.pricing-display .breakdown {
+  border: none;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.pricing-row,
+.breakdown-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid var(--color-border);
   padding: 8px 16px;
+  transition: all 0.2s ease;
 }
 
-.pricing-row:first-child {
-  border-radius: 16px 16px 0 0;
-}
-
-.pricing-row:last-child {
+.pricing-row:last-child,
+.breakdown-row:last-child {
   border-bottom: none;
 }
 
-.pricing-label {
+.pricing-label,
+.breakdown-label {
   font-size: 14px;
 }
 
-.pricing-value {
+.pricing-value,
+.breakdown-value {
   font-weight: 600;
   font-size: 16px;
   color: var(--color-text);
@@ -1328,106 +1341,132 @@ input[type="range"].form-slider::-moz-range-thumb {
 /* Collapsed State - Compact horizontal dashboard design */
 #pricingDisplay:not(:checked) + .pricing-display {
   cursor: pointer;
+}
+
+#pricingDisplay:not(:checked) + .pricing-display .breakdown {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
   padding: 12px 16px;
 }
 
+#pricingDisplay:not(:checked) + .pricing-display .pricing-row,
+#pricingDisplay:not(:checked) + .pricing-display .breakdown-row {
+  display: none;
+}
+
+/* Show first 3 important metrics */
 #pricingDisplay:not(:checked) + .pricing-display .pricing-row:nth-child(1),
 #pricingDisplay:not(:checked) + .pricing-display .pricing-row:nth-child(2),
-#pricingDisplay:not(:checked) + .pricing-display .pricing-row:nth-child(3) {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 6px;
-  margin: 0;
-  padding: 6px 10px;
-  border-radius: 8px;
-  background: var(--color-surface-alt);
-  border-bottom: none;
-  transition:
-    background 0.15s ease,
-    transform 0.15s ease;
-  flex: 1;
-  min-width: 0;
-  flex-wrap: wrap;
-}
-
-#pricingDisplay:not(:checked) + .pricing-display .state-managed,
-#pricingDisplay:not(:checked) + .pricing-display #businessTotalRow {
-  display: none !important;
-}
-
-/* Customer total - always visible in collapsed state (matches pricing-calculator) */
-#pricingDisplay:not(:checked) + .pricing-display #customerTotalRow {
-  grid-column: 1 / -1;
+#pricingDisplay:not(:checked) + .pricing-display .pricing-row:nth-child(3),
+#pricingDisplay:not(:checked) + .pricing-display .breakdown-row:nth-child(1),
+#pricingDisplay:not(:checked) + .pricing-display .breakdown-row:nth-child(2),
+#pricingDisplay:not(:checked) + .pricing-display .breakdown-row:nth-child(3) {
   display: flex !important;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  padding: 12px 16px;
-  margin: 4px 0 0 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  margin: 0;
+  padding: 8px 12px;
   border-radius: 10px;
-  background: var(--color-accent);
-  box-shadow: 0 2px 12px var(--color-accent-muted);
-  gap: 10px;
-  color: white;
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border-subtle);
+  transition: transform 0.2s ease;
 }
 
-#pricingDisplay:not(:checked)
-  + .pricing-display
-  #customerTotalRow
-  .pricing-label {
-  font-size: 11px;
-  opacity: 0.9;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  font-weight: 600;
-  color: white;
+#pricingDisplay:not(:checked) + .pricing-display .pricing-row:hover,
+#pricingDisplay:not(:checked) + .pricing-display .breakdown-row:hover {
+  transform: translateY(-2px);
+  background: var(--color-border-subtle);
 }
 
-#pricingDisplay:not(:checked)
-  + .pricing-display
-  #customerTotalRow
-  .pricing-total {
-  font-size: 26px;
-  font-weight: 800;
-  color: white;
-  letter-spacing: -0.5px;
-}
-
-#pricingDisplay:checked + .pricing-display #customerTotalRow {
-  background: linear-gradient(135deg, var(--color-accent) 0%, #0066cc 100%);
-  margin: 0px;
-  padding: 16px 20px;
-  border-radius: 0 0 16px 16px;
-  color: white;
-}
-
-#pricingDisplay:not(:checked)
-  + .pricing-display
-  .pricing-row:nth-child(-n + 3)
-  .pricing-label {
+/* Labels in collapsed mode */
+#pricingDisplay:not(:checked) + .pricing-display .pricing-label,
+#pricingDisplay:not(:checked) + .pricing-display .breakdown-label {
   font-size: 10px;
   opacity: 0.6;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  font-weight: 600;
-  white-space: nowrap;
+  font-weight: 700;
+}
+
+/* Values in collapsed mode */
+#pricingDisplay:not(:checked) + .pricing-display .pricing-value,
+#pricingDisplay:not(:checked) + .pricing-display .breakdown-value {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+/* Hero Total in collapsed mode */
+#pricingDisplay:not(:checked) + .pricing-display #customerTotalRow,
+#pricingDisplay:not(:checked) + .pricing-display .breakdown-row.total {
+  grid-column: 1 / -1;
+  display: flex !important;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  margin-top: 4px;
+  border-radius: 12px;
+  background: var(--color-accent);
+  color: white;
+  box-shadow: 0 4px 15px var(--color-accent-muted);
 }
 
 #pricingDisplay:not(:checked)
   + .pricing-display
-  .pricing-row:nth-child(-n + 3)
-  .pricing-value {
-  font-size: 16px;
-  font-weight: 700;
-  white-space: nowrap;
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  #customerTotalRow
+  .pricing-label,
+#pricingDisplay:not(:checked)
+  + .pricing-display
+  .breakdown-row.total
+  .breakdown-label {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 12px;
+}
+
+#pricingDisplay:not(:checked)
+  + .pricing-display
+  #customerTotalRow
+  .pricing-total,
+#pricingDisplay:not(:checked)
+  + .pricing-display
+  .breakdown-row.total
+  .breakdown-value {
+  color: white;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+/* Expanded State tweaks */
+#pricingDisplay:checked + .pricing-display {
+  padding-bottom: 0;
+}
+
+#pricingDisplay:checked + .pricing-display #customerTotalRow,
+#pricingDisplay:checked + .pricing-display .breakdown-row.total {
+  background: var(--color-accent);
+  color: white;
+  margin: 0;
+  padding: 16px 20px;
+  border-radius: 0 0 16px 16px;
+}
+
+#pricingDisplay:checked + .pricing-display #customerTotalRow .pricing-label,
+#pricingDisplay:checked
+  + .pricing-display
+  .breakdown-row.total
+  .breakdown-label {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+#pricingDisplay:checked + .pricing-display #customerTotalRow .pricing-total,
+#pricingDisplay:checked
+  + .pricing-display
+  .breakdown-row.total
+  .breakdown-value {
+  color: white;
+  font-size: 22px;
 }
 
 .state-managed[data-state="hidden"] {
@@ -1769,6 +1808,7 @@ input::placeholder {
 
 input:focus {
   outline: none;
+  border-bottom: dotted 1px;
 }
 
 /* ── Tour Suggestion Pill ── */
@@ -1789,7 +1829,7 @@ input:focus {
   border: 1px solid var(--color-accent);
   color: var(--color-text);
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .tour-suggestion-pill.active:active {
@@ -1802,6 +1842,32 @@ input:focus {
   border: 1px solid var(--color-success, #34c759);
   color: var(--color-success, #34c759);
   cursor: default;
+  animation: disappear 0.5s ease 0.8s forwards; /* Pequeño delay para que se vea el check antes de irse */
+  pointer-events: none;
+}
+
+@keyframes disappear {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+    max-height: 100px;
+    margin-top: 10px;
+  }
+  50% {
+    opacity: 0;
+    transform: scale(0.98);
+    max-height: 100px;
+    margin-top: 10px;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.98);
+    max-height: 0;
+    margin-top: 0;
+    padding: 0;
+    border-width: 0;
+    overflow: hidden;
+  }
 }
 
 .tour-suggestion-pill .suggestion-icon {
@@ -1821,6 +1887,12 @@ input:focus {
 }
 
 @keyframes slideDown {
-  from { opacity: 0; transform: translateY(-10px) scaleY(0.9); }
-  to { opacity: 1; transform: translateY(0) scaleY(1); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scaleY(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+  }
 }
