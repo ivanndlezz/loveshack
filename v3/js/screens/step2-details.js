@@ -24,18 +24,20 @@ const Step2Screen = {
 
     container.innerHTML = `
       <div class="step-content stagger-children">
+
+        <!-- Date & Time — DateTimePicker -->
+        <div class="step-section">
+          <div class="step-section-title">Schedule</div>
+          <div id="datetime-picker-mount"></div>
+        </div>
+
         <!-- Tour Type -->
         <div class="step-section">
           <div class="step-section-title">Tour Type</div>
           <div id="tourTypeToggleContainer">
             ${this.renderTourToggle(s2.tourType)}
           </div>
-        </div>
-
-        <!-- Date & Time — DateTimePicker -->
-        <div class="step-section">
-          <div class="step-section-title">Schedule</div>
-          <div id="datetime-picker-mount"></div>
+          <div id="tourSuggestionContainer"></div>
         </div>
 
         <!-- Customer Info — Contact Card -->
@@ -131,6 +133,7 @@ const Step2Screen = {
 
     this.buildTourSheet();
     this.bindEvents(s2, duration);
+    this.updateSuggestions(duration, s2.startTime, s2.tourType);
   },
 
   renderTourToggle(selectedType) {
@@ -155,7 +158,7 @@ const Step2Screen = {
       : "font-style: italic; font-weight: 400;";
 
     return `
-      <div class="gmb-toggle" style="cursor: pointer; background: var(--color-surface-alt); border: 1px solid var(--color-border); border-radius: 16px; padding: 16px; display: flex; align-items: center; gap: 12px; transition: background 0.2s;">
+      <div class="gmb-toggle" style="cursor: pointer; background: #fff; border: 1px solid var(--color-border); border-radius: 16px; padding: 16px; display: flex; align-items: center; gap: 12px; transition: background 0.2s;">
         <div style="width: 50px; height: 50px; background: var(--color-surface); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid var(--color-border);">
           <span style="font-size: 24px; filter: ${selected ? "none" : "grayscale(1) opacity(0.5)"}">${icon}</span>
         </div>
@@ -234,6 +237,10 @@ const Step2Screen = {
 
     window.Storage.updateReservation(this.reservationId, "step2_details", data);
     window.Storage.updateCurrentStep(this.reservationId, 2);
+
+    // Refresh suggestions
+    const s1 = reservation.data.step1_pricing;
+    this.updateSuggestions(s1.durationHours || 3, data.startTime, data.tourType);
   },
 
   escapeAttr(str) {
@@ -283,6 +290,24 @@ const Step2Screen = {
       initialsText.textContent = "";
       displayName.textContent = "Nuevo Contacto";
       displayName.classList.add("empty");
+    }
+  },
+
+  updateSuggestions(duration, startTime, currentTourId) {
+    const container = document.getElementById("tourSuggestionContainer");
+    if (!container || !window.TourSuggestions) return;
+
+    const suggestion = window.TourSuggestions.getSuggestion(duration, startTime);
+    const isSelected = suggestion && suggestion.id === currentTourId;
+
+    container.innerHTML = window.TourSuggestions.renderPill(suggestion, isSelected);
+
+    const pill = container.querySelector(".tour-suggestion-pill.active");
+    if (pill) {
+      pill.onclick = () => {
+        const tourId = pill.getAttribute("data-suggested-tour");
+        if (tourId) this.selectTour(tourId);
+      };
     }
   },
 

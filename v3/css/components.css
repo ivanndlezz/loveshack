@@ -1770,3 +1770,57 @@ input::placeholder {
 input:focus {
   outline: none;
 }
+
+/* ── Tour Suggestion Pill ── */
+.tour-suggestion-pill {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  transition: all 0.2s ease;
+  animation: slideDown 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transform-origin: top;
+}
+
+.tour-suggestion-pill.active {
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-accent);
+  color: var(--color-text);
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.tour-suggestion-pill.active:active {
+  transform: scale(0.98);
+  background: var(--color-border);
+}
+
+.tour-suggestion-pill.selected {
+  background: var(--color-success-bg, rgba(52, 199, 89, 0.1));
+  border: 1px solid var(--color-success, #34c759);
+  color: var(--color-success, #34c759);
+  cursor: default;
+}
+
+.tour-suggestion-pill .suggestion-icon {
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+.tour-suggestion-pill .suggestion-text {
+  flex: 1;
+}
+
+.tour-suggestion-pill .suggestion-arrow {
+  width: 16px;
+  height: 16px;
+  margin-left: 8px;
+  color: var(--color-accent);
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px) scaleY(0.9); }
+  to { opacity: 1; transform: translateY(0) scaleY(1); }
+}

@@ -631,6 +631,7 @@
 
 .dtp-block:has(.dtp-cal-cell.selected) + .dtp-block {
   transform: scale(1);
+  height: fit-content;
 }
 
 .dtp-root [id*="time"] {
