@@ -227,9 +227,12 @@ class DateTimePicker {
     const y = this.currentMonth.getFullYear(), mo = this.currentMonth.getMonth();
     this._el('cal-label').textContent = `${this.MONTHS_ES[mo]} ${y}`;
     const first = new Date(y,mo,1), last = new Date(y,mo+1,0), prevLast = new Date(y,mo,0);
-    const dim = last.getDate(), fdow = first.getDay(), dprev = prevLast.getDate();
+    const dim = last.getDate(), dprev = prevLast.getDate();
+    const fdow = (first.getDay() + 6) % 7; // Adjust Sunday (0) to 6, Monday (1) to 0, etc.
     let days = [];
-    for (let i=fdow-1;i>=0;i--) days.push({day:dprev-i,cur:false,date:new Date(y,mo-1,dprev-i)});
+    for (let i = fdow - 1; i >= 0; i--) {
+      days.push({ day: dprev - i, cur: false, date: new Date(y, mo - 1, dprev - i) });
+    }
     for (let i=1;i<=dim;i++) days.push({day:i,cur:true,date:new Date(y,mo,i)});
     const rem = 42-days.length;
     for (let i=1;i<=rem;i++) days.push({day:i,cur:false,date:new Date(y,mo+1,i)});

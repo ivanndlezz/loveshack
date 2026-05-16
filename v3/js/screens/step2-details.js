@@ -105,13 +105,26 @@ const Step2Screen = {
           </div>
         </div>
 
-        <!-- Notes -->
+        <!-- Notes (Optional) -->
         <div class="step-section">
-          <div class="step-section-title">Notes</div>
-          <textarea id="notes" class="form-input" placeholder="Special requests, notes..."
-                    data-field="notes"
-                    style="height: 80px; padding: var(--space-3) var(--space-4); resize: vertical; border-radius: var(--radius-lg);"
-          >${s2.notes || ""}</textarea>
+          <div class="input-group" id="notesAddContainer" style="display: ${s2.notes ? "none" : "block"}">
+            <div class="s2-action-row" id="notesRevealBtn">
+              <svg class="s2-icon-add" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="11" fill="var(--color-success, #34c759)"/>
+                <path d="M12 6v12m-6-6h12" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <span class="s2-text-add">Notas</span>
+            </div>
+          </div>
+          <div class="input-group" id="notesInputContainer" style="display: ${s2.notes ? "block" : "none"}">
+            <div style="padding: 16px;">
+              <div class="step-section-title" style="margin-left: 0; margin-bottom: 8px;">Notas</div>
+              <textarea id="notes" class="form-input" placeholder="Special requests, notes..."
+                        data-field="notes"
+                        style="height: 80px; width: 100%; padding: var(--space-3) var(--space-4); resize: vertical; border-radius: var(--radius-lg);"
+              >${s2.notes || ""}</textarea>
+            </div>
+          </div>
         </div>
       </div>
     `;
@@ -190,6 +203,9 @@ const Step2Screen = {
     document
       .getElementById("emailRevealBtn")
       ?.addEventListener("click", () => self.revealField("email"));
+    document
+      .getElementById("notesRevealBtn")
+      ?.addEventListener("click", () => self.revealField("notes"));
 
     // Auto-save on all input changes (customer info + notes)
     this.container.querySelectorAll("input, textarea").forEach((input) => {
@@ -277,7 +293,7 @@ const Step2Screen = {
     );
     inputContainer.style.display = "block";
     setTimeout(() => {
-      const input = inputContainer.querySelector("input");
+      const input = inputContainer.querySelector("input, textarea");
       if (input) input.focus();
     }, 50);
   },
