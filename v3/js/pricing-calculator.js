@@ -157,17 +157,29 @@ class PricingCalculator {
    * @param {Object} trip - Trip details { duration, adults, tourType }
    * @param {string} pricingTypeId - Pricing type ID (regular or snack)
    * @param {string} sourceId - Booking source ID
+   * @param {number} manualHourlyRate - Manual hourly rate override
+   * @param {number} manualExtraPaxRate - Manual extra passenger rate override
    * @returns {Object} Base price breakdown
    */
-  calculateBasePrice(trip, pricingTypeId = "regular", sourceId = "direct") {
+  calculateBasePrice(
+    trip,
+    pricingTypeId = "regular",
+    sourceId = "direct",
+    manualHourlyRate = null,
+    manualExtraPaxRate = null,
+  ) {
     const pricingType =
       this.pricingTypesMap[pricingTypeId] || this.pricingTypesMap["regular"];
     const duration = Math.max(trip.duration || 2, this.CONSTANTS.minDuration);
     const passengers = Math.min(trip.adults || 1, this.CONSTANTS.maxPassengers);
 
     // Get hourly rate - apply $100 discount for Get My Boat on Regular pricing
-    let hourlyRate = pricingType.hourlyRate;
-    if (sourceId === "get-my-boat" && pricingTypeId === "regular") {
+    let hourlyRate = manualHourlyRate || pricingType.hourlyRate;
+    if (
+      !manualHourlyRate &&
+      sourceId === "get-my-boat" &&
+      pricingTypeId === "regular"
+    ) {
       hourlyRate = 500; // $600 - $100 discount
     }
 
@@ -176,8 +188,8 @@ class PricingCalculator {
 
     // Extra passengers beyond included (14)
     const extraPassengers = Math.max(0, passengers - 14);
-    const extraPassengerCharge =
-      extraPassengers * pricingType.extraPassengerRate;
+    const extraPassengerRate = manualExtraPaxRate || pricingType.extraPassengerRate;
+    const extraPassengerCharge = extraPassengers * extraPassengerRate;
 
     return {
       baseTripCost,
@@ -186,10 +198,11 @@ class PricingCalculator {
       passengers,
       extraPassengers,
       extraPassengerCharge,
+      extraPassengerCharge,
       subtotal: baseTripCost + extraPassengerCharge,
       pricingTypeId: pricingType.id,
       pricingTypeName: pricingType.name,
-      extraPassengerRate: pricingType.extraPassengerRate,
+      extraPassengerRate: extraPassengerRate,
     };
   }
 
@@ -332,6 +345,8 @@ class PricingCalculator {
       trip,
       effectivePricingType,
       source,
+      reservation.manualHourlyRate,
+      reservation.manualExtraPaxRate,
     );
 
     // Step 2: Calculate extras

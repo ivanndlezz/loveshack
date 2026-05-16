@@ -86,7 +86,7 @@ const Step3Screen = {
             <div class="input-group">
               <div class="input-group-row">
                 <span class="input-group-label" style="display: flex; align-items: center; gap: 8px;">
-                  <div class="s2-avatar" id="editAvatarBox" style="width: 24px; height: 24px; font-size: 10px; background-color: ${s2.customerName ? this.createRandomColor(s2.customerName) : "var(--color-border)"}">
+                  <div class="s2-avatar" id="editAvatarBox" style="background-color: ${s2.customerName ? this.createRandomColor(s2.customerName) : "var(--color-border)"}">
                     <svg id="editDefaultIcon" class="s2-avatar-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="display: ${s2.customerName ? "none" : "block"}; width: 14px; height: 14px;">
                       <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="white"/>
                     </svg>
@@ -96,6 +96,15 @@ const Step3Screen = {
                 </span>
                 <div class="input-group-value">
                   <input type="text" id="editCustomerName" value="${this.escapeHtml(s2.customerName || "")}" placeholder="Name">
+                </div>
+              </div>
+              <div class="input-group-row">
+                <span class="input-group-label">Tour Type</span>
+                <div class="input-group-value" id="triggerTourType" style="cursor: pointer;">
+                  <div class="input-display-box" id="displayTourType" style="text-align: left; display: flex; align-items: center; gap: 10px;">
+                    <span id="tourTypeEmoji">${this.getTourEmoji(s2.tourType)}</span>
+                    <span id="tourTypeLabel">${s2.tourType || "Select tour"}</span>
+                  </div>
                 </div>
               </div>
               <div class="input-group-row">
@@ -292,6 +301,29 @@ const Step3Screen = {
           </div>
         </div>
 
+        <!-- Manual Rates Override -->
+        <div class="step-section">
+          <div class="step-section-title" style="opacity: 0.6; font-size: 10px;">Manual Rate Overrides</div>
+          <div class="input-group">
+            <div class="input-group-row">
+              <span class="input-group-label" style="font-size: 11px;">Hourly Rate Override</span>
+              <div class="input-group-value" style="display: flex; align-items: center; gap: 8px;">
+                <span style="opacity: 0.5;">$</span>
+                <input type="number" id="manualHourlyRate" placeholder="${window.PRICING_RULES?.pricingTypes.find(t => t.id === (s1.pricingType || "regular"))?.hourlyRate || 600}"
+                       value="${s3.manualHourlyRate || ""}" min="0" style="font-size: 12px; text-align: right;">
+              </div>
+            </div>
+            <div class="input-group-row">
+              <span class="input-group-label" style="font-size: 11px;">Extra Pax Rate Override</span>
+              <div class="input-group-value" style="display: flex; align-items: center; gap: 8px;">
+                <span style="opacity: 0.5;">$</span>
+                <input type="number" id="manualExtraPaxRate" placeholder="${window.PRICING_RULES?.pricingTypes.find(t => t.id === (s1.pricingType || "regular"))?.extraPassengerRate || 100}"
+                       value="${s3.manualExtraPaxRate || ""}" min="0" style="font-size: 12px; text-align: right;">
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Action Buttons -->
         <div style="display: flex; flex-direction: column; gap: var(--space-3); margin-top: var(--space-4);">
           <button class="btn btn-secondary btn-full" onclick="window.App.navigate('#/voucher/${this.reservationId}')">
@@ -343,12 +375,24 @@ const Step3Screen = {
     });
 
     // Edit Form Inputs
-    document.getElementById("editCustomerName")?.addEventListener("input", () => this.updateTripDetails());
+    document
+      .getElementById("editCustomerName")
+      ?.addEventListener("input", () => this.updateTripDetails());
 
     // Trigger Pickers
-    document.getElementById("triggerDate")?.addEventListener("click", () => this.openTimePicker());
-    document.getElementById("triggerTimes")?.addEventListener("click", () => this.openTimePicker());
-    document.getElementById("triggerDurPax")?.addEventListener("click", () => this.openDurPaxPicker());
+    document
+      .getElementById("triggerTourType")
+      ?.addEventListener("click", () => this.openTourTypeSheet());
+    document
+      .getElementById("triggerDate")
+      ?.addEventListener("click", () => this.openTimePicker("date"));
+    document.getElementById("triggerTimes")?.addEventListener("click", (e) => {
+      const isEnd = e.target.closest("#displayEndTime");
+      this.openTimePicker(isEnd ? "to" : "from");
+    });
+    document
+      .getElementById("triggerDurPax")
+      ?.addEventListener("click", () => this.openDurPaxPicker());
 
     // Reveal buttons
     document
@@ -474,6 +518,8 @@ const Step3Screen = {
     const fishingLicenses =
       parseInt(document.getElementById("fishingLicenses")?.value) || 0;
     const deposit = parseFloat(document.getElementById("deposit")?.value) || 0;
+    const manualHourlyRate = parseFloat(document.getElementById("manualHourlyRate")?.value) || null;
+    const manualExtraPaxRate = parseFloat(document.getElementById("manualExtraPaxRate")?.value) || null;
 
     let result;
     if (this.calculator) {
@@ -485,6 +531,8 @@ const Step3Screen = {
         },
         pricingType: s1.pricingType || "regular",
         source: sourceId,
+        manualHourlyRate,
+        manualExtraPaxRate,
         extras: {
           fishingLicenses: fishingLicenses,
           amount: extrasAmount,
@@ -564,23 +612,26 @@ const Step3Screen = {
     breakdown.innerHTML = html;
 
     if (reservation.status === "draft") {
+      const s3 = {
+        bookingSource: sourceId,
+        repriceType,
+        repriceDiscount,
+        extrasAmount,
+        fishingLicenses,
+        finalBusinessPrice: s.businessPrice,
+        finalCustomerPrice: s.customerPrice,
+        feeAmount: s.fee,
+        deposit,
+        balance,
+        paymentMethod: document.getElementById("paymentMethod")?.value || "cash",
+        manualHourlyRate,
+        manualExtraPaxRate,
+      };
+      
       window.Storage.updateReservation(
         this.reservationId,
         "step3_adjustments",
-        {
-          bookingSource: sourceId,
-          repriceType,
-          repriceDiscount,
-          extrasAmount,
-          fishingLicenses,
-          finalBusinessPrice: s.businessPrice,
-          finalCustomerPrice: s.customerPrice,
-          feeAmount: s.fee,
-          deposit,
-          balance,
-          paymentMethod:
-            document.getElementById("paymentMethod")?.value || "cash",
-        },
+        s3,
       );
 
       const s1Data = { ...s1, source: sourceId };
@@ -674,10 +725,16 @@ const Step3Screen = {
       return;
     }
 
-    const suggestion = window.TourSuggestions.getSuggestion(s1.durationHours, s2.startTime);
+    const suggestion = window.TourSuggestions.getSuggestion(
+      s1.durationHours,
+      s2.startTime,
+    );
     const isSelected = suggestion && suggestion.id === s2.tourType;
 
-    container.innerHTML = window.TourSuggestions.renderPill(suggestion, isSelected);
+    container.innerHTML = window.TourSuggestions.renderPill(
+      suggestion,
+      isSelected,
+    );
 
     // Bind click
     const pill = container.querySelector(".tour-suggestion-pill.active");
@@ -686,7 +743,11 @@ const Step3Screen = {
         const newTour = pill.dataset.suggestedTour;
         const res = window.Storage.getReservation(this.reservationId);
         const updatedS2 = { ...res.data.step2_details, tourType: newTour };
-        window.Storage.updateReservation(this.reservationId, "step2_details", updatedS2);
+        window.Storage.updateReservation(
+          this.reservationId,
+          "step2_details",
+          updatedS2,
+        );
 
         // Feedback
         pill.classList.remove("active");
@@ -701,7 +762,7 @@ const Step3Screen = {
     }
   },
 
-  openTimePicker() {
+  openTimePicker(mode = "date") {
     const reservation = window.Storage.getReservation(this.reservationId);
     const s2 = reservation.data.step2_details;
     const s1 = reservation.data.step1_pricing;
@@ -743,9 +804,16 @@ const Step3Screen = {
       },
     });
 
+    // Jump to mode
+    if (mode === "from" || mode === "to") {
+      setTimeout(() => {
+        picker._openSheet(mode);
+      }, 50);
+    }
+
     document.getElementById("s3-time-ok").onclick = () => {
       const res = window.Storage.getReservation(this.reservationId);
-      
+
       let tripDate = res.data.step2_details.tripDate;
       if (picker.selectedDate) {
         const y = picker.selectedDate.getFullYear();
@@ -756,8 +824,12 @@ const Step3Screen = {
 
       const values = {
         tripDate: tripDate,
-        startTime: picker.slots.from.confirmed ? picker._fmtSlot(picker.slots.from) : res.data.step2_details.startTime,
-        endTime: picker.slots.to.confirmed ? picker._fmtSlot(picker.slots.to) : res.data.step2_details.endTime,
+        startTime: picker.slots.from.confirmed
+          ? picker._fmtSlot(picker.slots.from)
+          : res.data.step2_details.startTime,
+        endTime: picker.slots.to.confirmed
+          ? picker._fmtSlot(picker.slots.to)
+          : res.data.step2_details.endTime,
       };
 
       const updatedS2 = {
@@ -766,20 +838,29 @@ const Step3Screen = {
         startTime: values.startTime,
         endTime: values.endTime,
       };
-      window.Storage.updateReservation(this.reservationId, "step2_details", updatedS2);
+      window.Storage.updateReservation(
+        this.reservationId,
+        "step2_details",
+        updatedS2,
+      );
 
       // Update UI triggers
       const dateEl = document.getElementById("displayTripDate");
       if (dateEl) {
-        dateEl.querySelector("span").textContent = values.tripDate 
-          ? new Date(values.tripDate + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+        dateEl.querySelector("span").textContent = values.tripDate
+          ? new Date(values.tripDate + "T00:00:00").toLocaleDateString(
+              "en-US",
+              { month: "short", day: "numeric", year: "numeric" },
+            )
           : "Select date";
       }
-      document.getElementById("displayStartTime").textContent = values.startTime || "--:--";
-      document.getElementById("displayEndTime").textContent = values.endTime || "--:--";
+      document.getElementById("displayStartTime").textContent =
+        values.startTime || "--:--";
+      document.getElementById("displayEndTime").textContent =
+        values.endTime || "--:--";
 
       this.updateTripDetails();
-      
+
       // Hide sheet
       backdrop.removeAttribute("data-state");
       sheet.removeAttribute("data-state");
@@ -856,8 +937,10 @@ const Step3Screen = {
     trkDur.addEventListener("scroll", () => handleScroll(trkDur));
     trkPax.addEventListener("scroll", () => handleScroll(trkPax));
 
-    document.getElementById("s3-durpax-cancel").onclick = () => this.hideDurPaxSheet();
-    document.getElementById("s3-durpax-backdrop").onclick = () => this.hideDurPaxSheet();
+    document.getElementById("s3-durpax-cancel").onclick = () =>
+      this.hideDurPaxSheet();
+    document.getElementById("s3-durpax-backdrop").onclick = () =>
+      this.hideDurPaxSheet();
     document.getElementById("s3-durpax-ok").onclick = () => {
       const durIdx = Math.round(trkDur.scrollTop / STEP);
       const paxIdx = Math.round(trkPax.scrollTop / STEP);
@@ -865,8 +948,16 @@ const Step3Screen = {
       const passengers = 1 + paxIdx;
 
       const res = window.Storage.getReservation(this.reservationId);
-      const updatedS1 = { ...res.data.step1_pricing, durationHours: duration, passengers: passengers };
-      window.Storage.updateReservation(this.reservationId, "step1_pricing", updatedS1);
+      const updatedS1 = {
+        ...res.data.step1_pricing,
+        durationHours: duration,
+        passengers: passengers,
+      };
+      window.Storage.updateReservation(
+        this.reservationId,
+        "step1_pricing",
+        updatedS1,
+      );
 
       // Update UI
       document.getElementById("displayDurationForm").textContent = duration;
@@ -880,8 +971,12 @@ const Step3Screen = {
   },
 
   showDurPaxSheet(curDur, curPax) {
-    document.getElementById("s3-durpax-backdrop").setAttribute("data-state", "open");
-    document.getElementById("s3-durpax-sheet").setAttribute("data-state", "open");
+    document
+      .getElementById("s3-durpax-backdrop")
+      .setAttribute("data-state", "open");
+    document
+      .getElementById("s3-durpax-sheet")
+      .setAttribute("data-state", "open");
 
     const trkDur = document.getElementById("s3-trk-duration");
     const trkPax = document.getElementById("s3-trk-passengers");
@@ -929,6 +1024,102 @@ const Step3Screen = {
     }).format(amount || 0);
   },
 
+  openTourTypeSheet() {
+    const reservation = window.Storage.getReservation(this.reservationId);
+    const s2 = reservation.data.step2_details;
+
+    const tours = [
+      { id: "Bay Trip", emoji: "🌊", label: "Bay Trip" },
+      { id: "Whale Watching", emoji: "🐋", label: "Whale Watch" },
+      { id: "Snorkeling Tour", emoji: "🤿", label: "Snorkel" },
+      { id: "Sunset Cruise", emoji: "🌅", label: "Sunset" },
+      { id: "Fishing", emoji: "🎣", label: "Fishing" },
+    ];
+
+    let wrapper = document.getElementById("s3-tour-sheet-wrapper");
+    if (!wrapper) {
+      wrapper = document.createElement("div");
+      wrapper.id = "s3-tour-sheet-wrapper";
+      wrapper.innerHTML = `
+        <div class="dtp-backdrop" id="s3-tour-backdrop"></div>
+        <div class="dtp-sheet" id="s3-tour-sheet">
+          <div class="dtp-sheet-handle-row"><div class="dtp-handle"></div></div>
+          <div class="dtp-sheet-header">
+            <div style="width:34px"></div>
+            <span class="dtp-sheet-title">SELECT TOUR TYPE</span>
+            <button class="dtp-btn-cancel" id="s3-tour-cancel">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div>
+          <div class="dtp-tour-options" style="padding: 0 20px 20px; display: flex; flex-direction: column; gap: 8px;">
+            <!-- Options injected here -->
+          </div>
+        </div>
+      `;
+      document.body.appendChild(wrapper);
+    }
+
+    const backdrop = document.getElementById("s3-tour-backdrop");
+    const sheet = document.getElementById("s3-tour-sheet");
+    const optionsContainer = wrapper.querySelector(".dtp-tour-options");
+
+    // Show sheet
+    backdrop.setAttribute("data-state", "open");
+    sheet.setAttribute("data-state", "open");
+
+    // Render options
+    optionsContainer.innerHTML = tours
+      .map(
+        (t) => `
+      <div class="tour-option-item ${s2.tourType === t.id ? "selected" : ""}" data-tour="${t.id}" style="display: flex; align-items: center; padding: 16px; background: var(--color-surface-alt); border: 1px solid ${s2.tourType === t.id ? "var(--color-accent, #1a6ef5)" : "var(--color-border)"}; border-radius: 14px; cursor: pointer; transition: all 0.2s;">
+        <span style="font-size: 24px; margin-right: 12px; filter: ${s2.tourType === t.id ? "none" : "grayscale(1) opacity(0.8)"}">${t.emoji}</span>
+        <span style="font-size: 16px; font-weight: ${s2.tourType === t.id ? "600" : "500"}; color: ${s2.tourType === t.id ? "var(--color-text)" : "var(--color-text-secondary)"}; flex: 1;">${t.label}</span>
+        ${s2.tourType === t.id ? `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent, #1a6ef5)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>` : ""}
+      </div>
+    `,
+      )
+      .join("");
+
+    optionsContainer.querySelectorAll(".tour-option-item").forEach((item) => {
+      item.onclick = () => {
+        const newTour = item.dataset.tour;
+        const res = window.Storage.getReservation(this.reservationId);
+        const updatedS2 = { ...res.data.step2_details, tourType: newTour };
+        window.Storage.updateReservation(this.reservationId, "step2_details", updatedS2);
+
+        // Update UI Trigger
+        document.getElementById("tourTypeEmoji").textContent = this.getTourEmoji(newTour);
+        document.getElementById("tourTypeLabel").textContent = newTour;
+
+        this.updateTripDetails();
+
+        // Hide sheet
+        backdrop.removeAttribute("data-state");
+        sheet.removeAttribute("data-state");
+      };
+    });
+
+    backdrop.onclick = () => {
+      backdrop.removeAttribute("data-state");
+      sheet.removeAttribute("data-state");
+    };
+    document.getElementById("s3-tour-cancel").onclick = () => {
+      backdrop.removeAttribute("data-state");
+      sheet.removeAttribute("data-state");
+    };
+  },
+
+  getTourEmoji(type) {
+    const tours = {
+      "Bay Trip": "🌊",
+      "Whale Watching": "🐋",
+      "Snorkeling Tour": "🤿",
+      "Sunset Cruise": "🌅",
+      Fishing: "🎣",
+    };
+    return tours[type] || "📍";
+  },
+
   escapeHtml(str) {
     const div = document.createElement("div");
     div.textContent = str;
@@ -939,7 +1130,9 @@ const Step3Screen = {
     if (!name) return "";
     const parts = name.trim().split(" ");
     if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+    return (
+      parts[0].charAt(0) + parts[parts.length - 1].charAt(0)
+    ).toUpperCase();
   },
 
   createRandomColor(name) {

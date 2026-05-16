@@ -344,6 +344,10 @@ input[type="range"].form-slider::-moz-range-thumb {
   color: var(--color-status-cancelled);
 }
 
+.summary-accordion .badge {
+  margin-right: 27px;
+}
+
 /* ---- Toast ---- */
 .toast {
   display: flex;
@@ -1912,6 +1916,7 @@ input:focus {
   cursor: pointer;
   position: relative;
   user-select: none;
+  background: var(--color-surface);
 }
 
 .summary-accordion-trigger:active {
@@ -1969,4 +1974,9 @@ input:focus {
   transform: scale(0.98);
 }
 
-
+[data-step="step3"] .s2-avatar {
+  --wh: 40px;
+  width: var(--wh);
+  height: var(--wh);
+  font-size: 12px;
+}
