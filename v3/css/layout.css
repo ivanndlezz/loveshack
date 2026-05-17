@@ -135,7 +135,9 @@
   max-width: var(--max-content-width);
   margin: 0 auto;
   padding: var(--space-4);
-  padding-bottom: calc(var(--bottom-nav-height) + var(--space-8) + var(--safe-bottom));
+  padding-bottom: calc(
+    var(--bottom-nav-height) + var(--space-8) + var(--safe-bottom)
+  );
 }
 
 #app {
@@ -201,13 +203,14 @@
   height: var(--fab-size);
   border-radius: var(--radius-full);
   background: var(--color-accent);
-  color: var(--color-text);
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: var(--shadow-fab);
-  transition: transform var(--duration-fast) var(--ease-spring),
-              box-shadow var(--duration-normal) var(--ease-default);
+  transition:
+    transform var(--duration-fast) var(--ease-spring),
+    box-shadow var(--duration-normal) var(--ease-default);
   animation: fabEnter 0.4s var(--ease-spring) 0.3s both;
 }
 
@@ -247,8 +250,9 @@
   -webkit-backdrop-filter: blur(8px);
   opacity: 0;
   visibility: hidden;
-  transition: opacity var(--duration-normal) var(--ease-default),
-              visibility var(--duration-normal) var(--ease-default);
+  transition:
+    opacity var(--duration-normal) var(--ease-default),
+    visibility var(--duration-normal) var(--ease-default);
 }
 
 .overlay.visible {
@@ -261,7 +265,6 @@
   position: fixed;
   bottom: calc(var(--bottom-nav-height) + var(--space-10) + var(--safe-bottom));
   left: 50%;
-  transform: translateX(-50%);
   z-index: var(--z-toast);
   pointer-events: none;
   display: flex;

@@ -200,6 +200,8 @@ function createDraft() {
     createdAt: now,
     updatedAt: now,
     currentStep: 1,
+    sync_status: 'pending',
+    airtable_id: null,
     data: {
       step1_pricing: {
         pricingType: 'regular',
@@ -271,8 +273,18 @@ function updateReservation(id, stepKey, stepData) {
   }
 
   all[idx].updatedAt = new Date().toISOString();
+  if (all[idx].status !== 'draft') {
+    all[idx].sync_status = 'pending';
+  }
 
   saveAll(all);
+
+  // Auto-sync if not draft and manager exists
+  if (window.SyncManager && all[idx].status !== 'draft') {
+    // Debounce or just fire and forget
+    window.SyncManager.syncReservation(id).catch(e => console.warn('Auto-sync failed:', e));
+  }
+
   return all[idx];
 }
 
@@ -304,7 +316,9 @@ function promoteToBooking(id) {
   all[idx].status = 'reservado';
   all[idx].currentStep = 3;
   all[idx].updatedAt = new Date().toISOString();
+  all[idx].sync_status = 'pending';
   saveAll(all);
+  
   return all[idx];
 }
 
@@ -320,7 +334,13 @@ function updateStatus(id, status) {
 
   all[idx].status = status;
   all[idx].updatedAt = new Date().toISOString();
+  all[idx].sync_status = 'pending';
   saveAll(all);
+
+  // Trigger async sync if SyncManager is available
+  if (window.SyncManager && status !== 'draft') {
+    window.SyncManager.syncReservation(id).catch(console.error);
+  }
 }
 
 /**

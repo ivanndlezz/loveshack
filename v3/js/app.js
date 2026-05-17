@@ -316,12 +316,20 @@
           Back
         </a>
         ${isViewOnly ? '<span class="header-title" style="font-size: var(--font-md);">Reservation</span>' : window.StepperBar.render(step, id)}
-        <button class="header-save-exit" onclick="${saveExitAction}; window.App.navigate('#/dashboard')">
-          Save
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
-        </button>
+        <div style="display: flex; align-items: center; background: var(--color-surface-alt); border: 1px solid var(--color-border); border-radius: 20px; height: 32px; overflow: hidden; margin-right: -8px;">
+          <button onclick="${saveExitAction}; window.App.navigate('#/dashboard')" style="background: transparent; border: none; color: var(--color-accent); font-size: 13px; font-weight: 500; height: 100%; padding: 0 12px; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+            Save
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </button>
+          <div style="width: 1px; height: 20px; background: var(--color-border);"></div>
+          <button onclick="window.App.openSyncSheet('${id}')" style="background: transparent; border: none; color: var(--color-accent); height: 100%; padding: 0 8px; display: flex; align-items: center; cursor: pointer;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+        </div>
       `;
     },
 
@@ -444,19 +452,38 @@
           </div>
 
           <div class="step-section">
-            <div class="step-section-title">Export / Import</div>
+            <div class="step-section-title">Nube Sync (Airtable)</div>
             <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+              <p style="font-size: 12px; color: var(--color-text-secondary); margin-bottom: 8px;">
+                Sincroniza todas tus reservaciones locales con la Nube (Airtable) de forma masiva en un solo paso.
+              </p>
+              <button class="btn btn-primary btn-full" id="syncAllNubeBtn" style="background: var(--color-accent); border-color: var(--color-accent);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:18px;height:18px">
+                  <path d="M16 16l-4-4-4 4M12 12v9"/>
+                  <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+                </svg>
+                Sincronizar Todo con la Nube
+              </button>
+            </div>
+          </div>
+
+          <div class="step-section">
+            <div class="step-section-title">Manual Backup (File Download)</div>
+            <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+              <p style="font-size: 12px; color: var(--color-text-secondary); margin-bottom: 8px;">
+                Manually download or upload a .json file to your device.
+              </p>
               <button class="btn btn-secondary btn-full" id="exportBtn">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
                 </svg>
-                Export JSON
+                Download .json Backup
               </button>
               <button class="btn btn-secondary btn-full" id="importBtn">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
                 </svg>
-                Import JSON
+                Upload .json Backup
               </button>
               <input type="file" id="importFile" accept=".json" style="display: none;">
 
@@ -469,19 +496,19 @@
           </div>
 
           <div class="step-section">
-            <div class="step-section-title">External JSON Sync (Double Storage)</div>
+            <div class="step-section-title">Local Server Sync (localhost:8765)</div>
             <div style="display: flex; flex-direction: column; gap: var(--space-3);">
               <p style="font-size: 12px; color: var(--color-text-secondary); margin-bottom: 8px;">
-                Sync your browser data with the local disk JSON file.
+                Sync all records with your local Node.js server. (Requires server to be running).
               </p>
               <button class="btn btn-primary btn-full" id="pushSyncBtn">
-                Push Local to JSON File
+                Push All Data to Local Server
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
                 </svg>
               </button>
               <button class="btn btn-secondary btn-full" id="pullSyncBtn">
-                Pull from JSON File
+                Pull Data from Local Server
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
                 </svg>
@@ -548,6 +575,16 @@
         }
       });
 
+      // Sync All to Nube
+      document.getElementById('syncAllNubeBtn')?.addEventListener('click', async () => {
+        if (window.SyncManager) {
+          await window.SyncManager.syncAllReservations();
+          this.route(); // Refresh counts
+        } else {
+          window.Toast.error('SyncManager not loaded');
+        }
+      });
+
       // Clear drafts
       document.getElementById('clearDraftsBtn')?.addEventListener('click', () => {
         if (!confirm('Delete all draft reservations?')) return;
@@ -558,6 +595,152 @@
         this.route();
       });
      },
+
+     downloadBackup() {
+       const json = window.Storage.exportJSON();
+       const blob = new window.Blob([json], { type: 'application/json' });
+       const url = window.URL.createObjectURL(blob);
+       const a = document.createElement('a');
+       a.href = url;
+       a.download = 'loveshack_reservations.json';
+       document.body.appendChild(a);
+       a.click();
+       document.body.removeChild(a);
+       window.URL.revokeObjectURL(url);
+     },
+
+
+     openSyncSheet(id) {
+       if (!id || id === 'undefined') {
+         window.App.navigate('#/dashboard');
+         return;
+       }
+
+       if (!this.syncContainer) {
+         this.syncContainer = document.createElement("div");
+         document.body.appendChild(this.syncContainer);
+       }
+       
+       const r = window.Storage.getReservation(id);
+       const isSynced = r && r.airtable_id ? true : false;
+       const syncStatus = r?.sync_status || 'unknown';
+       const airtableId = r?.airtable_id || null;
+       const lastSynced = r?.lastSyncedAt ? new Date(r.lastSyncedAt).toLocaleString() : '—';
+       const createdAt = r?.createdAt ? new Date(r.createdAt).toLocaleString() : '—';
+       const updatedAt = r?.updatedAt ? new Date(r.updatedAt).toLocaleString() : '—';
+
+       const syncBadgeColor = isSynced ? 'var(--color-success)' : syncStatus === 'failed' ? 'var(--color-danger)' : 'var(--color-warning)';
+       const syncBadgeLabel = isSynced ? '✓ Synced' : syncStatus === 'failed' ? '✗ Failed' : '⏳ Pending';
+
+       let backupPath = "../reservations/data/loveshack_reservations.json";
+       if (window.SyncManager && window.SyncManager.config) {
+         backupPath = window.SyncManager.config.settings.localBackupPath;
+       }
+
+       this.syncContainer.innerHTML = `
+         <div class="dtp-backdrop" id="app-sync-backdrop"></div>
+         <div class="dtp-sheet" id="app-sync-sheet" style="padding-bottom: 32px;">
+           <div class="dtp-header" style="justify-content: center; padding-top: 16px;">
+             <div class="dtp-title" style="text-align: center;">Storage Status</div>
+           </div>
+           
+           <div style="padding: 0 16px 16px; display: flex; flex-direction: column; gap: 12px;">
+
+             <!-- Storage Layers -->
+             <div style="display: flex; flex-direction: column; gap: 8px;">
+
+               <!-- Layer 1: LocalStorage -->
+               <div style="background: var(--color-surface-alt); border-radius: 10px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; border: 1px solid var(--color-border);">
+                 <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" stroke-width="2">
+                     <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+                   </svg>
+                 </div>
+                 <div style="flex: 1; min-width: 0;">
+                   <div style="font-size: 13px; font-weight: 500; color: var(--color-text);">LocalStorage</div>
+                   <div style="font-size: 11px; color: var(--color-text-secondary);">Created: ${createdAt}</div>
+                   <div style="font-size: 11px; color: var(--color-text-secondary);">Updated: ${updatedAt}</div>
+                 </div>
+                 <div style="font-size: 12px; font-weight: 600; color: var(--color-success); white-space: nowrap;">✓ Saved</div>
+               </div>
+
+               <!-- Layer 2: Nube -->
+               <div style="background: var(--color-surface-alt); border-radius: 10px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; border: 1px solid var(--color-border);">
+                 <div style="width: 36px; height: 36px; border-radius: 8px; background: color-mix(in srgb, ${syncBadgeColor} 10%, transparent); border: 1px solid color-mix(in srgb, ${syncBadgeColor} 30%, transparent); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${syncBadgeColor}" stroke-width="2">
+                     <path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/>
+                     <path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
+                   </svg>
+                 </div>
+                 <div style="flex: 1; min-width: 0;">
+                   <div style="font-size: 13px; font-weight: 500; color: var(--color-text);">Nube</div>
+                   ${airtableId ? `<div style="font-size: 10px; color: var(--color-text-secondary); font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${airtableId}</div>` : '<div style="font-size: 11px; color: var(--color-text-secondary);">No record yet</div>'}
+                   ${isSynced ? `<div style="font-size: 11px; color: var(--color-text-secondary);">Last sync: ${lastSynced}</div>` : ''}
+                 </div>
+                 <div style="font-size: 12px; font-weight: 600; color: ${syncBadgeColor}; white-space: nowrap;">${syncBadgeLabel}</div>
+               </div>
+
+             </div>
+
+             <!-- Divider -->
+             <div style="height: 1px; background: var(--color-border);"></div>
+
+             <!-- Export -->
+             <div>
+               <div style="font-size: 11px; font-weight: 500; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Manual Backup</div>
+               <div style="font-size: 10px; font-family: monospace; color: var(--color-text-secondary); margin-bottom: 8px; word-break: break-all;">${backupPath}</div>
+               <button class="btn btn-secondary" style="width: 100%; font-size: 13px; padding: 10px;" onclick="window.App.downloadBackup()">
+                 Download JSON Backup
+               </button>
+             </div>
+
+             <!-- Sync Action -->
+             <button class="btn btn-primary" id="app-force-sync" style="width: 100%; display: flex; justify-content: center; gap: 8px; padding: 12px;">
+               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                 <path d="M21 2v6h-6"></path>
+                 <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+                 <path d="M3 22v-6h6"></path>
+                 <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+               </svg>
+               ${isSynced ? 'Re-Sync to Nube' : 'Sync to Nube'}
+             </button>
+           </div>
+         </div>
+       `;
+
+       document.getElementById("app-sync-backdrop").addEventListener("click", () => {
+         this.hideSyncSheet();
+       });
+       
+       document.getElementById("app-force-sync").addEventListener("click", async () => {
+         const btn = document.getElementById("app-force-sync");
+         btn.innerHTML = `Syncing...`;
+         btn.disabled = true;
+         try {
+           if (window.SyncManager) {
+             await window.SyncManager.syncReservation(id);
+             window.Toast.success("Successfully synced!");
+           } else {
+             window.Toast.warning("SyncManager not loaded.");
+           }
+         } catch (e) {
+           window.Toast.error("Sync failed. Check console.");
+         }
+         this.hideSyncSheet();
+       });
+
+       setTimeout(() => {
+         document.getElementById("app-sync-backdrop").setAttribute("data-state", "open");
+         document.getElementById("app-sync-sheet").setAttribute("data-state", "open");
+       }, 10);
+     },
+
+     hideSyncSheet() {
+       const backdrop = document.getElementById("app-sync-backdrop");
+       const sheet = document.getElementById("app-sync-sheet");
+       if (backdrop) backdrop.removeAttribute("data-state");
+       if (sheet) sheet.removeAttribute("data-state");
+     }
    };
 
    // Export globally

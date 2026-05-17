@@ -302,22 +302,28 @@ const Step3Screen = {
         </div>
 
         <!-- Manual Rates Override -->
-        <div class="step-section">
-          <div class="step-section-title" style="opacity: 0.6; font-size: 10px;">Manual Rate Overrides</div>
-          <div class="input-group">
-            <div class="input-group-row">
-              <span class="input-group-label" style="font-size: 11px;">Hourly Rate Override</span>
+        <div class="step-section" style="--gap: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div class="step-section-title" style="margin: 0;">Manual Rate Overrides</div>
+            <label class="switch">
+              <input type="checkbox" id="overridesToggle" ${s3.manualHourlyRate || s3.manualExtraPaxRate ? "checked" : ""}>
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="input-group" id="overridesInputContainer" style="display: ${s3.manualHourlyRate || s3.manualExtraPaxRate ? "block" : "none"}">
+            <div class="input-group-row" style="gap: var(--gap)">
+              <span class="input-group-label" style="">Hourly Rate <small>Override</small></span>
               <div class="input-group-value" style="display: flex; align-items: center; gap: 8px;">
                 <span style="opacity: 0.5;">$</span>
-                <input type="number" id="manualHourlyRate" placeholder="${window.PRICING_RULES?.pricingTypes.find(t => t.id === (s1.pricingType || "regular"))?.hourlyRate || 600}"
+                <input type="number" id="manualHourlyRate" placeholder="${window.PRICING_RULES?.pricingTypes.find((t) => t.id === (s1.pricingType || "regular"))?.hourlyRate || 600}"
                        value="${s3.manualHourlyRate || ""}" min="0" style="font-size: 12px; text-align: right;">
               </div>
             </div>
-            <div class="input-group-row">
-              <span class="input-group-label" style="font-size: 11px;">Extra Pax Rate Override</span>
+            <div class="input-group-row" style="gap: var(--gap)">
+              <span class="input-group-label" style="">Extra Pax <small>Override</small></span>
               <div class="input-group-value" style="display: flex; align-items: center; gap: 8px;">
                 <span style="opacity: 0.5;">$</span>
-                <input type="number" id="manualExtraPaxRate" placeholder="${window.PRICING_RULES?.pricingTypes.find(t => t.id === (s1.pricingType || "regular"))?.extraPassengerRate || 100}"
+                <input type="number" id="manualExtraPaxRate" placeholder="${window.PRICING_RULES?.pricingTypes.find((t) => t.id === (s1.pricingType || "regular"))?.extraPassengerRate || 100}"
                        value="${s3.manualExtraPaxRate || ""}" min="0" style="font-size: 12px; text-align: right;">
               </div>
             </div>
@@ -401,6 +407,22 @@ const Step3Screen = {
     document
       .getElementById("depositRevealBtn")
       ?.addEventListener("click", () => self.revealField("deposit"));
+
+    // Overrides Toggle
+    const overridesToggle = document.getElementById("overridesToggle");
+    const overridesContainer = document.getElementById("overridesInputContainer");
+    overridesToggle?.addEventListener("change", () => {
+      if (overridesToggle.checked) {
+        overridesContainer.style.display = "block";
+        const input = overridesContainer.querySelector("input");
+        if (input) input.focus();
+      } else {
+        overridesContainer.style.display = "none";
+        const inputs = overridesContainer.querySelectorAll("input");
+        inputs.forEach(inp => inp.value = "");
+        this.recalculate();
+      }
+    });
     // Source select
     const srcWrapper = document.getElementById("sourceSelect");
     const srcInput = document.getElementById("sourceInput");
@@ -518,8 +540,10 @@ const Step3Screen = {
     const fishingLicenses =
       parseInt(document.getElementById("fishingLicenses")?.value) || 0;
     const deposit = parseFloat(document.getElementById("deposit")?.value) || 0;
-    const manualHourlyRate = parseFloat(document.getElementById("manualHourlyRate")?.value) || null;
-    const manualExtraPaxRate = parseFloat(document.getElementById("manualExtraPaxRate")?.value) || null;
+    const manualHourlyRate =
+      parseFloat(document.getElementById("manualHourlyRate")?.value) || null;
+    const manualExtraPaxRate =
+      parseFloat(document.getElementById("manualExtraPaxRate")?.value) || null;
 
     let result;
     if (this.calculator) {
@@ -611,35 +635,38 @@ const Step3Screen = {
 
     breakdown.innerHTML = html;
 
-    if (reservation.status === "draft") {
-      const s3 = {
-        bookingSource: sourceId,
-        repriceType,
-        repriceDiscount,
-        extrasAmount,
-        fishingLicenses,
-        finalBusinessPrice: s.businessPrice,
-        finalCustomerPrice: s.customerPrice,
-        feeAmount: s.fee,
-        deposit,
-        balance,
-        paymentMethod: document.getElementById("paymentMethod")?.value || "cash",
-        manualHourlyRate,
-        manualExtraPaxRate,
-      };
-      
-      window.Storage.updateReservation(
-        this.reservationId,
-        "step3_adjustments",
-        s3,
-      );
+    // Save adjustments & source immediately to LocalStorage for both drafts and confirmed bookings
+    const s3Data = {
+      bookingSource: sourceId,
+      repriceType,
+      repriceDiscount,
+      extrasAmount,
+      fishingLicenses,
+      finalBusinessPrice: s.businessPrice,
+      finalCustomerPrice: s.customerPrice,
+      feeAmount: s.fee,
+      deposit,
+      balance,
+      paymentMethod:
+        document.getElementById("paymentMethod")?.value || "cash",
+      manualHourlyRate,
+      manualExtraPaxRate,
+    };
 
-      const s1Data = { ...s1, source: sourceId };
-      window.Storage.updateReservation(
-        this.reservationId,
-        "step1_pricing",
-        s1Data,
-      );
+    window.Storage.updateReservation(
+      this.reservationId,
+      "step3_adjustments",
+      s3Data,
+    );
+
+    const s1Data = { ...s1, source: sourceId };
+    window.Storage.updateReservation(
+      this.reservationId,
+      "step1_pricing",
+      s1Data,
+    );
+
+    if (reservation.status === "draft") {
       window.Storage.updateCurrentStep(this.reservationId, 3);
     }
   },
@@ -997,7 +1024,7 @@ const Step3Screen = {
     return `<div class="breakdown-row ${cls}"><span class="breakdown-label">${label} ${detail ? `<span style="font-size: var(--font-xs); opacity: 0.6;">${detail}</span>` : ""}</span><span class="breakdown-value">${value}</span></div>`;
   },
 
-  confirmBooking() {
+  async confirmBooking() {
     const reservation = window.Storage.getReservation(this.reservationId);
     if (!reservation) return;
     const s2 = reservation.data.step2_details;
@@ -1005,8 +1032,22 @@ const Step3Screen = {
       window.Toast.warning("Please add a customer name in Step 2");
       return;
     }
+
+    window.Toast.success("Confirming booking...");
     window.Storage.promoteToBooking(this.reservationId);
-    window.Toast.success("Booking confirmed! 🎉");
+
+    if (window.SyncManager) {
+      try {
+        await window.SyncManager.syncReservation(this.reservationId);
+        window.Toast.success("Booking confirmed & synced! 🎉");
+      } catch (e) {
+        console.error("Sync error during confirm", e);
+        window.Toast.warning("Booking confirmed, but sync failed.");
+      }
+    } else {
+      window.Toast.success("Booking confirmed! 🎉");
+    }
+
     window.App.navigate("#/dashboard");
   },
 
@@ -1085,10 +1126,15 @@ const Step3Screen = {
         const newTour = item.dataset.tour;
         const res = window.Storage.getReservation(this.reservationId);
         const updatedS2 = { ...res.data.step2_details, tourType: newTour };
-        window.Storage.updateReservation(this.reservationId, "step2_details", updatedS2);
+        window.Storage.updateReservation(
+          this.reservationId,
+          "step2_details",
+          updatedS2,
+        );
 
         // Update UI Trigger
-        document.getElementById("tourTypeEmoji").textContent = this.getTourEmoji(newTour);
+        document.getElementById("tourTypeEmoji").textContent =
+          this.getTourEmoji(newTour);
         document.getElementById("tourTypeLabel").textContent = newTour;
 
         this.updateTripDetails();
