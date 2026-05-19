@@ -89,6 +89,11 @@
         inStepper = true;
         showBottomNav = false;
         headerHTML = this.renderStepperHeader(1, id);
+      } else if (hash === '#/compare') {
+        screen = window.DataCompareScreen;
+        showFab = false;
+        showBottomNav = true;
+        headerHTML = this.renderDefaultHeader();
       } else if (hash.match(/^#\/data/)) {
         // Data management screen (simple)
         screen = null; // We'll render inline

@@ -39,6 +39,7 @@
     <link rel="stylesheet" href="css/dashboard.css" />
     <link rel="stylesheet" href="css/screens/clients.css" />
     <link rel="stylesheet" href="css/screens/sources.css" />
+    <link rel="stylesheet" href="css/screens/data-compare.css" />
     <link rel="stylesheet" href="css/screens/menu.css" />
     <link rel="stylesheet" href="css/voucher.css" />
     <link rel="stylesheet" href="css/datetime-picker.css" />
@@ -183,6 +184,14 @@
             <button class="menu-item" id="menu-stats" aria-label="Resumen">
               <svg class="icon"><use href="#icon-chart" /></svg>
               Resumen
+            </button>
+            <button class="menu-item" id="menu-compare" aria-label="Compare Data">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 20V10M12 20V4M6 20v-6"/>
+                <circle cx="18" cy="7" r="2.5"/>
+                <circle cx="6" cy="11" r="2.5"/>
+              </svg>
+              Compare
             </button>
             <button
               class="menu-item toggle-theme"
@@ -614,6 +623,7 @@
     <script src="js/screens/filter.js"></script>
     <script src="js/screens/settings.js"></script>
     <script src="js/screens/voucher.js"></script>
+    <script src="js/screens/data-compare.js"></script>
 
     <!-- App Orchestrator (must be last) -->
     <script src="js/app.js"></script>
@@ -725,6 +735,12 @@
         island.dataset.sheetState = "closed";
         updateMenuIcon();
         window.App.navigate("#/filter");
+      });
+
+      document.getElementById("menu-compare").addEventListener("click", () => {
+        island.dataset.sheetState = "closed";
+        updateMenuIcon();
+        window.App.navigate("#/compare");
       });
     </script>
   </body>
