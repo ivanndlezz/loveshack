@@ -494,11 +494,18 @@ const DashboardScreen = {
         if (reservation.status === "draft") {
           // Resume at current step
           const step = reservation.currentStep || 1;
-          if (step === 1) window.App.navigate(`#/new/${id}`);
-          else if (step === 2) window.App.navigate(`#/new/${id}/details`);
-          else window.App.navigate(`#/new/${id}/adjustments`);
+          const isNewRes = reservation.flowMode === "new-reservation";
+          if (isNewRes) {
+            if (step === 1) window.App.navigate(`#/new-reservation/${id}`);
+            else window.App.navigate(`#/new-reservation/${id}/pricing`);
+          } else {
+            if (step === 1) window.App.navigate(`#/new/${id}`);
+            else if (step === 2) window.App.navigate(`#/new/${id}/details`);
+            else window.App.navigate(`#/new/${id}/adjustments`);
+          }
         } else {
           // For booked reservations, open step 3 as a view
+          // If it was created via new-reservation, let's open Step3 adjustments anyway so they can see all adjustments and details
           window.App.navigate(`#/new/${id}/adjustments`);
         }
       });

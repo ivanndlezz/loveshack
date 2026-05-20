@@ -48,6 +48,28 @@ const SyncManager = {
     }
   },
 
+  /**
+   * Maps an internal tourType string to the exact Airtable Single Select option name.
+   * Keys = values stored in localStorage / step2_details.tourType
+   * Values = exact option labels configured in the Airtable field.
+   *
+   * If the tourType doesn't match any key, it is passed through as-is so that
+   * legacy/free-text values still reach Airtable (they'll create a new option
+   * if the field allows it, or you can add them here to remap them).
+   */
+  TOUR_TYPE_MAP: {
+    "Bay Trip":        "Bay Trip",
+    "Whale Watching":  "Whale Watching",
+    "Snorkeling Tour": "Snorkeling Tour",
+    "Sunset Cruise":   "Sunset Cruise",
+    "Fishing":         "Fishing",
+  },
+
+  normalizeTourType(raw) {
+    if (!raw || raw.trim() === "") return null;  // Single Select: null = no value
+    return this.TOUR_TYPE_MAP[raw] ?? raw;       // fallback: pass through as-is
+  },
+
   mapReservationToAirtable(r) {
     const s1 = r.data?.step1_pricing || {};
     const s2 = r.data?.step2_details || {};
@@ -59,7 +81,7 @@ const SyncManager = {
       "name": s2.customerName || "",
       "email": s2.customerEmail || "",
       "phone": s2.customerPhone || "",
-      "TOUR_type": s2.tourType || "",
+      "TOUR_type": this.normalizeTourType(s2.tourType),  // Single Select — null when empty
       "trip_DATE": s2.tripDate || "",
       "START_time": s2.startTime || "",
       "END_time": s2.endTime || "",
@@ -297,6 +319,39 @@ const SyncManager = {
         "Error al sincronizar todas las reservas. Revisa la consola.",
         4000
       );
+    }
+  },
+
+  async deleteReservationFromAirtable(reservationId) {
+    if (!this.isInitialized) await this.init();
+
+    const r = window.Storage.getReservation(reservationId);
+    if (!r) throw new Error("Reservation not found in local storage");
+    if (!r.airtable_id) throw new Error("This reservation is not linked to Airtable");
+
+    try {
+      await this.shumRequest('delete', {
+        baseId: this.config.api.baseId,
+        table: this.config.api.tableName,
+        recordId: r.airtable_id
+      });
+
+      // Clear Airtable link in LocalStorage
+      const all = window.Storage.getAllReservations();
+      const idx = all.findIndex((item) => item.id === r.id);
+      if (idx !== -1) {
+        all[idx].airtable_id = null;
+        all[idx].sync_status = "pending";
+        delete all[idx].lastSyncedAt;
+        window.Storage.saveAll(all);
+      }
+      
+      // Dispatch sync-complete event
+      document.dispatchEvent(new CustomEvent("sync-complete"));
+      return true;
+    } catch (error) {
+      console.error("Failed to delete reservation from Airtable", error);
+      throw error;
     }
   }
 };

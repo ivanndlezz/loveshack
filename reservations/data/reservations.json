@@ -2222,53 +2222,52 @@
     "lastSyncedAt": "2026-05-19T22:09:35.964Z"
   },
   {
-    "id": "5626ff09-8886-4f72-9985-d7a8d87804e9",
+    "id": "04c9a203-3820-4dfa-b773-0de29643cd94",
     "status": "reservado",
-    "createdAt": "2026-05-19T23:39:59.609Z",
-    "updatedAt": "2026-05-19T23:55:58.337Z",
+    "createdAt": "2026-05-16T17:04:34.904Z",
+    "updatedAt": "2026-05-17T00:09:28.771Z",
     "currentStep": 3,
-    "sync_status": "synced",
-    "airtable_id": "recmkjXLJ7G2bvcno",
     "data": {
       "step1_pricing": {
         "pricingType": "regular",
         "durationHours": 2,
-        "passengers": 35,
-        "extraPassengers": 21,
-        "hourlyRate": 600,
-        "baseTripCost": 1200,
-        "extraPassengerCharge": 2100,
-        "estimatedSubtotal": 3300,
-        "source": "direct"
+        "passengers": 10,
+        "extraPassengers": 0,
+        "hourlyRate": 500,
+        "baseTripCost": 1000,
+        "extraPassengerCharge": 0,
+        "estimatedSubtotal": 1000,
+        "source": "get-my-boat"
       },
       "step2_details": {
         "tourType": "Bay Trip",
-        "tripDate": "2026-05-23",
-        "startTime": "15:30",
-        "endTime": "17:30",
-        "customerName": "Garret Korpinen",
+        "tripDate": "2026-05-30",
+        "startTime": "03:00",
+        "endTime": "05:00",
+        "customerName": "Ivan Gonzalez",
         "customerPhone": "",
         "customerEmail": "",
-        "notes": "Pre-boda",
-        "foodType": "TACOS & NATIONAL OPEN BAR"
+        "notes": "Just Testing"
       },
       "step3_adjustments": {
-        "bookingSource": "direct",
+        "bookingSource": "get-my-boat",
         "repriceType": "",
         "repriceDiscount": 0,
         "extrasAmount": 0,
         "fishingLicenses": 0,
-        "finalBusinessPrice": 3300,
-        "finalCustomerPrice": 3300,
-        "feeAmount": 0,
+        "finalBusinessPrice": 1000,
+        "finalCustomerPrice": 1129.9435028248588,
+        "feeAmount": 129.9435028248588,
         "deposit": 0,
-        "balance": 3300,
+        "balance": 1129.9435028248588,
         "paymentMethod": "cash",
         "manualHourlyRate": null,
         "manualExtraPaxRate": null
       }
     },
-    "clientId": "CLI-014",
-    "lastSyncedAt": "2026-05-19T23:56:01.233Z"
+    "clientId": "CLI-044",
+    "sync_status": "synced",
+    "airtable_id": "recuZNF7FgAd9Wxfa",
+    "lastSyncedAt": "2026-05-19T22:09:33.485Z"
   }
 ]

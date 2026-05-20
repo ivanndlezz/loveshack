@@ -5,7 +5,7 @@
 
 const STORAGE_KEY = 'loveshack_v3_reservations';
 const CLIENTS_KEY = 'loveshack_v3_clients';
-const JSON_URL = '../reservations/data/loveshack_reservations.json'; // Legacy data source
+const JSON_URL = './data/reservations.json'; // v3 data source
 const SAVE_SERVER_URL = 'http://localhost:8765/save_v3';
 
 /**

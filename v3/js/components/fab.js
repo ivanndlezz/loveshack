@@ -1,41 +1,49 @@
 /**
  * FAB Component — Love Shack v3
- * Floating Action Button that creates new drafts
+ * Floating Action Button that creates new drafts for the normal 3-step flow directly.
  */
 
-const FAB = {
-  el: null,
+(function () {
+  'use strict';
 
-  init() {
-    this.el = document.getElementById('fab');
-    if (!this.el) return;
+  const FAB = {
+    el: null,
 
-    this.el.addEventListener('click', () => {
-      this.handleClick();
-    });
-  },
+    init() {
+      this.el = document.getElementById('fab');
+      if (!this.el) return;
 
-  handleClick() {
-    // Create a new draft immediately
-    const draft = window.Storage.createDraft();
-    // Navigate to Step 1 with the new draft ID
-    window.App.navigate(`#/new/${draft.id}`);
-    window.Toast.success('New quote started');
-  },
+      this.el.addEventListener('click', () => {
+        this.handleClick();
+      });
+    },
 
-  show() {
-    if (this.el) {
-      this.el.style.display = '';
-      this.el.classList.remove('hidden');
-    }
-  },
+    handleClick() {
+      const draft = window.Storage.createDraft();
+      const all = window.Storage.getAllReservations();
+      const idx = all.findIndex(r => r.id === draft.id);
+      if (idx !== -1) {
+        all[idx].flowMode = 'default';
+        window.Storage.saveAll(all);
+      }
+      window.App.navigate(`#/new/${draft.id}`);
+      window.Toast.success('Nueva cotización iniciada');
+    },
 
-  hide() {
-    if (this.el) {
-      this.el.classList.add('hidden');
-      this.el.style.display = 'none';
-    }
-  },
-};
+    show() {
+      if (this.el) {
+        this.el.style.display = '';
+        this.el.classList.remove('hidden');
+      }
+    },
 
-window.FAB = FAB;
+    hide() {
+      if (this.el) {
+        this.el.classList.add('hidden');
+        this.el.style.display = 'none';
+      }
+    },
+  };
+
+  window.FAB = FAB;
+})();

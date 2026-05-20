@@ -6,7 +6,7 @@
   },
   "settings": {
     "autoSyncOnConfirm": true,
-    "localBackupPath": "../reservations/data/loveshack_reservations.json"
+    "localBackupPath": "./data/reservations.json"
   },
   "airtable":{
     "full_url": "https://airtable.com/appqEsxLao3gflxBG/tblMvoeaQNwJqVili/viwOv6RW0iV8ilcud?blocks=hide"

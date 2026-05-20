@@ -235,9 +235,15 @@ const ClientsListScreen = {
 
           if (res.status === 'draft') {
             const step = res.currentStep || 1;
-            if (step === 1) window.App.navigate(`#/new/${resId}`);
-            else if (step === 2) window.App.navigate(`#/new/${resId}/details`);
-            else window.App.navigate(`#/new/${resId}/adjustments`);
+            const isNewRes = res.flowMode === 'new-reservation';
+            if (isNewRes) {
+              if (step === 1) window.App.navigate(`#/new-reservation/${resId}`);
+              else window.App.navigate(`#/new-reservation/${resId}/pricing`);
+            } else {
+              if (step === 1) window.App.navigate(`#/new/${resId}`);
+              else if (step === 2) window.App.navigate(`#/new/${resId}/details`);
+              else window.App.navigate(`#/new/${resId}/adjustments`);
+            }
           } else {
             window.App.navigate(`#/new/${resId}/adjustments`);
           }

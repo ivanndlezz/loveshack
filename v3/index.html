@@ -169,6 +169,13 @@
 
         <div class="sheet-body">
           <div class="menu-grid">
+            <button class="menu-item" id="menu-new-reservation" aria-label="Nueva Reservación">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 10.16a10 10 0 1 1-5.16-5.16"></path>
+                <path d="m9 11 3 3L22 4"></path>
+              </svg>
+              Nueva Reserva
+            </button>
             <button class="menu-item" id="menu-share" aria-label="Share">
               <svg class="icon"><use href="#icon-share" /></svg>
               Share
@@ -611,6 +618,7 @@
     <script src="js/components/fab.js"></script>
     <script src="js/components/stepper-bar.js"></script>
     <script src="js/components/datetime-picker.js"></script>
+    <script src="js/components/delete-dialog.js"></script>
 
     <!-- Screens -->
     <script src="js/screens/dashboard.js"></script>
@@ -703,6 +711,21 @@
       updateMenuIcon();
 
       // Menu Button Actions
+      document.getElementById("menu-new-reservation").addEventListener("click", () => {
+        island.dataset.sheetState = "closed";
+        updateMenuIcon();
+        
+        const draft = window.Storage.createDraft();
+        const all = window.Storage.getAllReservations();
+        const idx = all.findIndex(r => r.id === draft.id);
+        if (idx !== -1) {
+          all[idx].flowMode = 'new-reservation';
+          window.Storage.saveAll(all);
+        }
+        window.App.navigate(`#/new-reservation/${draft.id}`);
+        window.Toast.success('Nueva reservación directa iniciada');
+      });
+
       document
         .getElementById("menu-share")
         .addEventListener("click", async () => {

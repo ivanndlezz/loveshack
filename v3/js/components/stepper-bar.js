@@ -1,21 +1,28 @@
 /**
  * Stepper Bar — Love Shack v3
- * Progress indicator for the 3-step booking flow
+ * Progress indicator for the 3-step booking flow or alternative 2-step flow
  */
 
 const StepperBar = {
   /**
    * Render the stepper bar into the header area
-   * @param {number} currentStep - 1, 2, or 3
+   * @param {number} currentStep - 1, 2, or 3 (for default), 1 or 2 (for new-reservation)
    * @param {string} id - Reservation ID
+   * @param {string} flowMode - 'default' or 'new-reservation'
    * @returns {string} HTML string
    */
-  render(currentStep, id) {
-    const steps = [
-      { num: 1, label: 'Pricing' },
-      { num: 2, label: 'Details' },
-      { num: 3, label: 'Booking' },
-    ];
+  render(currentStep, id, flowMode = 'default') {
+    const isNewRes = flowMode === 'new-reservation';
+    const steps = isNewRes
+      ? [
+          { num: 1, label: 'Trip' },
+          { num: 2, label: 'Pricing' },
+        ]
+      : [
+          { num: 1, label: 'Pricing' },
+          { num: 2, label: 'Details' },
+          { num: 3, label: 'Booking' },
+        ];
 
     let html = '<div class="stepper-bar">';
 
@@ -33,7 +40,7 @@ const StepperBar = {
         : step.num;
 
       html += `<div class="stepper-step">`;
-      html += `<div class="${dotClass}" onclick="window.StepperBar.handleStepClick(${step.num}, '${id}')">${dotContent}</div>`;
+      html += `<div class="${dotClass}" onclick="window.StepperBar.handleStepClick(${step.num}, '${id}', '${flowMode}')">${dotContent}</div>`;
 
       // Line (not after last step)
       if (i < steps.length - 1) {
@@ -52,8 +59,9 @@ const StepperBar = {
    * Handle click on a stepper dot
    * @param {number} stepNum
    * @param {string} id
+   * @param {string} flowMode
    */
-  handleStepClick(stepNum, id) {
+  handleStepClick(stepNum, id, flowMode = 'default') {
     if (!id) return;
 
     // Auto-save current screen before navigating
@@ -61,11 +69,16 @@ const StepperBar = {
       window.App.currentScreen.autoSave();
     }
 
-    const routes = {
-      1: `#/new/${id}`,
-      2: `#/new/${id}/details`,
-      3: `#/new/${id}/adjustments`,
-    };
+    const routes = flowMode === 'new-reservation'
+      ? {
+          1: `#/new-reservation/${id}`,
+          2: `#/new-reservation/${id}/pricing`,
+        }
+      : {
+          1: `#/new/${id}`,
+          2: `#/new/${id}/details`,
+          3: `#/new/${id}/adjustments`,
+        };
 
     if (routes[stepNum]) {
       window.App.navigate(routes[stepNum]);
@@ -75,10 +88,14 @@ const StepperBar = {
   /**
    * Render step labels separately
    * @param {number} currentStep
+   * @param {string} flowMode
    * @returns {string} HTML
    */
-  renderLabels(currentStep) {
-    const labels = ['Pricing', 'Details', 'Booking'];
+  renderLabels(currentStep, flowMode = 'default') {
+    const labels = flowMode === 'new-reservation'
+      ? ['Trip', 'Pricing']
+      : ['Pricing', 'Details', 'Booking'];
+
     return `<div class="stepper-labels">${labels
       .map((label, i) => {
         let cls = 'stepper-label';

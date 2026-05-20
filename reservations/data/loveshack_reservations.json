@@ -28,7 +28,7 @@
     "totalPassengers": 20,
     "extraPassengers": 6,
     "extraPassengerCost": 600,
-    "status": "completado",
+    "status": "completed",
     "id": "res_1773343480000_pablo",
     "folio": "IG 0305-0306 430P",
     "createdAt": "2026-03-12T12:24:40.000Z",
@@ -36,43 +36,7 @@
     "extraCostTitle": "",
     "extraCostAmount": 0,
     "extraCostDescription": "",
-    "crewTipsEnabled": "off",
-    "clientId": "CLI-001",
-    "currentStep": 3,
-    "data": {
-      "step1_pricing": {
-        "pricingType": "snack",
-        "durationHours": 3,
-        "passengers": 20,
-        "extraPassengers": 6,
-        "hourlyRate": 533.34,
-        "baseTripCost": 1600.02,
-        "extraPassengerCharge": 100,
-        "estimatedSubtotal": 2200.02
-      },
-      "step2_details": {
-        "tourType": "Sunset Cruise",
-        "tripDate": "2026-03-06",
-        "startTime": "16:30",
-        "endTime": "19:30",
-        "customerName": "Cliente Pablo Venegas",
-        "customerPhone": "",
-        "customerEmail": "",
-        "notes": "Remaining balance must be paid at check-in with cash. Crew tips not included."
-      },
-      "step3_adjustments": {
-        "bookingSource": "direct",
-        "repriceType": "",
-        "repriceDiscount": 0,
-        "extrasAmount": 0,
-        "fishingLicenses": 0,
-        "finalBusinessPrice": 2200.02,
-        "finalCustomerPrice": 2200.02,
-        "feeAmount": 0,
-        "deposit": 0,
-        "balance": 2200.02
-      }
-    }
+    "crewTipsEnabled": "off"
   },
   {
     "contactName": "Ivan Gonzalez",
@@ -103,7 +67,7 @@
     "totalPassengers": 45,
     "extraPassengers": 31,
     "extraPassengerCost": 3100,
-    "status": "completado",
+    "status": "completed",
     "id": "res_1773343480001_heather",
     "folio": "IG 0303-0406 1P",
     "createdAt": "2026-03-12T12:24:40.000Z",
@@ -111,43 +75,7 @@
     "extraCostTitle": "",
     "extraCostAmount": 0,
     "extraCostDescription": "",
-    "crewTipsEnabled": "off",
-    "clientId": "CLI-002",
-    "currentStep": 3,
-    "data": {
-      "step1_pricing": {
-        "pricingType": "regular",
-        "durationHours": 5,
-        "passengers": 45,
-        "extraPassengers": 31,
-        "hourlyRate": 600,
-        "baseTripCost": 3000,
-        "extraPassengerCharge": 100,
-        "estimatedSubtotal": 6100
-      },
-      "step2_details": {
-        "tourType": "Sunset Cruise",
-        "tripDate": "2026-04-06",
-        "startTime": "13:00",
-        "endTime": "18:00",
-        "customerName": "Heather Palcowski",
-        "customerPhone": "",
-        "customerEmail": "",
-        "notes": ""
-      },
-      "step3_adjustments": {
-        "bookingSource": "direct",
-        "repriceType": "",
-        "repriceDiscount": 0,
-        "extrasAmount": 0,
-        "fishingLicenses": 0,
-        "finalBusinessPrice": 6100,
-        "finalCustomerPrice": 6100,
-        "feeAmount": 0,
-        "deposit": 3050,
-        "balance": 3050
-      }
-    }
+    "crewTipsEnabled": "off"
   },
   {
     "contactName": "Get My Boat",
@@ -178,7 +106,7 @@
     "totalPassengers": 16,
     "extraPassengers": 2,
     "extraPassengerCost": 200,
-    "status": "completado",
+    "status": "completed",
     "id": "res_1773343480002_humza",
     "folio": "IG 0307-0308 2A",
     "createdAt": "2026-03-12T12:24:40.000Z",
@@ -186,43 +114,7 @@
     "extraCostTitle": "Service Fee",
     "extraCostAmount": 11.67,
     "extraCostDescription": "Additional charges",
-    "crewTipsEnabled": "off",
-    "clientId": "CLI-003",
-    "currentStep": 3,
-    "data": {
-      "step1_pricing": {
-        "pricingType": "snack",
-        "durationHours": 3,
-        "passengers": 16,
-        "extraPassengers": 2,
-        "hourlyRate": 500,
-        "baseTripCost": 1500,
-        "extraPassengerCharge": 100,
-        "estimatedSubtotal": 1700
-      },
-      "step2_details": {
-        "tourType": "Snorkeling Tour",
-        "tripDate": "2026-03-08",
-        "startTime": "14:00",
-        "endTime": "17:00",
-        "customerName": "Humza Rabbani",
-        "customerPhone": "",
-        "customerEmail": "",
-        "notes": "Additional charges: $11.67"
-      },
-      "step3_adjustments": {
-        "bookingSource": "get-my-boat",
-        "repriceType": "",
-        "repriceDiscount": 0,
-        "extrasAmount": 11.670000000000073,
-        "fishingLicenses": 0,
-        "finalBusinessPrice": 1700,
-        "finalCustomerPrice": 1711.67,
-        "feeAmount": 0,
-        "deposit": 0,
-        "balance": 1711.67
-      }
-    }
+    "crewTipsEnabled": "off"
   },
   {
     "contactName": "Ivan Gonzalez",
@@ -253,7 +145,7 @@
     "totalPassengers": 19,
     "extraPassengers": 5,
     "extraPassengerCost": 500,
-    "status": "completado",
+    "status": "completed",
     "id": "res_1773343480003_kristin",
     "folio": "IG 0402-0402 1130A",
     "createdAt": "2026-03-12T12:24:40.000Z",
@@ -263,43 +155,7 @@
     "extraCostDescription": "",
     "crewTipsEnabled": "on",
     "priceAdjustment": 0,
-    "priceAdjustmentNote": "",
-    "clientId": "CLI-004",
-    "currentStep": 3,
-    "data": {
-      "step1_pricing": {
-        "pricingType": "regular",
-        "durationHours": 3,
-        "passengers": 19,
-        "extraPassengers": 5,
-        "hourlyRate": 600,
-        "baseTripCost": 1800,
-        "extraPassengerCharge": 100,
-        "estimatedSubtotal": 2300
-      },
-      "step2_details": {
-        "tourType": "Whale Watching",
-        "tripDate": "2026-04-02",
-        "startTime": "11:30",
-        "endTime": "14:30",
-        "customerName": "Kristin Render",
-        "customerPhone": "",
-        "customerEmail": "",
-        "notes": ""
-      },
-      "step3_adjustments": {
-        "bookingSource": "direct",
-        "repriceType": "",
-        "repriceDiscount": 0,
-        "extrasAmount": 0,
-        "fishingLicenses": 0,
-        "finalBusinessPrice": 2300,
-        "finalCustomerPrice": 2300,
-        "feeAmount": 0,
-        "deposit": 900,
-        "balance": 1400
-      }
-    }
+    "priceAdjustmentNote": ""
   },
   {
     "contactName": "Ivan Gonzalez",
@@ -330,7 +186,7 @@
     "totalPassengers": 20,
     "extraPassengers": 6,
     "extraPassengerCost": 600,
-    "status": "completado",
+    "status": "completed",
     "id": "res_1773343480004_stephen",
     "folio": "IG 0310-0311 2P",
     "createdAt": "2026-03-12T12:24:40.000Z",
@@ -338,43 +194,7 @@
     "extraCostTitle": "",
     "extraCostAmount": 0,
     "extraCostDescription": "",
-    "crewTipsEnabled": "off",
-    "clientId": "CLI-005",
-    "currentStep": 3,
-    "data": {
-      "step1_pricing": {
-        "pricingType": "snack",
-        "durationHours": 2,
-        "passengers": 20,
-        "extraPassengers": 6,
-        "hourlyRate": 500,
-        "baseTripCost": 1000,
-        "extraPassengerCharge": 100,
-        "estimatedSubtotal": 1600
-      },
-      "step2_details": {
-        "tourType": "Snorkeling Tour",
-        "tripDate": "2026-03-11",
-        "startTime": "14:00",
-        "endTime": "16:00",
-        "customerName": "Stephen Caroll",
-        "customerPhone": "",
-        "customerEmail": "",
-        "notes": ""
-      },
-      "step3_adjustments": {
-        "bookingSource": "direct",
-        "repriceType": "",
-        "repriceDiscount": 0,
-        "extrasAmount": 0,
-        "fishingLicenses": 0,
-        "finalBusinessPrice": 1600,
-        "finalCustomerPrice": 1600,
-        "feeAmount": 0,
-        "deposit": 0,
-        "balance": 1600
-      }
-    }
+    "crewTipsEnabled": "off"
   },
   {
     "contactName": "David Morales",
@@ -409,47 +229,11 @@
     "totalPassengers": 53,
     "extraPassengers": 39,
     "extraPassengerCost": 3900,
-    "status": "completado",
+    "status": "completed",
     "id": "res_1773343897032_mbix0k3mw",
     "folio": "IG 0312-0317 130P",
     "createdAt": "2026-03-12T19:31:37.032Z",
-    "updatedAt": "2026-03-12T22:08:49.585Z",
-    "clientId": "CLI-006",
-    "currentStep": 3,
-    "data": {
-      "step1_pricing": {
-        "pricingType": "snack",
-        "durationHours": 3,
-        "passengers": 53,
-        "extraPassengers": 39,
-        "hourlyRate": 400,
-        "baseTripCost": 1200,
-        "extraPassengerCharge": 100,
-        "estimatedSubtotal": 5100
-      },
-      "step2_details": {
-        "tourType": "Bay Trip",
-        "tripDate": "2026-03-17",
-        "startTime": "13:30",
-        "endTime": "16:30",
-        "customerName": "Cliente David Morales",
-        "customerPhone": "",
-        "customerEmail": "",
-        "notes": ""
-      },
-      "step3_adjustments": {
-        "bookingSource": "direct",
-        "repriceType": "",
-        "repriceDiscount": 0,
-        "extrasAmount": 94,
-        "fishingLicenses": 0,
-        "finalBusinessPrice": 5100,
-        "finalCustomerPrice": 5194,
-        "feeAmount": 0,
-        "deposit": 3096,
-        "balance": 2098
-      }
-    }
+    "updatedAt": "2026-03-12T22:08:49.585Z"
   },
   {
     "contactName": "Eduardo Araujo",
@@ -484,49 +268,13 @@
     "totalPassengers": 15,
     "extraPassengers": 1,
     "extraPassengerCost": 100,
-    "status": "completado",
+    "status": "completed",
     "id": "res_1773355947551_cryjj5xvz",
     "folio": "IG 0328-0327 1P",
     "createdAt": "2026-03-12T22:52:27.551Z",
     "priceAdjustment": 0,
     "priceAdjustmentNote": "",
-    "updatedAt": "2026-03-28T21:00:46.875Z",
-    "clientId": "CLI-007",
-    "currentStep": 3,
-    "data": {
-      "step1_pricing": {
-        "pricingType": "regular",
-        "durationHours": 5,
-        "passengers": 15,
-        "extraPassengers": 1,
-        "hourlyRate": 600,
-        "baseTripCost": 3000,
-        "extraPassengerCharge": 100,
-        "estimatedSubtotal": 3100
-      },
-      "step2_details": {
-        "tourType": "Fishing",
-        "tripDate": "2026-03-27",
-        "startTime": "13:00",
-        "endTime": "18:00",
-        "customerName": "Kiel Brown",
-        "customerPhone": "+1 707 320 8252",
-        "customerEmail": "",
-        "notes": ""
-      },
-      "step3_adjustments": {
-        "bookingSource": "direct",
-        "repriceType": "",
-        "repriceDiscount": 0,
-        "extrasAmount": 0,
-        "fishingLicenses": 0,
-        "finalBusinessPrice": 3100,
-        "finalCustomerPrice": 3100,
-        "feeAmount": 0,
-        "deposit": 0,
-        "balance": 3100
-      }
-    }
+    "updatedAt": "2026-03-28T21:00:46.875Z"
   },
   {
     "contactName": "Eduardo Araujo",
@@ -561,48 +309,10 @@
     "totalPassengers": 14,
     "extraPassengers": 0,
     "extraPassengerCost": 0,
-    "status": "reservado",
+    "status": "confirmed",
     "id": "res_1773356055139_u5199ukto",
     "folio": "IG 0312-0515 7A",
-    "createdAt": "2026-03-12T22:54:15.139Z",
-    "clientId": "CLI-008",
-    "currentStep": 3,
-    "data": {
-      "step1_pricing": {
-        "pricingType": "regular",
-        "durationHours": 8,
-        "passengers": 14,
-        "extraPassengers": 0,
-        "hourlyRate": 600,
-        "baseTripCost": 4800,
-        "extraPassengerCharge": 100,
-        "estimatedSubtotal": 4800,
-        "source": "direct"
-      },
-      "step2_details": {
-        "tourType": "Fishing",
-        "tripDate": "2026-05-15",
-        "startTime": "07:00",
-        "endTime": "15:00",
-        "customerName": "Edward Stiefel",
-        "customerPhone": "+1 201 575 3946",
-        "customerEmail": "",
-        "notes": ""
-      },
-      "step3_adjustments": {
-        "bookingSource": "direct",
-        "repriceType": "",
-        "repriceDiscount": 0,
-        "extrasAmount": 0,
-        "fishingLicenses": 0,
-        "finalBusinessPrice": 4800,
-        "finalCustomerPrice": 4800,
-        "feeAmount": 0,
-        "deposit": 0,
-        "balance": 4800
-      }
-    },
-    "updatedAt": "2026-05-15T07:01:10.638Z"
+    "createdAt": "2026-03-12T22:54:15.139Z"
   },
   {
     "contactName": "Christian Palma",
@@ -637,49 +347,13 @@
     "totalPassengers": 14,
     "extraPassengers": 0,
     "extraPassengerCost": 0,
-    "status": "completado",
+    "status": "completed",
     "id": "res_1773858722562_1f635z4bb",
     "folio": "IG 0319-0320 10A",
     "createdAt": "2026-03-18T18:32:02.562Z",
     "priceAdjustment": 0,
     "priceAdjustmentNote": "Get My Boat Payout. Precio sin alimentos, solo snacks y open bar.",
-    "updatedAt": "2026-03-19T22:45:01.750Z",
-    "clientId": "CLI-009",
-    "currentStep": 3,
-    "data": {
-      "step1_pricing": {
-        "pricingType": "snack",
-        "durationHours": 4,
-        "passengers": 14,
-        "extraPassengers": 0,
-        "hourlyRate": 453.5,
-        "baseTripCost": 1814,
-        "extraPassengerCharge": 100,
-        "estimatedSubtotal": 1814
-      },
-      "step2_details": {
-        "tourType": "Snorkeling Tour",
-        "tripDate": "2026-03-20",
-        "startTime": "10:00",
-        "endTime": "14:00",
-        "customerName": "Christian Palma",
-        "customerPhone": "",
-        "customerEmail": "",
-        "notes": "⚠️🥐 Bagels, chips, quesadillas, charcutery and national open bar"
-      },
-      "step3_adjustments": {
-        "bookingSource": "get-my-boat",
-        "repriceType": "",
-        "repriceDiscount": 0,
-        "extrasAmount": 0,
-        "fishingLicenses": 0,
-        "finalBusinessPrice": 1814,
-        "finalCustomerPrice": 1814,
-        "feeAmount": 0,
-        "deposit": 0,
-        "balance": 1814
-      }
-    }
+    "updatedAt": "2026-03-19T22:45:01.750Z"
   },
   {
     "contactName": "Luis Roberts - Grand Solmar",
@@ -716,47 +390,11 @@
     "totalPassengers": 4,
     "extraPassengers": 0,
     "extraPassengerCost": 0,
-    "status": "completado",
+    "status": "completed",
     "id": "res_1773875988231_4z7b1vtly",
     "folio": "IG 0318-0321 5P",
     "createdAt": "2026-03-18T23:19:48.231Z",
-    "updatedAt": "2026-03-18T23:33:44.471Z",
-    "clientId": "CLI-010",
-    "currentStep": 3,
-    "data": {
-      "step1_pricing": {
-        "pricingType": "regular",
-        "durationHours": 2,
-        "passengers": 4,
-        "extraPassengers": 0,
-        "hourlyRate": 1390,
-        "baseTripCost": 2780,
-        "extraPassengerCharge": 100,
-        "estimatedSubtotal": 2780
-      },
-      "step2_details": {
-        "tourType": "Sunset Cruise",
-        "tripDate": "2026-03-21",
-        "startTime": "17:00",
-        "endTime": "19:00",
-        "customerName": "Lisa Cade",
-        "customerPhone": "",
-        "customerEmail": "",
-        "notes": "COUPON 89163"
-      },
-      "step3_adjustments": {
-        "bookingSource": "direct",
-        "repriceType": "",
-        "repriceDiscount": 0,
-        "extrasAmount": 0,
-        "fishingLicenses": 0,
-        "finalBusinessPrice": 2780,
-        "finalCustomerPrice": 2780,
-        "feeAmount": 0,
-        "deposit": 0,
-        "balance": 2780
-      }
-    }
+    "updatedAt": "2026-03-18T23:33:44.471Z"
   },
   {
     "contactName": "Viator",
@@ -793,47 +431,11 @@
     "totalPassengers": 12,
     "extraPassengers": 0,
     "extraPassengerCost": 0,
-    "status": "completado",
+    "status": "completed",
     "id": "res_1773942222462_af0u24zru",
     "folio": "IG 0319-0323 8A",
     "createdAt": "2026-03-19T17:43:42.462Z",
-    "updatedAt": "2026-03-19T17:46:32.849Z",
-    "clientId": "CLI-011",
-    "currentStep": 3,
-    "data": {
-      "step1_pricing": {
-        "pricingType": "snack",
-        "durationHours": 8,
-        "passengers": 12,
-        "extraPassengers": 0,
-        "hourlyRate": 400,
-        "baseTripCost": 3200,
-        "extraPassengerCharge": 100,
-        "estimatedSubtotal": 3200
-      },
-      "step2_details": {
-        "tourType": "Fishing",
-        "tripDate": "2026-03-23",
-        "startTime": "08:00",
-        "endTime": "16:00",
-        "customerName": "Han Trent",
-        "customerPhone": "+1 3174 964 351",
-        "customerEmail": "",
-        "notes": ""
-      },
-      "step3_adjustments": {
-        "bookingSource": "viator",
-        "repriceType": "",
-        "repriceDiscount": 0,
-        "extrasAmount": 0,
-        "fishingLicenses": 0,
-        "finalBusinessPrice": 3200,
-        "finalCustomerPrice": 3200,
-        "feeAmount": 0,
-        "deposit": 0,
-        "balance": 3200
-      }
-    }
+    "updatedAt": "2026-03-19T17:46:32.849Z"
   },
   {
     "contactName": "Viator",
@@ -911,7 +513,10 @@
         "deposit": 0,
         "balance": 3098.12
       }
-    }
+    },
+    "airtable_id": "rechGNAwpFXsRy1jv",
+    "sync_status": "synced",
+    "lastSyncedAt": "2026-05-19T22:09:35.115Z"
   },
   {
     "contactName": "JS Tour Travel",
@@ -948,46 +553,10 @@
     "totalPassengers": 25,
     "extraPassengers": 11,
     "extraPassengerCost": 1100,
-    "status": "completado",
+    "status": "confirmed",
     "id": "res_1773949142999_fba3my8tf",
     "folio": "IG 0319-0424 1P",
-    "createdAt": "2026-03-19T19:39:03.000Z",
-    "clientId": "CLI-013",
-    "currentStep": 3,
-    "data": {
-      "step1_pricing": {
-        "pricingType": "regular",
-        "durationHours": 4,
-        "passengers": 25,
-        "extraPassengers": 11,
-        "hourlyRate": 600,
-        "baseTripCost": 2400,
-        "extraPassengerCharge": 100,
-        "estimatedSubtotal": 3500
-      },
-      "step2_details": {
-        "tourType": "Snorkeling Tour",
-        "tripDate": "2026-04-24",
-        "startTime": "13:00",
-        "endTime": "17:00",
-        "customerName": "Raymond Williams",
-        "customerPhone": "+1 714 448 3267",
-        "customerEmail": "",
-        "notes": ""
-      },
-      "step3_adjustments": {
-        "bookingSource": "direct",
-        "repriceType": "",
-        "repriceDiscount": 0,
-        "extrasAmount": 13.900000000000091,
-        "fishingLicenses": 0,
-        "finalBusinessPrice": 3500,
-        "finalCustomerPrice": 3513.9,
-        "feeAmount": 0,
-        "deposit": 0,
-        "balance": 3513.9
-      }
-    }
+    "createdAt": "2026-03-19T19:39:03.000Z"
   },
   {
     "contactName": "Lupita Zamorano",
@@ -1024,46 +593,10 @@
     "totalPassengers": 16,
     "extraPassengers": 2,
     "extraPassengerCost": 200,
-    "status": "completado",
+    "status": "completed",
     "id": "res_1773958617534_afqjii9u8",
     "folio": "IG 0319-0324 5P",
-    "createdAt": "2026-03-19T22:16:57.534Z",
-    "clientId": "CLI-014",
-    "currentStep": 3,
-    "data": {
-      "step1_pricing": {
-        "pricingType": "regular",
-        "durationHours": 3,
-        "passengers": 16,
-        "extraPassengers": 2,
-        "hourlyRate": 600,
-        "baseTripCost": 1800,
-        "extraPassengerCharge": 100,
-        "estimatedSubtotal": 2000
-      },
-      "step2_details": {
-        "tourType": "Sunset Cruise",
-        "tripDate": "2026-03-24",
-        "startTime": "17:00",
-        "endTime": "20:00",
-        "customerName": "Grupo Lupita Zamorano",
-        "customerPhone": "",
-        "customerEmail": "",
-        "notes": ""
-      },
-      "step3_adjustments": {
-        "bookingSource": "direct",
-        "repriceType": "",
-        "repriceDiscount": 0,
-        "extrasAmount": 0,
-        "fishingLicenses": 0,
-        "finalBusinessPrice": 2000,
-        "finalCustomerPrice": 2000,
-        "feeAmount": 0,
-        "deposit": 0,
-        "balance": 2000
-      }
-    }
+    "createdAt": "2026-03-19T22:16:57.534Z"
   },
   {
     "contactName": "Lupita Zamorano",
@@ -1100,47 +633,11 @@
     "totalPassengers": 14,
     "extraPassengers": 0,
     "extraPassengerCost": 0,
-    "status": "completado",
+    "status": "completed",
     "id": "res_1773958923421_vjwikz8gk",
     "folio": "IG 0327-0326 4P",
     "createdAt": "2026-03-19T22:22:03.421Z",
-    "updatedAt": "2026-03-27T17:00:59.269Z",
-    "clientId": "CLI-014",
-    "currentStep": 3,
-    "data": {
-      "step1_pricing": {
-        "pricingType": "snack",
-        "durationHours": 3,
-        "passengers": 14,
-        "extraPassengers": 0,
-        "hourlyRate": 483.333,
-        "baseTripCost": 1449.999,
-        "extraPassengerCharge": 100,
-        "estimatedSubtotal": 1449.999
-      },
-      "step2_details": {
-        "tourType": "Sunset Cruise",
-        "tripDate": "2026-03-26",
-        "startTime": "16:00",
-        "endTime": "19:00",
-        "customerName": "Grupo Lupita Zamorano",
-        "customerPhone": "",
-        "customerEmail": "",
-        "notes": ""
-      },
-      "step3_adjustments": {
-        "bookingSource": "direct",
-        "repriceType": "",
-        "repriceDiscount": 0,
-        "extrasAmount": 0,
-        "fishingLicenses": 0,
-        "finalBusinessPrice": 1449.999,
-        "finalCustomerPrice": 1449.999,
-        "feeAmount": 0,
-        "deposit": 0,
-        "balance": 1449.999
-      }
-    }
+    "updatedAt": "2026-03-27T17:00:59.269Z"
   },
   {
     "contactName": "Eduardo Araujo",
@@ -1177,46 +674,10 @@
     "totalPassengers": 15,
     "extraPassengers": 1,
     "extraPassengerCost": 100,
-    "status": "completado",
+    "status": "completed",
     "id": "res_1774630377712_ofn7u07ts",
     "folio": "IG 0327-0327 7A",
-    "createdAt": "2026-03-27T16:52:57.712Z",
-    "clientId": "CLI-015",
-    "currentStep": 3,
-    "data": {
-      "step1_pricing": {
-        "pricingType": "regular",
-        "durationHours": 5,
-        "passengers": 15,
-        "extraPassengers": 1,
-        "hourlyRate": 600,
-        "baseTripCost": 3000,
-        "extraPassengerCharge": 100,
-        "estimatedSubtotal": 3100
-      },
-      "step2_details": {
-        "tourType": "Fishing",
-        "tripDate": "2026-03-27",
-        "startTime": "07:00",
-        "endTime": "12:00",
-        "customerName": "Danniel Triuino",
-        "customerPhone": "+1 954 651 0231",
-        "customerEmail": "",
-        "notes": "$300 USD Comisión Eduardo Araujo. Se cobraron $300 USD de licencias de pesca (20us c/u)."
-      },
-      "step3_adjustments": {
-        "bookingSource": "direct",
-        "repriceType": "",
-        "repriceDiscount": 0,
-        "extrasAmount": 300,
-        "fishingLicenses": 0,
-        "finalBusinessPrice": 3100,
-        "finalCustomerPrice": 3400,
-        "feeAmount": 0,
-        "deposit": 0,
-        "balance": 3400
-      }
-    }
+    "createdAt": "2026-03-27T16:52:57.712Z"
   },
   {
     "contactName": "Blue Moon",
@@ -1253,46 +714,10 @@
     "totalPassengers": 15,
     "extraPassengers": 1,
     "extraPassengerCost": 100,
-    "status": "completado",
+    "status": "completed",
     "id": "res_1774720781051_2i4sd9srk",
     "folio": "IG 0328-0328 1P",
-    "createdAt": "2026-03-28T17:59:41.052Z",
-    "clientId": "CLI-016",
-    "currentStep": 3,
-    "data": {
-      "step1_pricing": {
-        "pricingType": "regular",
-        "durationHours": 3,
-        "passengers": 15,
-        "extraPassengers": 1,
-        "hourlyRate": 666.5,
-        "baseTripCost": 1999.5,
-        "extraPassengerCharge": 100,
-        "estimatedSubtotal": 2099.5
-      },
-      "step2_details": {
-        "tourType": "Snorkeling Tour",
-        "tripDate": "2026-03-28",
-        "startTime": "13:00",
-        "endTime": "16:00",
-        "customerName": "Carly Giacchetti",
-        "customerPhone": "",
-        "customerEmail": "",
-        "notes": ""
-      },
-      "step3_adjustments": {
-        "bookingSource": "direct",
-        "repriceType": "",
-        "repriceDiscount": 0,
-        "extrasAmount": 0.5,
-        "fishingLicenses": 0,
-        "finalBusinessPrice": 2099.5,
-        "finalCustomerPrice": 2100,
-        "feeAmount": 0,
-        "deposit": 2034.38,
-        "balance": 65.61999999999989
-      }
-    }
+    "createdAt": "2026-03-28T17:59:41.052Z"
   },
   {
     "contactName": "Blue Moon",
@@ -1329,47 +754,11 @@
     "totalPassengers": 40,
     "extraPassengers": 26,
     "extraPassengerCost": 2600,
-    "status": "completado",
+    "status": "completed",
     "id": "res_1774731347285_w7ql48og1",
     "folio": "IG 0328-0325 11A",
     "createdAt": "2026-03-28T20:55:47.286Z",
-    "updatedAt": "2026-03-28T20:59:55.138Z",
-    "clientId": "CLI-017",
-    "currentStep": 3,
-    "data": {
-      "step1_pricing": {
-        "pricingType": "snack",
-        "durationHours": 3,
-        "passengers": 40,
-        "extraPassengers": 26,
-        "hourlyRate": 399.666,
-        "baseTripCost": 1198.998,
-        "extraPassengerCharge": 100,
-        "estimatedSubtotal": 3798.998
-      },
-      "step2_details": {
-        "tourType": "Bay Trip",
-        "tripDate": "2026-03-25",
-        "startTime": "11:00",
-        "endTime": "14:00",
-        "customerName": "Kristen Splin",
-        "customerPhone": "",
-        "customerEmail": "",
-        "notes": "Se cargaron $569.85 USD de propinas. <br>\n<b>Balance original:</b> $3,799. <b>Propina (15%):</b> $569.85. <b>Nuevo Total:</b> $4368.85."
-      },
-      "step3_adjustments": {
-        "bookingSource": "direct",
-        "repriceType": "",
-        "repriceDiscount": 0,
-        "extrasAmount": 0,
-        "fishingLicenses": 0,
-        "finalBusinessPrice": 3798.998,
-        "finalCustomerPrice": 3798.998,
-        "feeAmount": 0,
-        "deposit": 569.85,
-        "balance": 3229.148
-      }
-    }
+    "updatedAt": "2026-03-28T20:59:55.138Z"
   },
   {
     "contactName": "Ivan Gonzalez",
@@ -1406,47 +795,11 @@
     "totalPassengers": 33,
     "extraPassengers": 19,
     "extraPassengerCost": 1900,
-    "status": "completado",
+    "status": "completed",
     "id": "res_1774978104318_69wnv3l16",
     "folio": "IG 0331-0331 12A",
     "createdAt": "2026-03-31T17:28:24.318Z",
-    "updatedAt": "2026-03-31T17:29:40.286Z",
-    "clientId": "CLI-018",
-    "currentStep": 3,
-    "data": {
-      "step1_pricing": {
-        "pricingType": "regular",
-        "durationHours": 4,
-        "passengers": 33,
-        "extraPassengers": 19,
-        "hourlyRate": 775,
-        "baseTripCost": 3100,
-        "extraPassengerCharge": 100,
-        "estimatedSubtotal": 5000
-      },
-      "step2_details": {
-        "tourType": "Snorkeling Tour",
-        "tripDate": "2026-03-31",
-        "startTime": "00:00",
-        "endTime": "04:00",
-        "customerName": "Jesse Katz",
-        "customerPhone": "",
-        "customerEmail": "",
-        "notes": ""
-      },
-      "step3_adjustments": {
-        "bookingSource": "get-my-boat",
-        "repriceType": "",
-        "repriceDiscount": 0,
-        "extrasAmount": 0,
-        "fishingLicenses": 0,
-        "finalBusinessPrice": 5000,
-        "finalCustomerPrice": 5000,
-        "feeAmount": 0,
-        "deposit": 2500,
-        "balance": 2500
-      }
-    }
+    "updatedAt": "2026-03-31T17:29:40.286Z"
   },
   {
     "contactName": "Patricia Barron",
@@ -1483,47 +836,11 @@
     "totalPassengers": 24,
     "extraPassengers": 10,
     "extraPassengerCost": 1000,
-    "status": "completado",
+    "status": "completed",
     "id": "res_1774895940775_kcbhsk5px",
     "folio": "IG 0331-0331 6A",
     "createdAt": "2026-03-30T18:39:00.775Z",
-    "updatedAt": "2026-03-31T22:14:30.406Z",
-    "clientId": "CLI-019",
-    "currentStep": 3,
-    "data": {
-      "step1_pricing": {
-        "pricingType": "regular",
-        "durationHours": 4,
-        "passengers": 24,
-        "extraPassengers": 10,
-        "hourlyRate": 750,
-        "baseTripCost": 3000,
-        "extraPassengerCharge": 100,
-        "estimatedSubtotal": 4000
-      },
-      "step2_details": {
-        "tourType": "Fishing",
-        "tripDate": "2026-03-31",
-        "startTime": "06:00",
-        "endTime": "10:00",
-        "customerName": "James Lopez",
-        "customerPhone": "",
-        "customerEmail": "",
-        "notes": "16 licencess required. <br><b>Cost:</b> $20 USD per person.<br><b>TOTAL:</b> $320 USD (To be paid on board). "
-      },
-      "step3_adjustments": {
-        "bookingSource": "direct",
-        "repriceType": "",
-        "repriceDiscount": 0,
-        "extrasAmount": 0,
-        "fishingLicenses": 0,
-        "finalBusinessPrice": 4000,
-        "finalCustomerPrice": 4000,
-        "feeAmount": 0,
-        "deposit": 1800,
-        "balance": 2200
-      }
-    }
+    "updatedAt": "2026-03-31T22:14:30.406Z"
   },
   {
     "contactName": "Blue Moon",
@@ -1560,46 +877,10 @@
     "totalPassengers": 14,
     "extraPassengers": 0,
     "extraPassengerCost": 0,
-    "status": "completado",
+    "status": "completed",
     "id": "res_1775167561147_j4s1ktlvk",
     "folio": "IG 0402-0403 1030A",
-    "createdAt": "2026-04-02T22:06:01.148Z",
-    "clientId": "CLI-020",
-    "currentStep": 3,
-    "data": {
-      "step1_pricing": {
-        "pricingType": "snack",
-        "durationHours": 4,
-        "passengers": 14,
-        "extraPassengers": 0,
-        "hourlyRate": 500,
-        "baseTripCost": 2000,
-        "extraPassengerCharge": 100,
-        "estimatedSubtotal": 2000
-      },
-      "step2_details": {
-        "tourType": "Snorkeling Tour",
-        "tripDate": "2026-04-03",
-        "startTime": "10:30",
-        "endTime": "14:30",
-        "customerName": "Jack Rivers",
-        "customerPhone": "+44 7807 711832",
-        "customerEmail": "",
-        "notes": ""
-      },
-      "step3_adjustments": {
-        "bookingSource": "direct",
-        "repriceType": "",
-        "repriceDiscount": 0,
-        "extrasAmount": 200,
-        "fishingLicenses": 0,
-        "finalBusinessPrice": 2000,
-        "finalCustomerPrice": 2200,
-        "feeAmount": 0,
-        "deposit": 0,
-        "balance": 2200
-      }
-    }
+    "createdAt": "2026-04-02T22:06:01.148Z"
   },
   {
     "contactName": "Beatriz JS Tour & Travel",
@@ -1636,46 +917,10 @@
     "totalPassengers": 13,
     "extraPassengers": 0,
     "extraPassengerCost": 0,
-    "status": "completado",
+    "status": "completed",
     "id": "res_1775323941624_mr7sk2xln",
     "folio": "IG 0404-0404 11A",
-    "createdAt": "2026-04-04T17:32:21.625Z",
-    "clientId": "CLI-021",
-    "currentStep": 3,
-    "data": {
-      "step1_pricing": {
-        "pricingType": "regular",
-        "durationHours": 3,
-        "passengers": 13,
-        "extraPassengers": 0,
-        "hourlyRate": 700,
-        "baseTripCost": 2100,
-        "extraPassengerCharge": 100,
-        "estimatedSubtotal": 2100
-      },
-      "step2_details": {
-        "tourType": "Sunset Cruise",
-        "tripDate": "2026-04-04",
-        "startTime": "11:00",
-        "endTime": "14:00",
-        "customerName": "Jill Hill",
-        "customerPhone": "+1 816 616 3626",
-        "customerEmail": "",
-        "notes": ""
-      },
-      "step3_adjustments": {
-        "bookingSource": "direct",
-        "repriceType": "",
-        "repriceDiscount": 0,
-        "extrasAmount": 24.84999999999991,
-        "fishingLicenses": 0,
-        "finalBusinessPrice": 2100,
-        "finalCustomerPrice": 2124.85,
-        "feeAmount": 0,
-        "deposit": 0,
-        "balance": 2124.85
-      }
-    }
+    "createdAt": "2026-04-04T17:32:21.625Z"
   },
   {
     "contactName": "Grand Velas - Itzel Toledo",
@@ -1712,46 +957,10 @@
     "totalPassengers": 9,
     "extraPassengers": 0,
     "extraPassengerCost": 0,
-    "status": "completado",
+    "status": "completed",
     "id": "res_1775681744032_zaiav9xwg",
     "folio": "IG 0408-0408 4P",
-    "createdAt": "2026-04-08T20:55:44.033Z",
-    "clientId": "CLI-022",
-    "currentStep": 3,
-    "data": {
-      "step1_pricing": {
-        "pricingType": "regular",
-        "durationHours": 3,
-        "passengers": 9,
-        "extraPassengers": 0,
-        "hourlyRate": 1089.666,
-        "baseTripCost": 3268.9979999999996,
-        "extraPassengerCharge": 100,
-        "estimatedSubtotal": 3268.9979999999996
-      },
-      "step2_details": {
-        "tourType": "Snorkeling Tour",
-        "tripDate": "2026-04-08",
-        "startTime": "16:00",
-        "endTime": "19:00",
-        "customerName": "Olivia Muzquiz",
-        "customerPhone": "",
-        "customerEmail": "",
-        "notes": ""
-      },
-      "step3_adjustments": {
-        "bookingSource": "direct",
-        "repriceType": "",
-        "repriceDiscount": 0,
-        "extrasAmount": 0,
-        "fishingLicenses": 0,
-        "finalBusinessPrice": 3268.9979999999996,
-        "finalCustomerPrice": 3268.9979999999996,
-        "feeAmount": 0,
-        "deposit": 0,
-        "balance": 3268.9979999999996
-      }
-    }
+    "createdAt": "2026-04-08T20:55:44.033Z"
   },
   {
     "contactName": "Daniel Rios",
@@ -1788,46 +997,10 @@
     "totalPassengers": 18,
     "extraPassengers": 4,
     "extraPassengerCost": 400,
-    "status": "completado",
+    "status": "completed",
     "id": "res_1775851442027_f1xsh79sd",
     "folio": "IG 0410-0410 7A",
-    "createdAt": "2026-04-10T20:04:02.027Z",
-    "clientId": "CLI-023",
-    "currentStep": 3,
-    "data": {
-      "step1_pricing": {
-        "pricingType": "regular",
-        "durationHours": 8,
-        "passengers": 18,
-        "extraPassengers": 4,
-        "hourlyRate": 600,
-        "baseTripCost": 4800,
-        "extraPassengerCharge": 100,
-        "estimatedSubtotal": 5200
-      },
-      "step2_details": {
-        "tourType": "Fishing",
-        "tripDate": "2026-04-10",
-        "startTime": "07:00",
-        "endTime": "15:00",
-        "customerName": "Greg Konen",
-        "customerPhone": "",
-        "customerEmail": "",
-        "notes": ""
-      },
-      "step3_adjustments": {
-        "bookingSource": "direct",
-        "repriceType": "",
-        "repriceDiscount": 0,
-        "extrasAmount": 600,
-        "fishingLicenses": 0,
-        "finalBusinessPrice": 5200,
-        "finalCustomerPrice": 5800,
-        "feeAmount": 0,
-        "deposit": 2950,
-        "balance": 2850
-      }
-    }
+    "createdAt": "2026-04-10T20:04:02.027Z"
   },
   {
     "contactName": "Grand Velas - Lucia Hernandez",
@@ -1864,47 +1037,11 @@
     "totalPassengers": 14,
     "extraPassengers": 0,
     "extraPassengerCost": 0,
-    "status": "completado",
+    "status": "completed",
     "id": "res_1775950843008_ehhximpe4",
     "folio": "IG 0411-0412 9A",
     "createdAt": "2026-04-11T23:40:43.009Z",
-    "updatedAt": "2026-04-11T23:41:35.012Z",
-    "clientId": "CLI-024",
-    "currentStep": 3,
-    "data": {
-      "step1_pricing": {
-        "pricingType": "regular",
-        "durationHours": 3,
-        "passengers": 14,
-        "extraPassengers": 0,
-        "hourlyRate": 600,
-        "baseTripCost": 1800,
-        "extraPassengerCharge": 100,
-        "estimatedSubtotal": 1800
-      },
-      "step2_details": {
-        "tourType": "Snorkeling Tour",
-        "tripDate": "2026-04-12",
-        "startTime": "09:00",
-        "endTime": "12:00",
-        "customerName": "Jake Shepherd",
-        "customerPhone": "",
-        "customerEmail": "",
-        "notes": ""
-      },
-      "step3_adjustments": {
-        "bookingSource": "direct",
-        "repriceType": "",
-        "repriceDiscount": 0,
-        "extrasAmount": 1469,
-        "fishingLicenses": 0,
-        "finalBusinessPrice": 1800,
-        "finalCustomerPrice": 3269,
-        "feeAmount": 0,
-        "deposit": 0,
-        "balance": 3269
-      }
-    }
+    "updatedAt": "2026-04-11T23:41:35.012Z"
   },
   {
     "contactName": "Eduardo Araujo",
@@ -1941,249 +1078,9 @@
     "totalPassengers": 20,
     "extraPassengers": 6,
     "extraPassengerCost": 600,
-    "status": "completado",
+    "status": "confirmed",
     "id": "res_1776450379985_t2498p7a9",
     "folio": "IG 0417-0424 7A",
-    "createdAt": "2026-04-17T18:26:19.985Z",
-    "clientId": "CLI-025",
-    "currentStep": 3,
-    "data": {
-      "step1_pricing": {
-        "pricingType": "regular",
-        "durationHours": 5,
-        "passengers": 20,
-        "extraPassengers": 6,
-        "hourlyRate": 600,
-        "baseTripCost": 3000,
-        "extraPassengerCharge": 100,
-        "estimatedSubtotal": 3600
-      },
-      "step2_details": {
-        "tourType": "Fishing",
-        "tripDate": "2026-04-24",
-        "startTime": "07:00",
-        "endTime": "12:00",
-        "customerName": "Alberto Guadiana",
-        "customerPhone": " +1 619 930 3232",
-        "customerEmail": "",
-        "notes": ""
-      },
-      "step3_adjustments": {
-        "bookingSource": "direct",
-        "repriceType": "",
-        "repriceDiscount": 0,
-        "extrasAmount": 0,
-        "fishingLicenses": 0,
-        "finalBusinessPrice": 3600,
-        "finalCustomerPrice": 3600,
-        "feeAmount": 0,
-        "deposit": 0,
-        "balance": 3600
-      }
-    }
-  },
-  {
-    "contactName": "Celeste Peters",
-    "contactPhone": "",
-    "contactEmail": "",
-    "reservationSource": "Contacto Directo",
-    "guestName": "Maurice Jones",
-    "tourName": "SNORKEL",
-    "reservationDate": "2026-06-13",
-    "reservationTime": "04:00",
-    "reservationHours": "3",
-    "agentCode": "IG",
-    "adults": "6",
-    "kids": "0",
-    "infants": "0",
-    "extraPax": "0",
-    "foodOption": "TACOS & NATIONAL OPEN BAR",
-    "hotel": "",
-    "hourlyRate": 600,
-    "basePrice": 1800,
-    "extraPassengerFee": "100",
-    "totalPrice": 1800,
-    "deposit": 0,
-    "balance": 1800,
-    "paymentMethod": "CASH",
-    "extraCostTitle": "",
-    "extraCostAmount": 0,
-    "extraCostDescription": "",
-    "priceAdjustment": 0,
-    "priceAdjustmentNote": "",
-    "crewTipsEnabled": "on",
-    "notes": "",
-    "hours": 3,
-    "totalPassengers": 6,
-    "extraPassengers": 0,
-    "extraPassengerCost": 0,
-    "status": "reservado",
-    "id": "res_1777581370274_zihk80prn",
-    "folio": "IG 0430-0613 4A",
-    "createdAt": "2026-04-30T20:36:10.274Z",
-    "updatedAt": "2026-05-16T23:04:51.001Z",
-    "clientId": "CLI-026",
-    "currentStep": 1,
-    "data": {
-      "step1_pricing": {
-        "pricingType": "regular",
-        "durationHours": 3,
-        "passengers": 6,
-        "extraPassengers": 0,
-        "hourlyRate": 600,
-        "baseTripCost": 1800,
-        "extraPassengerCharge": 0,
-        "estimatedSubtotal": 1800,
-        "source": "direct"
-      },
-      "step2_details": {
-        "tourType": "Snorkeling Tour",
-        "tripDate": "2026-06-13",
-        "startTime": "04:00",
-        "endTime": "07:00",
-        "customerName": "Maurice Jones",
-        "customerPhone": "",
-        "customerEmail": "",
-        "notes": ""
-      },
-      "step3_adjustments": {
-        "bookingSource": "direct",
-        "repriceType": "",
-        "repriceDiscount": 0,
-        "extrasAmount": 0,
-        "fishingLicenses": 0,
-        "finalBusinessPrice": 1800,
-        "finalCustomerPrice": 1800,
-        "feeAmount": 0,
-        "deposit": 0,
-        "balance": 1800
-      }
-    }
-  },
-  {
-    "contactName": "Ivan Gonzalez",
-    "contactPhone": "",
-    "contactEmail": "",
-    "reservationSource": "Get My Boat",
-    "guestName": "Tyrone Bowie",
-    "tourName": "SNORKEL",
-    "reservationDate": "2026-05-01",
-    "reservationTime": "01:00",
-    "reservationHours": "3",
-    "agentCode": "IG",
-    "adults": "30",
-    "kids": "0",
-    "infants": "0",
-    "extraPax": "0",
-    "foodOption": "FISHING HALF DAY MENU",
-    "hotel": "",
-    "hourlyRate": 500,
-    "basePrice": 1500,
-    "extraPassengerFee": "100",
-    "totalPrice": 2565.5,
-    "deposit": 0,
-    "balance": 2565.5,
-    "paymentMethod": "TRANSFER",
-    "extraCostTitle": "",
-    "extraCostAmount": -534.5,
-    "extraCostDescription": "Get My Boat Fee",
-    "priceAdjustment": 0,
-    "priceAdjustmentNote": "",
-    "crewTipsEnabled": "on",
-    "notes": "BRIDE & GROOMS",
-    "hours": 3,
-    "totalPassengers": 30,
-    "extraPassengers": 16,
-    "extraPassengerCost": 1600,
-    "status": "reservado",
-    "id": "res_1777593977928_wfig88hyd",
-    "folio": "IG 0430-0501 1A",
-    "createdAt": "2026-05-01T00:06:17.929Z",
-    "updatedAt": "2026-05-01T00:09:42.923Z",
-    "clientId": "CLI-027",
-    "currentStep": 3,
-    "data": {
-      "step1_pricing": {
-        "pricingType": "snack",
-        "durationHours": 3,
-        "passengers": 30,
-        "extraPassengers": 16,
-        "hourlyRate": 500,
-        "baseTripCost": 1500,
-        "extraPassengerCharge": 100,
-        "estimatedSubtotal": 3100
-      },
-      "step2_details": {
-        "tourType": "Snorkeling Tour",
-        "tripDate": "2026-05-01",
-        "startTime": "01:00",
-        "endTime": "04:00",
-        "customerName": "Tyrone Bowie",
-        "customerPhone": "",
-        "customerEmail": "",
-        "notes": "BRIDE & GROOMS"
-      },
-      "step3_adjustments": {
-        "bookingSource": "get-my-boat",
-        "repriceType": "",
-        "repriceDiscount": 0,
-        "extrasAmount": -534.5,
-        "fishingLicenses": 0,
-        "finalBusinessPrice": 3100,
-        "finalCustomerPrice": 2565.5,
-        "feeAmount": 0,
-        "deposit": 0,
-        "balance": 2565.5
-      }
-    }
-  },
-  {
-    "id": "04c9a203-3820-4dfa-b773-0de29643cd94",
-    "status": "reservado",
-    "createdAt": "2026-05-16T17:04:34.904Z",
-    "updatedAt": "2026-05-17T00:09:28.771Z",
-    "currentStep": 3,
-    "data": {
-      "step1_pricing": {
-        "pricingType": "regular",
-        "durationHours": 2,
-        "passengers": 10,
-        "extraPassengers": 0,
-        "hourlyRate": 500,
-        "baseTripCost": 1000,
-        "extraPassengerCharge": 0,
-        "estimatedSubtotal": 1000,
-        "source": "get-my-boat"
-      },
-      "step2_details": {
-        "tourType": "Bay Trip",
-        "tripDate": "2026-05-30",
-        "startTime": "03:00",
-        "endTime": "05:00",
-        "customerName": "Ivan Gonzalez",
-        "customerPhone": "",
-        "customerEmail": "",
-        "notes": "Just Testing"
-      },
-      "step3_adjustments": {
-        "bookingSource": "get-my-boat",
-        "repriceType": "",
-        "repriceDiscount": 0,
-        "extrasAmount": 0,
-        "fishingLicenses": 0,
-        "finalBusinessPrice": 1000,
-        "finalCustomerPrice": 1129.9435028248588,
-        "feeAmount": 129.9435028248588,
-        "deposit": 0,
-        "balance": 1129.9435028248588,
-        "paymentMethod": "cash",
-        "manualHourlyRate": null,
-        "manualExtraPaxRate": null
-      }
-    },
-    "clientId": "CLI-044",
-    "sync_status": "synced",
-    "airtable_id": "recuZNF7FgAd9Wxfa",
-    "lastSyncedAt": "2026-05-17T01:07:36.172Z"
+    "createdAt": "2026-04-17T18:26:19.985Z"
   }
 ]
