@@ -6,34 +6,7 @@
 (function () {
   'use strict';
 
-  // === RELOAD ORIGIN LOGGER (temporary diagnostic) ===
-  (function() {
-    // Safe reload interception via prototype (works in modern browsers)
-    try {
-      const proto = Location.prototype;
-      const origReload = proto.reload;
-      proto.reload = function(force) {
-        console.groupCollapsed('%c[RELOAD ORIGIN] location.reload() called', 'color:#f00;font-weight:700');
-        console.trace('Stack at reload time');
-        console.log('Current hash:', window.location.hash);
-        console.log('Active screen:', window.App && window.App.currentScreenName);
-        console.groupEnd();
-        return origReload.apply(this, arguments);
-      };
-    } catch (e) {
-      console.warn('[Logger] Could not patch Location.prototype.reload', e);
-    }
 
-    // beforeunload trap for any navigation that causes unload/reload
-    window.addEventListener('beforeunload', () => {
-      console.groupCollapsed('%c[RELOAD ORIGIN] beforeunload fired (possible reload/nav)', 'color:#f00;font-weight:700');
-      console.log('hash at unload:', window.location.hash);
-      console.log('active screen:', window.App && window.App.currentScreenName);
-      console.trace('Callers leading to unload');
-      console.groupEnd();
-    });
-  })();
-  // === END LOGGER ===
 
   const App = {
     currentScreen: null,
@@ -70,7 +43,7 @@
      */
     route() {
       const hash = window.location.hash || '#/dashboard';
-      console.log('%c[ROUTE]', 'color:#0af', hash, 'screen=', this.currentScreenName);
+      console.log('%c[ROUTE] Navigating from:', 'color:#0af', this.currentScreenName || 'none', 'to:', hash);
       const container = document.getElementById('app');
       const mainEl = document.querySelector('.app-main');
 
@@ -190,8 +163,8 @@
         showFab = false;
         showBottomNav = true;
         headerHTML = this.renderDefaultHeader();
-      } else {
-         // Dashboard: #/dashboard or #/
+      } else if (hash === '#/dashboard' || hash === '#/' || hash === '#' || hash === '') {
+         // Dashboard
          screen = window.DashboardScreen;
          showFab = true;
          showBottomNav = true;
@@ -203,11 +176,21 @@
            window.Storage.autoImportLegacy().then(result => {
              if (result.imported > 0) {
                window.Toast.success(`Imported ${result.imported} historical reservations`);
-               // Refresh dashboard to show new data
-               this.route();
+               // Refresh only the list in-place (avoid full route() re-cycle)
+               const listEl = document.getElementById('reservationList');
+               if (listEl && window.DashboardScreen) {
+                 const currentFilter = listEl.getAttribute('data-active-filter') || 'all';
+                 const reservations = window.Storage.getAllReservations();
+                 listEl.innerHTML = window.DashboardScreen.renderList(reservations, currentFilter);
+                 window.DashboardScreen.bindCardEvents();
+               }
              }
            });
          }
+      } else {
+        // Unknown route — do nothing (avoids ghost dashboard render that causes hash reset loop)
+        console.warn('[ROUTE] Unknown route, ignoring:', hash);
+        return;
       }
 
       // Update header
@@ -220,9 +203,7 @@
           window.AppState.syncStatus = status;
           if (status.hasWarnings) {
             this.showSyncWarning(status);
-          }
-          // Refresh dashboard list to show sync icons on cards
-          if (hash === '#/dashboard' || hash === '' || hash === '#/') {
+            // Only re-render card list when there are warnings (to show sync alert icons)
             const listEl = document.getElementById('reservationList');
             if (listEl && window.DashboardScreen) {
               const currentFilter = listEl.getAttribute('data-active-filter') || 'all';
@@ -297,6 +278,8 @@
         container.dataset.step = `step${stepNumber}`;
         screen.render(container, params);
         this.currentScreen = screen;
+        this.currentScreenName = hash; // track for [ROUTE] log
+        console.log('%c[ROUTE] Successfully rendered:', 'color:#2e7d32', hash);
       } else {
         container.dataset.step = 'dashboard';
       }
