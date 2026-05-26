@@ -6,6 +6,35 @@
 (function () {
   'use strict';
 
+  // === RELOAD ORIGIN LOGGER (temporary diagnostic) ===
+  (function() {
+    // Safe reload interception via prototype (works in modern browsers)
+    try {
+      const proto = Location.prototype;
+      const origReload = proto.reload;
+      proto.reload = function(force) {
+        console.groupCollapsed('%c[RELOAD ORIGIN] location.reload() called', 'color:#f00;font-weight:700');
+        console.trace('Stack at reload time');
+        console.log('Current hash:', window.location.hash);
+        console.log('Active screen:', window.App && window.App.currentScreenName);
+        console.groupEnd();
+        return origReload.apply(this, arguments);
+      };
+    } catch (e) {
+      console.warn('[Logger] Could not patch Location.prototype.reload', e);
+    }
+
+    // beforeunload trap for any navigation that causes unload/reload
+    window.addEventListener('beforeunload', () => {
+      console.groupCollapsed('%c[RELOAD ORIGIN] beforeunload fired (possible reload/nav)', 'color:#f00;font-weight:700');
+      console.log('hash at unload:', window.location.hash);
+      console.log('active screen:', window.App && window.App.currentScreenName);
+      console.trace('Callers leading to unload');
+      console.groupEnd();
+    });
+  })();
+  // === END LOGGER ===
+
   const App = {
     currentScreen: null,
     currentScreenName: null,
@@ -41,6 +70,7 @@
      */
     route() {
       const hash = window.location.hash || '#/dashboard';
+      console.log('%c[ROUTE]', 'color:#0af', hash, 'screen=', this.currentScreenName);
       const container = document.getElementById('app');
       const mainEl = document.querySelector('.app-main');
 
@@ -111,13 +141,20 @@
         showBottomNav = false;
         headerHTML = this.renderStepperHeader(1, id);
       } else if (hash === '#/compare') {
-        screen = window.DataCompareScreen;
+        screen = window.SettingsScreen;
+        params = { tab: 'compare' };
         showFab = false;
         showBottomNav = true;
         headerHTML = this.renderDefaultHeader();
+      } else if (hash === '#/yacht-pricing') {
+        screen = window.YachtPricingScreen;
+        showFab = false;
+        showBottomNav = false; // hide main bottom island (internal tab bar used instead)
+        headerHTML = ''; // screen renders its own header with back button
       } else if (hash.match(/^#\/data/)) {
-        // Data management screen (simple)
-        screen = null; // We'll render inline
+        // Redirected to unified Settings screen — Sync tab
+        screen = window.SettingsScreen;
+        params = { tab: 'sync' };
         showFab = false;
         showBottomNav = true;
         headerHTML = this.renderDefaultHeader();
@@ -260,9 +297,6 @@
         container.dataset.step = `step${stepNumber}`;
         screen.render(container, params);
         this.currentScreen = screen;
-      } else if (hash.match(/^#\/data/)) {
-        container.dataset.step = 'data';
-        this.renderDataScreen(container);
       } else {
         container.dataset.step = 'dashboard';
       }
@@ -495,190 +529,28 @@
     },
 
     /**
-     * Render a simple data management screen
+     * @deprecated — Screen logic moved to SettingsScreen (settings.js) with tab='sync'
+     * Kept as a no-op stub to avoid breaking any remaining references.
      */
     renderDataScreen(container) {
-      const counts = window.Storage.getCounts();
+      if (window.SettingsScreen) {
+        window.SettingsScreen.render(container, { tab: 'sync' });
+        return;
+      }
+    },
 
-      container.innerHTML = `
-        <div class="step-content stagger-children">
-          <div class="step-section">
-            <div class="step-section-title">Data Management</div>
-            <div class="input-group">
-              <div class="input-group-row">
-                <span class="input-group-label">Total Records</span>
-                <div class="input-group-value">
-                  <span style="font-weight: var(--weight-bold); color: var(--color-accent);">${counts.total}</span>
-                </div>
-              </div>
-              <div class="input-group-row">
-                <span class="input-group-label">Drafts</span>
-                <div class="input-group-value"><span>${counts.draft}</span></div>
-              </div>
-              <div class="input-group-row">
-                <span class="input-group-label">Reserved</span>
-                <div class="input-group-value"><span>${counts.reservado}</span></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="step-section">
-            <div class="step-section-title">Nube Sync (Airtable)</div>
-            <div style="display: flex; flex-direction: column; gap: var(--space-3);">
-              <p style="font-size: 12px; color: var(--color-text-secondary); margin-bottom: 8px;">
-                Sincroniza todas tus reservaciones locales con la Nube (Airtable) de forma masiva en un solo paso.
-              </p>
-              <button class="btn btn-primary btn-full" id="syncAllNubeBtn" style="background: var(--color-accent); border-color: var(--color-accent);">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:18px;height:18px">
-                  <path d="M16 16l-4-4-4 4M12 12v9"/>
-                  <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
-                </svg>
-                Sincronizar Todo con la Nube
-              </button>
-            </div>
-          </div>
-
-          <div class="step-section">
-            <div class="step-section-title">Manual Backup (File Download)</div>
-            <div style="display: flex; flex-direction: column; gap: var(--space-3);">
-              <p style="font-size: 12px; color: var(--color-text-secondary); margin-bottom: 8px;">
-                Manually download or upload a .json file to your device.
-              </p>
-              <button class="btn btn-secondary btn-full" id="exportBtn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-                </svg>
-                Download .json Backup
-              </button>
-              <button class="btn btn-secondary btn-full" id="importBtn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-                </svg>
-                Upload .json Backup
-              </button>
-              <input type="file" id="importFile" accept=".json" style="display: none;">
-
-              <div class="divider"></div>
-
-              <button class="btn btn-danger btn-full" id="clearDraftsBtn">
-                Clear All Drafts
-              </button>
-            </div>
-          </div>
-
-          <div class="step-section">
-            <div class="step-section-title">Local Server Sync (localhost:8765)</div>
-            <div style="display: flex; flex-direction: column; gap: var(--space-3);">
-              <p style="font-size: 12px; color: var(--color-text-secondary); margin-bottom: 8px;">
-                Sync all records with your local Node.js server. (Requires server to be running).
-              </p>
-              <button class="btn btn-primary btn-full" id="pushSyncBtn">
-                Push All Data to Local Server
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-                </svg>
-              </button>
-              <button class="btn btn-secondary btn-full" id="pullSyncBtn">
-                Pull Data from Local Server
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      `;
-
-      // Export button
-      document.getElementById('exportBtn')?.addEventListener('click', () => {
-        const json = window.Storage.exportJSON();
-        const blob = new Blob([json], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `loveshack_v3_${new Date().toISOString().split('T')[0]}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-        window.Toast.success('Exported successfully');
-      });
-
-      // Import button
-      document.getElementById('importBtn')?.addEventListener('click', () => {
-        document.getElementById('importFile')?.click();
-      });
-
-      document.getElementById('importFile')?.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          const result = window.Storage.importJSON(ev.target.result);
-          window.Toast.success(`Imported ${result.imported} records (${result.duplicates} duplicates)`);
-          this.route(); // Refresh
-        };
-        reader.readAsText(file);
-      });
-
-      // Push Sync
-      document.getElementById('pushSyncBtn')?.addEventListener('click', async () => {
-        const reservations = window.Storage.getAllReservations();
-        const success = await window.Storage.saveToJSON(reservations);
-        if (success) {
-          window.Toast.success('Successfully backed up to JSON file');
-          // Clear warning
-          const warning = document.getElementById('sync-warning');
-          if (warning) warning.remove();
-          if (window.AppState) window.AppState.syncStatus = { hasWarnings: false };
-        } else {
-          window.Toast.error('Save server not running (localhost:8765)');
-        }
-      });
-
-      // Pull Sync
-      document.getElementById('pullSyncBtn')?.addEventListener('click', async () => {
-        const jsonItems = await window.Storage.loadFromJSON();
-        if (jsonItems.length > 0) {
-          const result = window.Storage.importJSON(JSON.stringify(jsonItems));
-          window.Toast.success(`Synced ${result.imported} new items from file.`);
-          this.route();
-        } else {
-          window.Toast.error('Could not load or file is empty');
-        }
-      });
-
-      // Sync All to Nube
-      document.getElementById('syncAllNubeBtn')?.addEventListener('click', async () => {
-        if (window.SyncManager) {
-          await window.SyncManager.syncAllReservations();
-          this.route(); // Refresh counts
-        } else {
-          window.Toast.error('SyncManager not loaded');
-        }
-      });
-
-      // Clear drafts
-      document.getElementById('clearDraftsBtn')?.addEventListener('click', () => {
-        if (!confirm('Delete all draft reservations?')) return;
-        const all = window.Storage.getAllReservations();
-        const filtered = all.filter((r) => r.status !== 'draft');
-        localStorage.setItem('loveshack_v3_reservations', JSON.stringify(filtered));
-        window.Toast.success('Drafts cleared');
-        this.route();
-      });
-     },
-
-      downloadBackup() {
-        const json = window.Storage.exportJSON();
-        const blob = new window.Blob([json], { type: 'application/json' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'reservations.json';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-      },
+    downloadBackup() {
+      const json = window.Storage.exportJSON();
+      const blob = new window.Blob([json], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'reservations.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    },
 
       async confirmReservation2Step(id) {
         if (!id) return;

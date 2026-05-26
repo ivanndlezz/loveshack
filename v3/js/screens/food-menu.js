@@ -44,7 +44,7 @@ const FoodMenuScreen = {
     `;
 
     try {
-      const response = await fetch('../reservations/data/menu-options.json');
+      const response = await fetch('../v3/data/menu-options.json');
       const data = await response.json();
       this.allMenus = this.enrichMenus(data.foodOptions);
       this.renderList();

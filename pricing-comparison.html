@@ -1,0 +1,2909 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Yacht Pricing - Premium Price Comparator</title>
+  <!-- Google Fonts (Inter) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <style>
+    :root {
+      /* Fuentes */
+      --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      
+      /* Colores de Sistema (Apple) */
+      --color-bg-primary: #F2F2F7;
+      --color-bg-secondary: #FFFFFF;
+      --color-bg-tertiary: #FAFAFC;
+      --color-text-primary: #1C1C1E;
+      --color-text-secondary: #8E8E93;
+      --color-text-muted: #A1A1A6;
+      
+      /* Acentos */
+      --color-accent-blue: #007AFF;
+      --color-accent-blue-hover: #0066D6;
+      --color-accent-green: #30D158;
+      --color-accent-green-bg: rgba(48, 209, 88, 0.1);
+      --color-accent-green-bg-strong: rgba(48, 209, 88, 0.2);
+      --color-accent-red: #FF453A;
+      --color-accent-red-bg: rgba(255, 69, 58, 0.05);
+      --color-accent-purple: #AF52DE;
+      --color-accent-purple-bg: rgba(175, 82, 222, 0.1);
+      --color-accent-amber: #FF9500;
+      --color-accent-amber-bg: rgba(255, 149, 0, 0.1);
+      --color-neutral-100: #F2F2F7;
+      --color-neutral-200: #E5E5EA;
+      
+      /* Bordes y Sombras */
+      --border-subtle: 1px solid rgba(0, 0, 0, 0.04);
+      --border-subtle-strong: 1px solid rgba(0, 0, 0, 0.06);
+      --border-dashed: 1px dashed #E5E5EA;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+      --radius-xxl: 32px;
+      --radius-full: 9999px;
+      
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.03);
+      --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.04);
+      --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.06);
+      --shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.12);
+      --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      
+      /* Transiciones */
+      --transition-standard: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      --transition-transform: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Base */
+    body {
+      font-family: var(--font-primary);
+      background-color: var(--color-bg-primary);
+      color: var(--color-text-primary);
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    /* Existing custom components (preserved for sheets & tabs) */
+    .responsive-sheet {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      max-width: 100%;
+      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+      transform: translateY(100%);
+      transition: var(--transition-transform);
+      max-height: 85vh;
+    }
+    .responsive-sheet.open {
+      transform: translateY(0);
+    }
+
+    @media (min-width: 768px) {
+      .responsive-sheet {
+        top: 0;
+        bottom: 0;
+        right: 0;
+        left: auto;
+        width: 440px;
+        max-width: 440px;
+        max-height: 100vh;
+        border-radius: var(--radius-xl) 0 0 var(--radius-xl);
+        transform: translateX(100%);
+      }
+      .responsive-sheet.open {
+        transform: translateX(0);
+      }
+    }
+
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+
+    .segmented-scroll::-webkit-scrollbar {
+      display: none;
+    }
+    .segmented-scroll {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* =====================================================
+       BEM SEMANTIC STYLES - Apple iOS/macOS Fidelity
+       ===================================================== */
+
+    .yacht-app {
+      width: 100%;
+      max-width: 28rem;
+      margin-left: auto;
+      margin-right: auto;
+      background-color: var(--color-bg-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    @media (min-width: 768px) {
+      .yacht-app {
+        max-width: 64rem;
+        box-shadow: var(--shadow-2xl);
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border-radius: var(--radius-xxl);
+        overflow: hidden;
+        border: var(--border-subtle);
+      }
+    }
+    @media (min-width: 1024px) {
+      .yacht-app {
+        max-width: 72rem;
+      }
+    }
+
+    /* Header */
+    .yacht-header {
+      background-color: rgba(242, 242, 247, 0.8);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      border-bottom: var(--border-subtle);
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .yacht-header__brand {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+    }
+
+    .yacht-header__status {
+      width: 0.75rem;
+      height: 0.75rem;
+      border-radius: var(--radius-full);
+      background-color: var(--color-accent-blue);
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .yacht-header__title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      color: #000000;
+    }
+
+    .yacht-header__location {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .yacht-header__location-icon {
+      width: 1rem;
+      height: 1rem;
+      color: var(--color-text-secondary);
+    }
+
+    .yacht-header__location-text {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--color-text-secondary);
+    }
+
+    /* Main content area */
+    .yacht-main {
+      flex: 1;
+      overflow-y: auto;
+      padding-left: 1rem;
+      padding-right: 1rem;
+      padding-top: 1rem;
+      padding-bottom: 7rem;
+    }
+
+    @media (min-width: 768px) {
+      .yacht-main {
+        padding-left: 2rem;
+        padding-right: 2rem;
+      }
+    }
+
+    /* Simulator grid */
+    .simulator-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    @media (min-width: 768px) {
+      .simulator-grid {
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+      }
+    }
+
+    .simulator-grid__left {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    @media (min-width: 768px) {
+      .simulator-grid__left {
+        grid-column: span 5 / span 5;
+      }
+    }
+
+    .simulator-grid__right {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    @media (min-width: 768px) {
+      .simulator-grid__right {
+        grid-column: span 7 / span 7;
+      }
+    }
+
+    /* Section headers */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding-bottom: 0.25rem;
+      border-bottom: var(--border-subtle);
+    }
+
+    .section-header__icon {
+      width: 1rem;
+      height: 1rem;
+    }
+
+    .section-header__title {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: #000000;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Segmented Control */
+    .segmented-control {
+      background-color: rgba(0, 0, 0, 0.04);
+      padding: 0.25rem;
+      border-radius: var(--radius-lg);
+      display: flex;
+      gap: 0.25rem;
+      overflow-x: auto;
+    }
+
+    .segmented-btn {
+      flex: 1;
+      padding-top: 0.375rem;
+      padding-bottom: 0.375rem;
+      padding-left: 0.75rem;
+      padding-right: 0.75rem;
+      border-radius: var(--radius-md);
+      font-size: 0.75rem;
+      font-weight: 700;
+      transition: all 0.2s ease;
+      text-align: center;
+      white-space: nowrap;
+      color: var(--color-text-secondary);
+      border: none;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .segmented-btn--active {
+      background-color: var(--color-bg-secondary);
+      color: #000000;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .segmented-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Control cards (steppers & selectors) */
+    .control-card {
+      background-color: var(--color-bg-secondary);
+      padding: 1rem;
+      border-radius: var(--radius-xl);
+      border: var(--border-subtle);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .control-card__label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .stepper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 0.75rem;
+    }
+
+    .stepper__btn {
+      width: 2rem;
+      height: 2rem;
+      border-radius: var(--radius-full);
+      background-color: var(--color-bg-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.125rem;
+      color: var(--color-accent-blue);
+      border: none;
+      transition: transform 0.1s ease;
+      cursor: pointer;
+    }
+
+    .stepper__btn:active {
+      transform: scale(0.9);
+    }
+
+    .stepper__value {
+      width: 3rem;
+      text-align: center;
+      font-weight: 700;
+      font-size: 1.125rem;
+      background: transparent;
+      border: none;
+      outline: none;
+    }
+
+    /* Selector card for A/B yachts */
+    .selector-card {
+      background-color: var(--color-bg-secondary);
+      padding: 1rem;
+      border-radius: var(--radius-xl);
+      border: var(--border-subtle);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .selector-card__label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: block;
+    }
+
+    .selector-pair {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    @media (min-width: 640px) {
+      .selector-pair {
+        flex-direction: row;
+        align-items: stretch;
+        gap: 0.5rem;
+      }
+    }
+
+    .selector-wrapper {
+      position: relative;
+      flex: 1;
+    }
+
+    .selector-label {
+      position: absolute;
+      left: 0.75rem;
+      top: 0.5rem;
+      font-size: 0.625rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--color-text-secondary);
+    }
+
+    .selector {
+      width: 100%;
+      padding-top: 1.5rem;
+      padding-bottom: 0.5rem;
+      padding-left: 0.75rem;
+      padding-right: 0.75rem;
+      background-color: var(--color-bg-primary);
+      border: none;
+      border-radius: var(--radius-lg);
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--color-text-primary);
+      appearance: none;
+      outline: none;
+    }
+
+    .selector:focus {
+      box-shadow: 0 0 0 2px var(--color-accent-blue);
+    }
+
+    .selector-chevron {
+      position: absolute;
+      right: 0.75rem;
+      top: 0.75rem;
+      pointer-events: none;
+      color: #a3a3a3;
+    }
+
+    .selector-vs {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--color-text-secondary);
+      text-align: center;
+    }
+
+    @media (min-width: 640px) {
+      .selector-vs {
+        display: block;
+        align-self: center;
+      }
+    }
+
+    /* Results header */
+    .results-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding-bottom: 0.25rem;
+      border-bottom: var(--border-subtle);
+    }
+
+    /* Diff banner */
+    .diff-banner {
+      transition: all 0.3s ease;
+    }
+
+    .diff-banner__equal {
+      background-color: var(--color-bg-secondary);
+      padding: 1rem;
+      border-radius: var(--radius-xl);
+      text-align: center;
+      border: var(--border-subtle);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .diff-banner__equal-label {
+      font-size: 0.6875rem;
+      font-weight: 700;
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: block;
+    }
+
+    .diff-banner__equal-text {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: var(--color-text-primary);
+      margin-top: 0.25rem;
+    }
+
+    .diff-banner__diff {
+      background-color: var(--color-accent-green-bg);
+      padding: 1rem;
+      border-radius: var(--radius-xl);
+      border: 1px solid rgba(48, 209, 88, 0.2);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .diff-banner__diff-left {
+      text-align: left;
+    }
+
+    .diff-banner__diff-label {
+      font-size: 0.625rem;
+      font-weight: 700;
+      color: #15803d;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: block;
+    }
+
+    .diff-banner__diff-value {
+      font-size: 1.125rem;
+      font-weight: 800;
+      color: var(--color-text-primary);
+      margin-top: 0.125rem;
+    }
+
+    .diff-banner__diff-right {
+      text-align: right;
+    }
+
+    .diff-banner__winner {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #15803d;
+      display: block;
+    }
+
+    .diff-banner__savings {
+      font-size: 0.625rem;
+      font-weight: 600;
+      color: #15803d;
+    }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    @media (min-width: 640px) {
+      .comparison-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    /* Comparison cards */
+    .comparison-card {
+      background-color: var(--color-bg-secondary);
+      border-radius: var(--radius-xl);
+      border: var(--border-subtle);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .comparison-card__header {
+      padding: 1.25rem;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .comparison-card__header--winner {
+      background-color: rgba(16, 185, 129, 0.08);
+    }
+
+    .comparison-card__header--default {
+      background-color: var(--color-bg-tertiary);
+    }
+
+    .comparison-card__badge {
+      display: inline-flex;
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+      padding-top: 0.125rem;
+      padding-bottom: 0.125rem;
+      border-radius: var(--radius-full);
+      font-size: 0.5625rem;
+      font-weight: 700;
+    }
+
+    .comparison-card__badge--direct {
+      background-color: #f3f4f6;
+      color: var(--color-text-secondary);
+    }
+
+    .comparison-card__badge--hotel {
+      background-color: var(--color-accent-purple-bg);
+      color: #6b21a8;
+    }
+
+    .comparison-card__badge--agency {
+      background-color: var(--color-accent-amber-bg);
+      color: #92400e;
+    }
+
+    .comparison-card__winner {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #059669;
+      gap: 0.25rem;
+    }
+
+    .comparison-card__name {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--color-text-primary);
+      line-height: 1;
+      margin-top: 0.75rem;
+    }
+
+    .comparison-card__total {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--color-accent-blue);
+    }
+
+    .comparison-card__body {
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      flex: 1;
+    }
+
+    .comparison-card__row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+    }
+
+    .comparison-card__row-label {
+      color: var(--color-text-secondary);
+    }
+
+    .comparison-card__row-value {
+      font-weight: 600;
+      color: var(--color-text-primary);
+    }
+
+    .comparison-card__commission {
+      margin-top: 1rem;
+      padding: 0.75rem;
+      background-color: #f9fafb;
+      border-radius: var(--radius-lg);
+      border: var(--border-subtle);
+    }
+
+    .comparison-card__commission-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.6875rem;
+      font-weight: 500;
+      color: #b45309;
+    }
+
+    .comparison-card__net {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #059669;
+      border-top: 1px dashed #e5e7eb;
+      padding-top: 0.375rem;
+      margin-top: 0.375rem;
+    }
+
+    .comparison-card__footer {
+      padding-top: 1rem;
+      border-top: 1px solid #f3f4f6;
+      font-size: 0.625rem;
+      color: var(--color-text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+    }
+
+    /* Action button */
+    .action-btn {
+      width: 100%;
+      padding-top: 1rem;
+      padding-bottom: 1rem;
+      background-color: var(--color-accent-blue);
+      color: white;
+      border-radius: var(--radius-xl);
+      font-weight: 700;
+      font-size: 0.875rem;
+      transition: transform 0.1s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      box-shadow: 0 10px 15px -3px rgb(0 122 255 / 0.1);
+      border: none;
+      cursor: pointer;
+    }
+
+    .action-btn:active {
+      transform: scale(0.98);
+    }
+
+    /* Rates catalog */
+    .rates-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    @media (min-width: 768px) {
+      .rates-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+    @media (min-width: 1024px) {
+      .rates-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    .rate-card {
+      background-color: var(--color-bg-secondary);
+      padding: 1rem;
+      border-radius: var(--radius-xl);
+      border: var(--border-subtle);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .rate-card__top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .rate-card__title {
+      font-weight: 700;
+      font-size: 0.875rem;
+      color: var(--color-text-primary);
+    }
+
+    .rate-card__id {
+      font-size: 0.625rem;
+      font-family: ui-monospace, monospace;
+      color: #a3a3a3;
+      background-color: #f4f4f5;
+      padding: 0.125rem 0.25rem;
+      border-radius: 0.25rem;
+      display: block;
+      width: fit-content;
+      margin-top: 0.25rem;
+    }
+
+    .rate-card__actions {
+      display: flex;
+      gap: 0.25rem;
+    }
+
+    .rate-card__action-btn {
+      width: 2rem;
+      height: 2rem;
+      border-radius: var(--radius-full);
+      background-color: var(--color-bg-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #737373;
+      border: none;
+      cursor: pointer;
+      transition: all 0.1s ease;
+    }
+
+    .rate-card__action-btn:hover {
+      background-color: rgba(0, 122, 255, 0.1);
+      color: var(--color-accent-blue);
+    }
+
+    .rate-card__action-btn--danger:hover {
+      background-color: rgba(255, 69, 58, 0.1);
+      color: var(--color-accent-red);
+    }
+
+    .rate-card__metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.5rem;
+      text-align: center;
+      background-color: rgba(242, 242, 247, 0.6);
+      padding: 0.5rem;
+      border-radius: var(--radius-lg);
+      font-size: 0.75rem;
+    }
+
+    .rate-card__metric-label {
+      font-size: 0.5625rem;
+      font-weight: 700;
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      display: block;
+    }
+
+    .rate-card__metric-value {
+      font-weight: 700;
+      color: var(--color-text-primary);
+    }
+
+    .rate-card__metric-value--accent {
+      color: var(--color-accent-blue);
+    }
+
+    /* Delete confirm */
+    .delete-confirm {
+      background-color: #fef2f2;
+      padding: 0.625rem;
+      border-radius: var(--radius-lg);
+      border: 1px solid #fee2e2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.75rem;
+    }
+
+    .delete-confirm__text {
+      font-weight: 700;
+      color: #dc2626;
+    }
+
+    .delete-confirm__actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .delete-confirm__btn {
+      padding-left: 0.625rem;
+      padding-right: 0.625rem;
+      padding-top: 0.25rem;
+      padding-bottom: 0.25rem;
+      border-radius: var(--radius-md);
+      font-weight: 700;
+      font-size: 0.75rem;
+      border: 1px solid #e5e7eb;
+      background: white;
+      color: #52525b;
+      cursor: pointer;
+    }
+
+    .delete-confirm__btn--danger {
+      background-color: #dc2626;
+      color: white;
+      border-color: #dc2626;
+    }
+
+    /* Catalog header selector */
+    .catalog-header {
+      background-color: var(--color-bg-secondary);
+      padding: 1rem;
+      border-radius: var(--radius-xl);
+      border: var(--border-subtle);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      grid-column: 1 / -1;
+    }
+
+    .catalog-header__select-wrapper {
+      position: relative;
+      width: 9rem;
+    }
+
+    .catalog-header__select {
+      width: 100%;
+      padding-top: 0.375rem;
+      padding-bottom: 0.375rem;
+      padding-left: 0.75rem;
+      padding-right: 2rem;
+      background-color: var(--color-bg-primary);
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--color-text-primary);
+      appearance: none;
+    }
+
+    .catalog-header__chevron {
+      position: absolute;
+      right: 0.5rem;
+      top: 0.5rem;
+      pointer-events: none;
+      color: #a3a3a3;
+    }
+
+    /* Tab bar */
+    .tab-bar {
+      position: absolute;
+      bottom: 1.25rem;
+      left: 1rem;
+      right: 1rem;
+      background-color: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      border: var(--border-subtle);
+      height: 4rem;
+      border-radius: var(--radius-full);
+      box-shadow: var(--shadow-lg);
+      padding-left: 2rem;
+      padding-right: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      z-index: 40;
+    }
+
+    @media (min-width: 768px) {
+      .tab-bar {
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+        width: 24rem;
+        justify-content: center;
+        gap: 3rem;
+      }
+    }
+
+    .tab-bar__item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25rem;
+      font-size: 0.625rem;
+      font-weight: 700;
+      transition: transform 0.1s ease;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .tab-bar__item:active {
+      transform: scale(0.9);
+    }
+
+    /* Sheets (form modals) */
+    .sheet {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      pointer-events: none; /* default: closed, do not capture clicks */
+    }
+
+    /* When JS removes the "closed" state classes, the sheet becomes interactive */
+    .sheet:not(.invisible):not(.pointer-events-none) {
+      pointer-events: auto;
+    }
+
+    .invisible {
+      visibility: hidden;
+    }
+
+    .pointer-events-none {
+      pointer-events: none;
+    }
+
+    .opacity-100 {
+      opacity: 1 !important;
+    }
+
+    .sheet__backdrop {
+      position: absolute;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(4px);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none; /* only the parent .sheet decides when to accept clicks */
+    }
+
+    .sheet__panel {
+      position: absolute;
+      background-color: var(--color-bg-secondary);
+      box-shadow: var(--shadow-xl);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      border-left: var(--border-subtle);
+    }
+
+    .sheet__handle {
+      width: 3rem;
+      height: 0.375rem;
+      background-color: #e5e7eb;
+      border-radius: var(--radius-full);
+      margin: 0 auto 1rem;
+    }
+
+    .sheet__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+
+    .sheet__title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--color-text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .sheet__close {
+      width: 2rem;
+      height: 2rem;
+      border-radius: var(--radius-full);
+      background-color: var(--color-bg-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #737373;
+      border: none;
+      cursor: pointer;
+      transition: all 0.1s ease;
+    }
+
+    .sheet__close:active {
+      transform: scale(0.9);
+      background-color: #e5e7eb;
+    }
+
+    .sheet-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      padding-bottom: 1.5rem;
+    }
+
+    .sheet-form__field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .sheet-form__label {
+      font-size: 0.6875rem;
+      font-weight: 700;
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .sheet-form__input,
+    .sheet-form__select,
+    .sheet-form__textarea {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background-color: var(--color-bg-primary);
+      border: none;
+      border-radius: var(--radius-lg);
+      font-size: 0.875rem;
+      font-weight: 600;
+      outline: none;
+    }
+
+    .sheet-form__input:focus,
+    .sheet-form__select:focus,
+    .sheet-form__textarea:focus {
+      box-shadow: 0 0 0 2px var(--color-accent-blue);
+    }
+
+    .sheet-form__textarea {
+      height: 8rem;
+      font-family: ui-monospace, monospace;
+      font-size: 0.75rem;
+      resize: none;
+    }
+
+    .sheet-form__slots {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      max-height: 18rem;
+      overflow-y: auto;
+      padding-right: 0.25rem;
+      border-top: var(--border-subtle);
+      padding-top: 1rem;
+    }
+
+    .slot-row {
+      background-color: rgba(242, 242, 247, 0.6);
+      padding: 0.875rem;
+      border-radius: var(--radius-xl);
+      border: var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .slot-row__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 0.375rem;
+      border-bottom: var(--border-subtle);
+    }
+
+    .slot-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+    }
+
+    .slot-input {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .slot-input__label {
+      font-size: 0.5625rem;
+      font-weight: 700;
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+    }
+
+    .slot-input__field {
+      padding: 0.5rem 0.625rem;
+      background: white;
+      border: 1px solid rgba(0,0,0,0.04);
+      border-radius: var(--radius-md);
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .sheet-form__commission {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      border-top: var(--border-subtle);
+      padding-top: 1rem;
+    }
+
+    .sheet-form__actions {
+      display: flex;
+      gap: 0.75rem;
+      padding-top: 1rem;
+      border-top: var(--border-subtle);
+    }
+
+    .sheet-form__btn {
+      flex: 1;
+      padding-top: 0.75rem;
+      padding-bottom: 0.75rem;
+      border-radius: var(--radius-lg);
+      font-weight: 700;
+      font-size: 0.875rem;
+      transition: transform 0.1s ease;
+      border: none;
+      cursor: pointer;
+    }
+
+    .sheet-form__btn--cancel {
+      background-color: var(--color-bg-primary);
+      color: var(--color-text-primary);
+    }
+
+    .sheet-form__btn--submit {
+      background-color: var(--color-accent-blue);
+      color: white;
+      box-shadow: 0 4px 6px -1px rgb(0 122 255 / 0.1);
+    }
+
+    .sheet-form__btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Import sheet specifics */
+    .import-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+    }
+
+    .import-preview {
+      overflow-x: auto;
+      border-radius: var(--radius-lg);
+      border: var(--border-subtle);
+      background-color: #fafafc;
+    }
+
+    .import-preview table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.75rem;
+    }
+
+    .import-preview th {
+      padding: 0.625rem;
+      font-weight: 700;
+      text-align: left;
+      font-size: 0.5625rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-secondary);
+      background-color: rgba(0,0,0,0.02);
+      border-bottom: var(--border-subtle);
+    }
+
+    .import-preview td {
+      padding: 0.625rem;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      top: 1.25rem;
+      left: 1rem;
+      right: 1rem;
+      max-width: 24rem;
+      margin-left: auto;
+      margin-right: auto;
+      z-index: 50;
+      transform: translateY(-5rem);
+      opacity: 0;
+      transition: all 0.3s ease;
+      pointer-events: none;
+      background-color: rgba(0, 0, 0, 0.9);
+      backdrop-filter: blur(12px);
+      color: white;
+      padding-top: 0.875rem;
+      padding-bottom: 0.875rem;
+      padding-left: 1rem;
+      padding-right: 1rem;
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-xl);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .toast--visible {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .toast__icon {
+      padding: 0.25rem;
+      border-radius: var(--radius-full);
+    }
+
+    .toast__message {
+      font-size: 0.75rem;
+      font-weight: 500;
+      flex: 1;
+    }
+
+    /* Utility helpers for dynamic content */
+    .hidden { display: none !important; }
+    .text-center { text-align: center; }
+    .font-bold { font-weight: 700; }
+    .font-semibold { font-weight: 600; }
+    .uppercase { text-transform: uppercase; }
+    .tracking-wider { letter-spacing: 0.05em; }
+    .text-xs { font-size: 0.75rem; }
+    .text-\[9px\] { font-size: 0.5625rem; }
+    .text-\[10px\] { font-size: 0.625rem; }
+    .text-\[11px\] { font-size: 0.6875rem; }
+
+    .flex { display: flex; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .gap-2 { gap: 0.5rem; }
+    .gap-1\.5 { gap: 0.375rem; }
+    .space-x-1 > * + * { margin-left: 0.25rem; }
+    .space-x-2 > * + * { margin-left: 0.5rem; }
+    .space-x-3 > * + * { margin-left: 0.75rem; }
+
+    .border-t { border-top: var(--border-subtle); }
+    .pt-4 { padding-top: 1rem; }
+    .pb-1 { padding-bottom: 0.25rem; }
+    .mb-2 { margin-bottom: 0.5rem; }
+    .mb-4 { margin-bottom: 1rem; }
+    .mb-5 { margin-bottom: 1.25rem; }
+
+    .w-full { width: 100%; }
+    .flex-1 { flex: 1 1 0%; }
+    .mx-auto { margin-left: auto; margin-right: auto; }
+
+    .rounded-xl { border-radius: var(--radius-lg); }
+    .rounded-2xl { border-radius: var(--radius-xl); }
+    .rounded-full { border-radius: var(--radius-full); }
+
+    .bg-white { background-color: white; }
+    .bg-neutral-50 { background-color: #fafafa; }
+    .bg-emerald-50\/25 { background-color: rgba(16, 185, 129, 0.08); }
+    .bg-red-50 { background-color: #fef2f2; }
+    .text-red-500 { color: #ef4444; }
+    .text-emerald-600 { color: #059669; }
+    .text-amber-600 { color: #d97706; }
+
+    /* Focus rings */
+    .focus-ring-blue:focus {
+      box-shadow: 0 0 0 1px var(--color-accent-blue);
+    }
+  </style>
+</head>
+<body>
+ 
+  <!-- Contenedor general que se expande elegantemente en pantallas grandes -->
+  <div class="yacht-app">
+     
+    <!-- Header Minimalista -->
+    <header class="yacht-header">
+      <div class="yacht-header__brand">
+        <div class="yacht-header__status"></div>
+        <h1 class="yacht-header__title">Yacht Prices</h1>
+      </div>
+      <div class="yacht-header__location">
+        <i data-lucide="map-pin" class="yacht-header__location-icon"></i>
+        <span class="yacht-header__location-text" id="current-date">Cabo San Lucas</span>
+      </div>
+    </header>
+
+    <!-- Área Principal de Contenido (Scrollable) -->
+    <main class="yacht-main">
+ 
+      <!-- ================= TAB 1: SIMULADOR (DISEÑO MULTI-COLUMNA EN DESKTOP) ================= -->
+      <section id="tab-simulator" class="tab-content active">
+        <div class="simulator-grid">
+          
+          <!-- LADO IZQUIERDO: Configuración y Controles -->
+          <div class="simulator-grid__left">
+            <div class="section-header">
+              <i data-lucide="sliders-horizontal" class="section-header__icon" style="color: var(--color-accent-blue);"></i>
+              <h2 class="section-header__title">Centro de Control</h2>
+            </div>
+ 
+            <!-- Segmented Control de Horas (Cohorte) -->
+            <div>
+              <label class="control-card__label" style="display:block; margin-bottom:0.5rem; padding-left:0.25rem;">Duración del Charter</label>
+              <div class="segmented-control segmented-scroll">
+                <button onclick="setCohort(2)" id="btn-cohort-2" class="segmented-btn">2 hrs</button>
+                <button onclick="setCohort(3)" id="btn-cohort-3" class="segmented-btn">3 hrs</button>
+                <button onclick="setCohort(4)" id="btn-cohort-4" class="segmented-btn segmented-btn--active">4 hrs</button>
+                <button onclick="setCohort(5)" id="btn-cohort-5" class="segmented-btn">5 hrs</button>
+                <button onclick="setCohort(6)" id="btn-cohort-6" class="segmented-btn">6 hrs</button>
+                <button onclick="setCohort(7)" id="btn-cohort-7" class="segmented-btn">7 hrs</button>
+                <button onclick="setCohort(8)" id="btn-cohort-8" class="segmented-btn">8 hrs</button>
+              </div>
+            </div>
+ 
+            <!-- Controles de Steppers (Pasajeros y Horas Extras) -->
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+              <!-- Stepper de Pasajeros -->
+              <div class="control-card">
+                <span class="control-card__label">Pasajeros</span>
+                <div class="stepper">
+                  <button onclick="stepInput('sim-passengers', -1)" class="stepper__btn">
+                    <i data-lucide="minus" class="w-4 h-4"></i>
+                  </button>
+                  <input type="number" id="sim-passengers" min="1" value="12" class="stepper__value" readonly>
+                  <button onclick="stepInput('sim-passengers', 1)" class="stepper__btn">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
+ 
+              <!-- Stepper de Horas Extras -->
+              <div class="control-card">
+                <span class="control-card__label">Horas Extras</span>
+                <div class="stepper">
+                  <button onclick="stepInput('sim-extra-hours', -1)" class="stepper__btn">
+                    <i data-lucide="minus" class="w-4 h-4"></i>
+                  </button>
+                  <input type="number" id="sim-extra-hours" min="0" value="0" class="stepper__value" readonly>
+                  <button onclick="stepInput('sim-extra-hours', 1)" class="stepper__btn">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+ 
+            <!-- Selectores de Orígenes Comparativos (A vs B) -->
+            <div class="selector-card">
+              <span class="selector-card__label">Yates a Comparar</span>
+              
+              <div class="selector-pair">
+                <!-- Origen A -->
+                <div class="selector-wrapper">
+                  <div class="selector-label">Origen A</div>
+                  <select id="sim-source-a" class="selector focus-ring-blue">
+                    <!-- Dinámico -->
+                  </select>
+                  <div class="selector-chevron">
+                    <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                  </div>
+                </div>
+ 
+                <div class="selector-vs hidden sm:block">vs</div>
+ 
+                <!-- Origen B -->
+                <div class="selector-wrapper">
+                  <div class="selector-label">Origen B</div>
+                  <select id="sim-source-b" class="selector focus-ring-blue">
+                    <!-- Dinámico -->
+                  </select>
+                  <div class="selector-chevron">
+                    <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+ 
+          <!-- LADO DERECHO: Tarjetas Comparativas y Diferenciales -->
+          <div class="simulator-grid__right">
+            <div class="results-header">
+              <i data-lucide="trending-up" class="section-header__icon" style="color: var(--color-accent-green);"></i>
+              <h2 class="section-header__title">Resultados de Comparación</h2>
+            </div>
+ 
+            <!-- Contenedor Diferencial -->
+            <div id="diff-banner" class="diff-banner">
+              <!-- Dinámico -->
+            </div>
+ 
+            <!-- Tarjetas Comparativas (Flujo responsive adaptable) -->
+            <div class="comparison-grid">
+              <!-- Tarjeta A -->
+              <div id="card-panel-a" class="comparison-card">
+                <!-- Dinámico -->
+              </div>
+ 
+              <!-- Tarjeta B -->
+              <div id="card-panel-b" class="comparison-card">
+                <!-- Dinámico -->
+              </div>
+            </div>
+ 
+            <!-- Botón de Acción Principal (Copiar reporte) -->
+            <button id="btn-copy-report" class="action-btn">
+              <i data-lucide="clipboard" class="w-4 h-4"></i>
+              <span>Copiar Reporte Comparativo</span>
+            </button>
+          </div>
+ 
+        </div>
+      </section>
+
+      <!-- ================= TAB 2: CRUD DE TARIFAS (DISTRIBUIDO EN GRID EN DESKTOP) ================= -->
+      <section id="tab-rates" class="tab-content">
+        
+        <div style="display:flex; flex-direction:column; gap:0.75rem; border-bottom:var(--border-subtle); padding-bottom:1rem; margin-bottom:1.25rem;">
+          <div class="flex flex-col">
+            <span class="control-card__label">Ajustes Generales</span>
+            <h2 style="font-size:1.25rem; font-weight:700; color:#000;">Catálogo de Tarifas</h2>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.5rem; align-self:flex-start;">
+            <button onclick="openImportModal()" class="sheet-form__btn sheet-form__btn--cancel" style="display:flex; align-items:center; gap:0.375rem; height:2.75rem; font-size:0.75rem; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+              <i data-lucide="download" class="w-4 h-4"></i>
+              <span>Importar Convenio</span>
+            </button>
+            <button onclick="openFormModal(null)" class="sheet-form__btn sheet-form__btn--submit" style="display:flex; align-items:center; gap:0.375rem; height:2.75rem; font-size:0.75rem;">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              <span>Nuevo Origen</span>
+            </button>
+          </div>
+        </div>
+ 
+        <!-- Lista de Orígenes de Tarifas (Responsiva de 1 a 3 columnas) -->
+        <div id="rates-list-container" class="rates-grid">
+          <!-- Dinámico -->
+        </div>
+ 
+      </section>
+
+    </main>
+
+    <!-- Tab Bar Inferior (Estilo Apple iOS & Dock macOS) -->
+    <nav class="tab-bar">
+      
+      <!-- Tab 1: Simulador -->
+      <button onclick="switchTab('tab-simulator')" id="nav-simulator" class="tab-bar__item" style="color: var(--color-accent-blue);">
+        <i data-lucide="sliders" class="w-5 h-5"></i>
+        <span class="text-[10px] font-bold">Simular</span>
+      </button>
+ 
+      <!-- Tab 2: Tarifas (CRUD) -->
+      <button onclick="switchTab('tab-rates')" id="nav-rates" class="tab-bar__item" style="color: var(--color-text-secondary);">
+        <i data-lucide="database" class="w-5 h-5"></i>
+        <span class="text-[10px] font-bold">Tarifas</span>
+      </button>
+ 
+    </nav>
+
+    <!-- iOS & Desktop Responsive Sheet (Bottom-sheet en mobile, Side-sheet en desktop) -->
+    <div id="bottom-sheet" class="sheet invisible pointer-events-none">
+      <!-- Backdrop translúcido de Apple -->
+      <div id="sheet-backdrop" class="sheet__backdrop" onclick="closeFormModal()"></div>
+      
+      <!-- Hoja del Formulario -->
+      <div id="sheet-panel" class="responsive-sheet sheet__panel">
+        
+        <!-- Indicador de arrastre visual iOS (Solo visible en pantallas móviles) -->
+        <div class="sheet__handle md:hidden"></div>
+
+        <div class="sheet__header">
+          <h3 id="form-title" class="sheet__title">
+            <i data-lucide="edit-3" style="width:1rem; height:1rem; color:var(--color-accent-blue);"></i>
+            <span>Añadir Nueva Tarifa</span>
+          </h3>
+          <button onclick="closeFormModal()" class="sheet__close">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <form id="source-form" onsubmit="handleFormSubmit(event)" class="sheet-form">
+          
+          <!-- Clave Única (ID) -->
+          <div class="sheet-form__field">
+            <label class="sheet-form__label" for="form-source-key">ID del Origen (Único, sin espacios)</label>
+            <input type="text" id="form-source-key" required class="sheet-form__input" placeholder="ej: hotel_premium">
+          </div>
+
+          <!-- Nombre Comercial -->
+          <div class="sheet-form__field">
+            <label class="sheet-form__label" for="form-source-label">Nombre Comercial</label>
+            <input type="text" id="form-source-label" required class="sheet-form__input" placeholder="ej: Hotel Pedregal VIP">
+          </div>
+
+          <!-- Tipo de Operador -->
+          <div class="sheet-form__field">
+            <label class="sheet-form__label" for="form-source-type">Categoría</label>
+            <select id="form-source-type" class="sheet-form__select">
+              <option value="direct">Operador Directo</option>
+              <option value="hotel">Conserjería de Hotel</option>
+              <option value="agency">Agencia / Broker</option>
+            </select>
+          </div>
+
+          <!-- Contenedor Dinámico para Slots de Hora (2h a 8h) -->
+          <div id="form-hourly-slots-container" class="sheet-form__slots">
+            <!-- Renderizado dinámico en JS -->
+          </div>
+
+          <!-- Slider de Comisión (Estilo Apple) -->
+          <div class="sheet-form__commission">
+            <div class="flex justify-between items-center">
+              <label class="sheet-form__label" for="form-commission">Comisión de Intermediario</label>
+              <div style="display:flex; align-items:center; gap:1px;">
+                <input type="number" id="form-commission-input" min="0" max="100" step="1"
+                       style="width:38px; text-align:right; font-size:0.75rem; font-weight:700; color:#007AFF; background:transparent; border:none; outline:none; padding:0;"
+                       oninput="syncCommissionFromInput('form-commission', 'form-commission-input')">
+                <span style="font-size:0.75rem; font-weight:700; color:#007AFF;">%</span>
+              </div>
+            </div>
+            <input type="range" id="form-commission" min="0" max="100" step="5" value="0" style="width:100%; accent-color:var(--color-accent-blue); cursor:pointer;" oninput="syncCommissionFromSlider('form-commission', 'form-commission-input')">
+          </div>
+
+          <!-- Botonera del Formulario -->
+          <div class="sheet-form__actions">
+            <button type="button" onclick="closeFormModal()" class="sheet-form__btn sheet-form__btn--cancel">
+              Cancelar
+            </button>
+            <button type="submit" class="sheet-form__btn sheet-form__btn--submit">
+              Guardar
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+    <!-- iOS & Desktop Responsive Sheet for Importing Agreements -->
+    <div id="import-sheet" class="sheet invisible pointer-events-none">
+      <!-- Backdrop translúcido de Apple -->
+      <div id="import-sheet-backdrop" class="sheet__backdrop" onclick="closeImportModal()"></div>
+      
+      <!-- Hoja del Formulario de Importación -->
+      <div id="import-sheet-panel" class="responsive-sheet sheet__panel">
+        
+        <!-- Indicador de arrastre visual iOS (Solo visible en pantallas móviles) -->
+        <div class="sheet__handle md:hidden"></div>
+
+        <div class="sheet__header">
+          <h3 class="sheet__title">
+            <i data-lucide="download" style="width:1rem;height:1rem;color:var(--color-accent-blue);"></i>
+            <span>Importar Convenio por Plantilla</span>
+          </h3>
+          <button onclick="closeImportModal()" class="sheet__close">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <form id="import-form" onsubmit="handleImportSubmit(event)" class="sheet-form">
+          
+          <!-- Clave Única (ID) y Nombre Comercial -->
+          <div class="import-grid">
+            <div class="sheet-form__field">
+              <label class="sheet-form__label" for="import-source-key">ID del Convenio (Único)</label>
+              <input type="text" id="import-source-key" required class="sheet-form__input" placeholder="ej: hacienda_vip">
+            </div>
+
+            <div class="sheet-form__field">
+              <label class="sheet-form__label" for="import-source-label">Nombre Comercial</label>
+              <input type="text" id="import-source-label" required class="sheet-form__input" placeholder="ej: Hacienda Encantada Premium">
+            </div>
+          </div>
+
+          <!-- Tipo de Operador y Selector de Plantilla -->
+          <div class="import-grid">
+            <div class="sheet-form__field">
+              <label class="sheet-form__label" for="import-source-type">Categoría</label>
+              <select id="import-source-type" class="sheet-form__select">
+                <option value="hotel">Conserjería de Hotel</option>
+                <option value="direct">Operador Directo</option>
+                <option value="agency">Agencia / Broker</option>
+              </select>
+            </div>
+
+            <div class="sheet-form__field">
+              <label class="sheet-form__label" for="import-preset-selector">Plantilla Base</label>
+              <select id="import-preset-selector" onchange="updateImportPresetView()" class="sheet-form__select">
+                <option value="hacienda_real">Hacienda Encantada (Real)</option>
+                <option value="direct_base">Directo Base Estándar</option>
+                <option value="json_custom">Importar desde JSON</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Campo JSON personalizado (oculto por defecto) -->
+          <div id="import-json-container" class="sheet-form__field hidden">
+            <label class="sheet-form__label" for="import-json-data">Pegar JSON de Convenio</label>
+            <textarea id="import-json-data" oninput="updateImportPreview()" class="sheet-form__textarea" placeholder='Pega un JSON con las horas como claves...'></textarea>
+            <span class="text-[9px] text-[#8E8E93] block">Debe tener un formato similar a: {"2": {"charter-price": 1850, "extra-passenger": 87, "base-passengers": 14}}</span>
+          </div>
+
+          <!-- Ajustes del Convenio (Multiplicador y Comisión) -->
+          <div class="import-grid" style="border-top:var(--border-subtle); padding-top:1rem;">
+            <!-- Modificador de precio porcentual -->
+            <div class="sheet-form__field">
+              <label class="sheet-form__label" for="import-price-modifier">Modificador de Precio</label>
+              <select id="import-price-modifier" onchange="updateImportPreview()" class="sheet-form__select">
+                <option value="0">Precio Original (100%)</option>
+                <option value="0.05">Incrementar +5%</option>
+                <option value="0.10">Incrementar +10%</option>
+                <option value="0.15">Incrementar +15%</option>
+                <option value="-0.05">Descontar -5%</option>
+                <option value="-0.10">Descontar -10%</option>
+              </select>
+            </div>
+
+            <!-- Comisión -->
+            <div class="sheet-form__field">
+              <div class="flex justify-between items-center">
+                <label class="sheet-form__label" for="import-commission">Comisión</label>
+                <div style="display:flex; align-items:center; gap:1px;">
+                  <input type="number" id="import-commission-input" min="0" max="100" step="1"
+                         style="width:38px; text-align:right; font-size:0.75rem; font-weight:700; color:#007AFF; background:transparent; border:none; outline:none; padding:0;"
+                         oninput="syncCommissionFromInput('import-commission', 'import-commission-input', true)">
+                  <span style="font-size:0.75rem; font-weight:700; color:#007AFF;">%</span>
+                </div>
+              </div>
+              <input type="range" id="import-commission" min="0" max="100" step="5" value="35" style="width:100%; accent-color:var(--color-accent-blue); cursor:pointer;" oninput="syncCommissionFromSlider('import-commission', 'import-commission-input', true)">
+            </div>
+          </div>
+
+          <!-- Vista Previa de Tabla de Precios -->
+          <div class="sheet-form__field">
+            <label class="sheet-form__label">Vista Previa de Precios Resultantes</label>
+            <div class="import-preview">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Duración</th>
+                    <th style="text-align:right;">Precio Base</th>
+                    <th style="text-align:center;">Pax Base</th>
+                    <th style="text-align:right;">Pax Extra</th>
+                    <th style="text-align:right;">Comisión</th>
+                  </tr>
+                </thead>
+                <tbody id="import-preview-tbody">
+                  <!-- Dinámico -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Botonera del Formulario -->
+          <div class="sheet-form__actions">
+            <button type="button" onclick="closeImportModal()" class="sheet-form__btn sheet-form__btn--cancel">
+              Cancelar
+            </button>
+            <button type="submit" class="sheet-form__btn sheet-form__btn--submit">
+              Importar Convenio
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+    <!-- Toast de Notificaciones iOS (Centrado arriba) -->
+    <div id="toast" class="toast">
+      <div id="toast-icon-box" class="toast__icon" style="color:#30D158;">
+        <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+      </div>
+      <p id="toast-message" class="toast__message"></p>
+    </div>
+
+  </div>
+
+  <script>
+    // Base de datos por defecto de 2hrs a 8hrs
+    const DEFAULT_PRICING_DATA = {
+      "2": {
+        "label": "2 horas",
+        "label-short": "2hrs",
+        "sources": {
+          "direct": {
+            "label": "Directo",
+            "type": "direct",
+            "charter-price": 1600,
+            "extra-hour": 500,
+            "extra-passenger": 75,
+            "base-passengers": 10,
+            "commission": 0
+          },
+          "hacienda_encantada": {
+            "label": "Hacienda Encantada",
+            "type": "hotel",
+            "charter-price": 1850,
+            "extra-hour": 500,
+            "extra-passenger": 87,
+            "base-passengers": 14,
+            "commission": 0.35
+          }
+        }
+      },
+      "3": {
+        "label": "3 horas",
+        "label-short": "3hrs",
+        "sources": {
+          "direct": {
+            "label": "Directo",
+            "type": "direct",
+            "charter-price": 2200,
+            "extra-hour": 500,
+            "extra-passenger": 75,
+            "base-passengers": 10,
+            "commission": 0
+          },
+          "hacienda_encantada": {
+            "label": "Hacienda Encantada",
+            "type": "hotel",
+            "charter-price": 2770,
+            "extra-hour": 500,
+            "extra-passenger": 97,
+            "base-passengers": 14,
+            "commission": 0.35
+          }
+        }
+      },
+      "4": {
+        "label": "4 horas",
+        "label-short": "4hrs",
+        "sources": {
+          "direct": {
+            "label": "Directo",
+            "type": "direct",
+            "charter-price": 2800,
+            "extra-hour": 500,
+            "extra-passenger": 75,
+            "base-passengers": 10,
+            "commission": 0
+          },
+          "hacienda_encantada": {
+            "label": "Hacienda Encantada",
+            "type": "hotel",
+            "charter-price": 3693,
+            "extra-hour": 500,
+            "extra-passenger": 110,
+            "base-passengers": 14,
+            "commission": 0.35
+          }
+        }
+      },
+      "5": {
+        "label": "5 horas",
+        "label-short": "5hrs",
+        "sources": {
+          "direct": {
+            "label": "Directo",
+            "type": "direct",
+            "charter-price": 3400,
+            "extra-hour": 500,
+            "extra-passenger": 75,
+            "base-passengers": 10,
+            "commission": 0
+          },
+          "hacienda_encantada": {
+            "label": "Hacienda Encantada",
+            "type": "hotel",
+            "charter-price": 4616,
+            "extra-hour": 500,
+            "extra-passenger": 148,
+            "base-passengers": 14,
+            "commission": 0.35
+          }
+        }
+      },
+      "6": {
+        "label": "6 horas",
+        "label-short": "6hrs",
+        "sources": {
+          "direct": {
+            "label": "Directo",
+            "type": "direct",
+            "charter-price": 4000,
+            "extra-hour": 500,
+            "extra-passenger": 75,
+            "base-passengers": 10,
+            "commission": 0
+          },
+          "hacienda_encantada": {
+            "label": "Hacienda Encantada",
+            "type": "hotel",
+            "charter-price": 5010,
+            "extra-hour": 500,
+            "extra-passenger": 169,
+            "base-passengers": 14,
+            "commission": 0.35
+          }
+        }
+      },
+      "7": {
+        "label": "7 horas",
+        "label-short": "7hrs",
+        "sources": {
+          "direct": {
+            "label": "Directo",
+            "type": "direct",
+            "charter-price": 4500,
+            "extra-hour": 500,
+            "extra-passenger": 75,
+            "base-passengers": 10,
+            "commission": 0
+          },
+          "hacienda_encantada": {
+            "label": "Hacienda Encantada",
+            "type": "hotel",
+            "charter-price": 5405,
+            "extra-hour": 500,
+            "extra-passenger": 189,
+            "base-passengers": 14,
+            "commission": 0.35
+          }
+        }
+      },
+      "8": {
+        "label": "8 horas",
+        "label-short": "8hrs",
+        "sources": {
+          "direct": {
+            "label": "Directo",
+            "type": "direct",
+            "charter-price": 5000,
+            "extra-hour": 500,
+            "extra-passenger": 75,
+            "base-passengers": 10,
+            "commission": 0
+          },
+          "hacienda_encantada": {
+            "label": "Hacienda Encantada",
+            "type": "hotel",
+            "charter-price": 5800,
+            "extra-hour": 500,
+            "extra-passenger": 210,
+            "base-passengers": 14,
+            "commission": 0.35
+          }
+        }
+      }
+    };
+
+    const FORM_CONFIG = {
+      commission: {
+        min: 0,
+        max: 100,
+        step: 5,        // paso del slider
+        default: 35
+      }
+    };
+
+    let pricingData = {};
+    let activeCohortKey = "4"; // Por defecto 4 Horas
+    let editingSourceKey = null;
+
+    // Referencias de Elementos
+    const simPassengers = document.getElementById('sim-passengers');
+    const simExtraHours = document.getElementById('sim-extra-hours');
+    const simSourceA = document.getElementById('sim-source-a');
+    const simSourceB = document.getElementById('sim-source-b');
+    const cardPanelA = document.getElementById('card-panel-a');
+    const cardPanelB = document.getElementById('card-panel-b');
+    const diffBanner = document.getElementById('diff-banner');
+
+    // Inicializador
+    function initApp() {
+      // Cargar persistencia
+      const stored = localStorage.getItem('yacht_pricing_db_apple');
+      if (stored) {
+        try {
+          pricingData = JSON.parse(stored);
+        } catch(e) {
+          pricingData = JSON.parse(JSON.stringify(DEFAULT_PRICING_DATA));
+        }
+      } else {
+        pricingData = JSON.parse(JSON.stringify(DEFAULT_PRICING_DATA));
+      }
+
+      setCohort(activeCohortKey);
+      lucide.createIcons();
+    }
+
+    // Guardar en almacenamiento local
+    function saveStorage() {
+      localStorage.setItem('yacht_pricing_db_apple', JSON.stringify(pricingData));
+    }
+
+    // Cambiar de Tab de iOS / macOS
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+
+      // Actualizar estilo del Nav Bar
+      const isSim = tabId === 'tab-simulator';
+      const navSim = document.getElementById('nav-simulator');
+      const navRates = document.getElementById('nav-rates');
+      navSim.className = `tab-bar__item`;
+      navSim.style.color = isSim ? 'var(--color-accent-blue)' : 'var(--color-text-secondary)';
+      navRates.className = `tab-bar__item`;
+      navRates.style.color = !isSim ? 'var(--color-accent-blue)' : 'var(--color-text-secondary)';
+
+      if(!isSim) {
+        renderRatesList();
+      } else {
+        updateComparisonSelectors();
+        calculateAll();
+      }
+      lucide.createIcons();
+    }
+
+    // Configurar cohorte activa en la barra segmentada
+    function setCohort(key) {
+      activeCohortKey = String(key);
+      document.querySelectorAll('.segmented-btn').forEach(pill => {
+        pill.classList.remove('segmented-btn--active');
+      });
+      const activePill = document.getElementById(`btn-cohort-${key}`);
+      if(activePill) {
+        activePill.classList.add('segmented-btn--active');
+      }
+
+      updateComparisonSelectors();
+      calculateAll();
+    }
+
+    // Cambiar valores en los stepper táctiles
+    function stepInput(inputId, direction) {
+      const input = document.getElementById(inputId);
+      let val = parseInt(input.value) || 0;
+      val = Math.max(parseInt(input.min) || 0, val + direction);
+      input.value = val;
+      calculateAll();
+    }
+
+    // Actualiza los selectores del simulador
+    function updateComparisonSelectors() {
+      const sources = pricingData[activeCohortKey]?.sources || {};
+      const selA = simSourceA.value;
+      const selB = simSourceB.value;
+
+      simSourceA.innerHTML = '';
+      simSourceB.innerHTML = '';
+
+      Object.keys(sources).forEach(key => {
+        const option = `<option value="${key}">${sources[key].label}</option>`;
+        simSourceA.insertAdjacentHTML('beforeend', option);
+        simSourceB.insertAdjacentHTML('beforeend', option);
+      });
+
+      // Intentar preservar elecciones
+      if (Object.keys(sources).includes(selA)) simSourceA.value = selA;
+      else if (Object.keys(sources)[0]) simSourceA.value = Object.keys(sources)[0];
+
+      if (Object.keys(sources).includes(selB)) simSourceB.value = selB;
+      else if (Object.keys(sources)[1]) simSourceB.value = Object.keys(sources)[1];
+      else if (Object.keys(sources)[0]) simSourceB.value = Object.keys(sources)[0];
+    }
+
+    // Motor de cálculo financiero
+    function computeRates(sourceKey, cohortKey, passengers, extraHours) {
+      const cohort = pricingData[cohortKey];
+      if (!cohort || !cohort.sources[sourceKey]) return null;
+
+      const src = cohort.sources[sourceKey];
+      const charterPrice = parseFloat(src["charter-price"]) || 0;
+      const extraHourRate = parseFloat(src["extra-hour"]) || 0;
+      const extraPassengerRate = parseFloat(src["extra-passenger"]) || 0;
+      const basePassengers = parseInt(src["base-passengers"]) || 10;
+      const commissionRate = parseFloat(src["commission"]) || 0;
+
+      const extraHoursTotal = extraHours * extraHourRate;
+      const extraPassengersCount = Math.max(0, passengers - basePassengers);
+      const extraPassengersTotal = extraPassengersCount * extraPassengerRate;
+
+      const subtotalNet = charterPrice + extraHoursTotal + extraPassengersTotal;
+      const commissionAmount = subtotalNet * commissionRate;
+
+      return {
+        key: sourceKey,
+        label: src.label,
+        type: src.type || 'direct',
+        charterPrice,
+        basePassengers,
+        extraHoursCount: extraHours,
+        extraHourRate,
+        extraHoursTotal,
+        extraPassengersCount,
+        extraPassengerRate,
+        extraPassengersTotal,
+        subtotalNet,
+        commissionRate,
+        commissionAmount,
+        total: subtotalNet
+      };
+    }
+
+    // Renderizado de cartas comparativas
+    function renderComparisonCard(data, container, isWinner) {
+      if (!data) {
+        container.innerHTML = `
+          <div style="padding:2rem; text-align:center; color:#8E8E93; margin:auto;">
+            <i data-lucide="help-circle" style="width:2rem;height:2rem;margin:0 auto 0.5rem; color:#d1d5db;"></i>
+            <p class="text-xs font-bold uppercase tracking-wider">No configurado</p>
+          </div>
+        `;
+        return;
+      }
+
+      let badgeClass = "comparison-card__badge comparison-card__badge--direct";
+      let categoryText = "Proveedor Directo";
+      if (data.type === 'hotel') {
+        badgeClass = "comparison-card__badge comparison-card__badge--hotel";
+        categoryText = "Hotel";
+      } else if (data.type === 'agency') {
+        badgeClass = "comparison-card__badge comparison-card__badge--agency";
+        categoryText = "Agencia / Broker";
+      }
+
+      const headerClass = isWinner ? 'comparison-card__header comparison-card__header--winner' : 'comparison-card__header comparison-card__header--default';
+
+      container.innerHTML = `
+        <div class="${headerClass}">
+          <div class="flex justify-between items-center">
+            <span class="${badgeClass}">
+              ${categoryText}
+            </span>
+            ${isWinner ? `<span class="comparison-card__winner">
+              <i data-lucide="sparkles" style="width:0.875rem;height:0.875rem;"></i>
+              <span>Mejor Opción</span>
+            </span>` : ''}
+          </div>
+          <div class="flex items-end justify-between mt-3">
+            <h3 class="comparison-card__name">${data.label}</h3>
+            <span class="comparison-card__total">$${data.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+          </div>
+        </div>
+
+        <div class="comparison-card__body">
+          <div>
+            <div class="comparison-card__row">
+              <span class="comparison-card__row-label">Charter Base (${activeCohortKey}h):</span>
+              <span class="comparison-card__row-value">$${data.charterPrice.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+            </div>
+            <div class="comparison-card__row">
+              <span class="comparison-card__row-label">Horas Extras (${data.extraHoursCount}h):</span>
+              <span class="comparison-card__row-value">+$${data.extraHoursTotal.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+            </div>
+            <div class="comparison-card__row">
+              <span class="comparison-card__row-label">Pax Extra (${data.extraPassengersCount}pax):</span>
+              <span class="comparison-card__row-value">+$${data.extraPassengersTotal.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+            </div>
+          </div>
+
+          ${data.commissionAmount > 0 ? `
+            <div class="comparison-card__commission">
+              <div class="comparison-card__commission-row">
+                <span>Comisión de Retención (${data.commissionRate * 100}%):</span>
+                <span>-$${data.commissionAmount.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+              </div>
+              <div class="comparison-card__net">
+                <span>Liquidación Operador:</span>
+                <span>$${(data.total - data.commissionAmount).toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+              </div>
+            </div>
+          ` : `
+            <div class="comparison-card__footer">
+              <i data-lucide="shield-check" style="width:0.875rem;height:0.875rem;color:#30D158;"></i>
+              <span>Liquidación libre de comisión</span>
+            </div>
+          `}
+        </div>
+      `;
+    }
+
+    // Calcula de forma unificada
+    function calculateAll() {
+      const pass = parseInt(simPassengers.value) || 0;
+      const extraH = parseInt(simExtraHours.value) || 0;
+      const srcA = simSourceA.value;
+      const srcB = simSourceB.value;
+
+      const resA = computeRates(srcA, activeCohortKey, pass, extraH);
+      const resB = computeRates(srcB, activeCohortKey, pass, extraH);
+
+      const hasA = !!resA;
+      const hasB = !!resB;
+
+      const winA = hasA && hasB && resA.total < resB.total;
+      const winB = hasA && hasB && resB.total < resA.total;
+
+      renderComparisonCard(resA, cardPanelA, winA);
+      renderComparisonCard(resB, cardPanelB, winB);
+
+      // Render del banner de diferencia
+      if (hasA && hasB) {
+        const diff = Math.abs(resA.total - resB.total);
+        const diffPct = resA.total > 0 ? ((diff / resA.total) * 100).toFixed(1) : 0;
+        
+        if (resA.total === resB.total) {
+          diffBanner.innerHTML = `
+            <div class="diff-banner__equal">
+              <span class="diff-banner__equal-label">Diferencial</span>
+              <p class="diff-banner__equal-text">Los precios son exactamente iguales</p>
+            </div>
+          `;
+        } else {
+          const winnerName = resA.total < resB.total ? resA.label : resB.label;
+          diffBanner.innerHTML = `
+            <div class="diff-banner__diff">
+              <div class="diff-banner__diff-left">
+                <span class="diff-banner__diff-label">Diferencia de Precio</span>
+                <p class="diff-banner__diff-value">$${diff.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</p>
+              </div>
+              <div class="diff-banner__diff-right">
+                <span class="diff-banner__winner">${winnerName}</span>
+                <span class="diff-banner__savings">Ahorras un ~${diffPct}%</span>
+              </div>
+            </div>
+          `;
+        }
+      } else {
+        diffBanner.innerHTML = '';
+      }
+
+      lucide.createIcons();
+    }
+
+    // Renderizado del Catálogo de Tarifas en Tab 2
+    function renderRatesList() {
+      const container = document.getElementById('rates-list-container');
+      container.innerHTML = '';
+
+      // Selector de cohorte interna del catálogo (Ocupará toda la cabecera del grid)
+      const headerSelectorHTML = `
+        <div class="catalog-header">
+          <span class="text-xs font-bold text-black uppercase tracking-wider">Ver Tarifas para:</span>
+          <div class="catalog-header__select-wrapper">
+            <select id="catalogue-cohort" onchange="renderRatesList()" class="catalog-header__select">
+              ${Object.keys(pricingData).map(k => `<option value="${k}" ${k === activeCohortKey ? 'selected':''}>${pricingData[k].label}</option>`).join('')}
+            </select>
+            <div class="catalog-header__chevron">
+              <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+            </div>
+          </div>
+        </div>
+      `;
+      container.insertAdjacentHTML('beforeend', headerSelectorHTML);
+
+      const catalogueKey = document.getElementById('catalogue-cohort')?.value || activeCohortKey;
+      const sources = pricingData[catalogueKey]?.sources || {};
+
+      const keys = Object.keys(sources);
+      if(keys.length === 0) {
+        container.innerHTML += `
+          <div style="background:white; padding:2rem; border-radius:1rem; text-align:center; color:#8E8E93; border:var(--border-subtle); grid-column:1/-1;">
+            <i data-lucide="folder-open" style="width:2.5rem;height:2.5rem;margin:0 auto 0.5rem; color:#d1d5db; display:block;"></i>
+            <p class="text-xs font-bold">No hay tarifas cargadas en esta duración</p>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      keys.forEach(key => {
+        const src = sources[key];
+        const commPct = Math.round((src.commission || 0) * 100);
+
+        let badgeClass = "comparison-card__badge comparison-card__badge--direct";
+        if (src.type === 'hotel') badgeClass = "comparison-card__badge comparison-card__badge--hotel";
+        if (src.type === 'agency') badgeClass = "comparison-card__badge comparison-card__badge--agency";
+
+        const card = `
+          <div class="rate-card">
+            <div>
+              <div class="rate-card__top">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h4 class="rate-card__title">${src.label}</h4>
+                    <span class="${badgeClass}" style="font-size:0.5rem; padding:0.125rem 0.375rem;">${src.type || 'Directo'}</span>
+                  </div>
+                  <span class="rate-card__id">ID: ${key}</span>
+                </div>
+                <div class="rate-card__actions">
+                  <button onclick="copySourceToAll('${key}', '${catalogueKey}')" title="Copiar a todas las horas" class="rate-card__action-btn">
+                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                  </button>
+                  <button onclick="openFormModal('${key}')" title="Editar" class="rate-card__action-btn">
+                    <i data-lucide="edit" class="w-3.5 h-3.5"></i>
+                  </button>
+                  <button onclick="deleteSourceConfirm('${key}', '${catalogueKey}')" title="Eliminar" class="rate-card__action-btn rate-card__action-btn--danger">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+              </div>
+ 
+              <div class="rate-card__metrics">
+                <div>
+                  <span class="rate-card__metric-label">Base</span>
+                  <span class="rate-card__metric-value">$${src["charter-price"]}</span>
+                </div>
+                <div>
+                  <span class="rate-card__metric-label">Pax Lim</span>
+                  <span class="rate-card__metric-value">${src["base-passengers"] || 10}</span>
+                </div>
+                <div>
+                  <span class="rate-card__metric-label">H. Ext</span>
+                  <span class="rate-card__metric-value">$${src["extra-hour"]}</span>
+                </div>
+                <div>
+                  <span class="rate-card__metric-label">Com.</span>
+                  <span class="rate-card__metric-value rate-card__metric-value--accent">${commPct}%</span>
+                </div>
+              </div>
+            </div>
+ 
+            <div id="confirm-del-${key}" class="delete-confirm hidden">
+              <span class="delete-confirm__text">¿Eliminar?</span>
+              <div class="delete-confirm__actions">
+                <button onclick="cancelDelete('${key}')" class="delete-confirm__btn">No</button>
+                <button onclick="executeDelete('${key}', '${catalogueKey}')" class="delete-confirm__btn delete-confirm__btn--danger">Sí</button>
+              </div>
+            </div>
+          </div>
+        `;
+        container.insertAdjacentHTML('beforeend', card);
+      });
+
+      lucide.createIcons();
+    }
+
+    // Replicar origen seleccionado a todas las cohortes horarias
+    function copySourceToAll(sourceKey, currentCohort) {
+      const sourceToCopy = pricingData[currentCohort].sources[sourceKey];
+      if (!sourceToCopy) return;
+
+      Object.keys(pricingData).forEach(cohort => {
+        if(!pricingData[cohort].sources) pricingData[cohort].sources = {};
+        pricingData[cohort].sources[sourceKey] = JSON.parse(JSON.stringify(sourceToCopy));
+      });
+
+      saveStorage();
+      showToast(`Tarifa "${sourceToCopy.label}" copiada a todas las duraciones.`);
+    }
+
+    // Controladores del Botton-Sheet / Side-Sheet
+    function openFormModal(sourceKey = null) {
+      editingSourceKey = sourceKey;
+      
+      const form = document.getElementById('source-form');
+      form.reset();
+
+      const container = document.getElementById('form-hourly-slots-container');
+      container.innerHTML = `<label class="sheet-form__label" style="margin-bottom:0.5rem;">Tarifas por Slot de Hora</label>`;
+
+      if(sourceKey) {
+        // MODO EDICIÓN
+        document.getElementById('form-title').querySelector('span').innerText = "Editar Convenio de Precios";
+        const keyInput = document.getElementById('form-source-key');
+        keyInput.value = sourceKey;
+        keyInput.disabled = true;
+
+        // Buscar el primer valor existente para rellenar los datos globales
+        let firstSrc = null;
+        Object.keys(pricingData).forEach(cohort => {
+          if (pricingData[cohort]?.sources?.[sourceKey]) {
+            firstSrc = pricingData[cohort].sources[sourceKey];
+          }
+        });
+
+        if (firstSrc) {
+          document.getElementById('form-source-label').value = firstSrc.label || '';
+          document.getElementById('form-source-type').value = firstSrc.type || 'direct';
+          document.getElementById('form-commission').value = Math.round((firstSrc.commission || 0) * 100);
+          syncCommissionFromSlider('form-commission', 'form-commission-input');
+        }
+      } else {
+        // MODO CREACIÓN
+        document.getElementById('form-title').querySelector('span').innerText = "Crear Nuevo Convenio";
+        const keyInput = document.getElementById('form-source-key');
+        keyInput.value = '';
+        keyInput.disabled = false;
+        
+        document.getElementById('form-source-label').value = '';
+        document.getElementById('form-source-type').value = 'hotel';
+        document.getElementById('form-commission').value = 35; // Comisión sugerida
+        syncCommissionFromSlider('form-commission', 'form-commission-input');
+      }
+
+      // Renderizar los slots horarias dinámicamente
+      const cohortKeys = Object.keys(pricingData); // ["2", "3", "4", "5", "6", "7", "8"]
+      cohortKeys.forEach(cohort => {
+        let charterPrice = '';
+        let extraPassenger = '';
+        let basePassengers = '14'; // Por defecto 14 pax (Hacienda style)
+
+        if (sourceKey && pricingData[cohort]?.sources?.[sourceKey]) {
+          const src = pricingData[cohort].sources[sourceKey];
+          charterPrice = src["charter-price"] || '';
+          extraPassenger = src["extra-passenger"] || '';
+          basePassengers = src["base-passengers"] || '14';
+        } else {
+          // Valores sugeridos incrementales por defecto
+          const defaults = {
+            "2": { price: 1600, extra: 75 },
+            "3": { price: 2200, extra: 75 },
+            "4": { price: 2800, extra: 75 },
+            "5": { price: 3400, extra: 75 },
+            "6": { price: 4000, extra: 75 },
+            "7": { price: 4500, extra: 75 },
+            "8": { price: 5000, extra: 75 }
+          };
+          charterPrice = defaults[cohort]?.price || '';
+          extraPassenger = defaults[cohort]?.extra || '';
+        }
+
+        const slotHTML = `
+          <div class="slot-row">
+            <div class="slot-row__header">
+              <span class="text-xs font-bold text-black flex items-center gap-1.5">
+                <i data-lucide="clock" style="width:0.875rem;height:0.875rem;color:var(--color-accent-blue);"></i>
+                <span>Slot: ${cohort} Horas</span>
+              </span>
+            </div>
+            <div class="slot-grid">
+              <div class="slot-input">
+                <span class="slot-input__label">Base ($)</span>
+                <input type="number" required min="0" step="any" data-cohort="${cohort}" data-field="charter-price" value="${charterPrice}" class="slot-input__field">
+              </div>
+              <div class="slot-input">
+                <span class="slot-input__label">Pax Lim</span>
+                <input type="number" required min="1" data-cohort="${cohort}" data-field="base-passengers" value="${basePassengers}" class="slot-input__field">
+              </div>
+              <div class="slot-input">
+                <span class="slot-input__label">Pax Ext ($)</span>
+                <input type="number" required min="0" step="any" data-cohort="${cohort}" data-field="extra-passenger" value="${extraPassenger}" class="slot-input__field">
+              </div>
+            </div>
+          </div>
+        `;
+        container.insertAdjacentHTML('beforeend', slotHTML);
+      });
+
+      syncCommissionFromSlider('form-commission', 'form-commission-input');
+
+      // Animación bottom-sheet con control de visibilidad nativa
+      const sheet = document.getElementById('bottom-sheet');
+      sheet.classList.remove('invisible', 'pointer-events-none');
+      
+      // Forzar reflow para asegurar que la transición se ejecute correctamente
+      void sheet.offsetWidth;
+
+      document.getElementById('sheet-backdrop').classList.add('opacity-100');
+      document.getElementById('sheet-panel').classList.add('open');
+      
+      lucide.createIcons();
+    }
+
+    function closeFormModal() {
+      document.getElementById('sheet-backdrop').classList.remove('opacity-100');
+      document.getElementById('sheet-panel').classList.remove('open');
+      setTimeout(() => {
+        const sheet = document.getElementById('bottom-sheet');
+        sheet.classList.add('invisible', 'pointer-events-none');
+      }, 400);
+    }
+
+    function syncCommissionFromSlider(sliderId, inputId, updatePreview = false) {
+      const slider = document.getElementById(sliderId);
+      const input = document.getElementById(inputId);
+      if (!slider || !input) return;
+
+      let val = parseInt(slider.value) || 0;
+      const cfg = FORM_CONFIG.commission;
+      val = Math.max(cfg.min, Math.min(cfg.max, val));
+
+      input.value = val;
+
+      if (updatePreview && typeof updateImportPreview === 'function') {
+        updateImportPreview();
+      }
+    }
+
+    function syncCommissionFromInput(sliderId, inputId, updatePreview = false) {
+      const slider = document.getElementById(sliderId);
+      const input = document.getElementById(inputId);
+      if (!slider || !input) return;
+
+      let val = parseInt(input.value) || 0;
+      const cfg = FORM_CONFIG.commission;
+      val = Math.max(cfg.min, Math.min(cfg.max, val));
+
+      // Update slider to closest step
+      const step = cfg.step || 5;
+      const snapped = Math.round(val / step) * step;
+      slider.value = Math.max(cfg.min, Math.min(cfg.max, snapped));
+
+      // Keep input clean
+      input.value = val;
+
+      if (updatePreview && typeof updateImportPreview === 'function') {
+        updateImportPreview();
+      }
+    }
+
+    function handleFormSubmit(event) {
+      event.preventDefault();
+
+      const keyInput = document.getElementById('form-source-key');
+      const key = keyInput.value.trim().toLowerCase().replace(/\s+/g, '_');
+
+      if (!key) {
+        showToast("ID de origen inválido", "error");
+        return;
+      }
+
+      const label = document.getElementById('form-source-label').value.trim();
+      const type = document.getElementById('form-source-type').value;
+      const commission = (parseInt(document.getElementById('form-commission-input').value) || 0) / 100;
+
+      // Si es creación, validar colisión
+      if (editingSourceKey === null) {
+        let exists = false;
+        Object.keys(pricingData).forEach(cohort => {
+          if (pricingData[cohort]?.sources?.[key]) exists = true;
+        });
+        if (exists) {
+          showToast("Ya existe un origen con este ID", "error");
+          return;
+        }
+      }
+
+      // Procesar cada input por slot de hora
+      const container = document.getElementById('form-hourly-slots-container');
+      const baseInputs = container.querySelectorAll('input[data-field="charter-price"]');
+      
+      baseInputs.forEach(input => {
+        const cohort = input.getAttribute('data-cohort');
+        const charterPrice = parseFloat(input.value) || 0;
+        
+        const passengersInput = container.querySelector(`input[data-cohort="${cohort}"][data-field="base-passengers"]`);
+        const basePassengers = parseInt(passengersInput.value) || 14;
+
+        const extraPassengerInput = container.querySelector(`input[data-cohort="${cohort}"][data-field="extra-passenger"]`);
+        const extraPassenger = parseFloat(extraPassengerInput.value) || 0;
+
+        // Mantener extra-hour heredado del default o 500
+        let extraHour = 500;
+        if (pricingData[cohort]?.sources?.[key]?.["extra-hour"]) {
+          extraHour = pricingData[cohort].sources[key]["extra-hour"];
+        }
+
+        if (!pricingData[cohort].sources) {
+          pricingData[cohort].sources = {};
+        }
+
+        pricingData[cohort].sources[key] = {
+          label,
+          type,
+          "charter-price": charterPrice,
+          "extra-hour": extraHour,
+          "extra-passenger": extraPassenger,
+          "base-passengers": basePassengers,
+          commission
+        };
+      });
+
+      saveStorage();
+      renderRatesList();
+      closeFormModal();
+      showToast("Convenio guardado con éxito");
+      
+      // Si estamos en la pestaña de simulador, refrescar vistas
+      updateComparisonSelectors();
+      calculateAll();
+    }
+
+    // Confirmación e interacción de borrado
+    function deleteSourceConfirm(key) {
+      document.getElementById(`confirm-del-${key}`).classList.remove('hidden');
+    }
+
+    function cancelDelete(key) {
+      document.getElementById(`confirm-del-${key}`).classList.add('hidden');
+    }
+
+    function executeDelete(key, cohort) {
+      delete pricingData[cohort].sources[key];
+      saveStorage();
+      renderRatesList();
+      showToast("Origen eliminado correctamente");
+    }
+
+    // Copiar reporte completo con portapapeles seguro de iFrame
+    document.getElementById('btn-copy-report').addEventListener('click', () => {
+      const pass = parseInt(simPassengers.value) || 0;
+      const extraH = parseInt(simExtraHours.value) || 0;
+      const srcA = simSourceA.value;
+      const srcB = simSourceB.value;
+
+      const resA = computeRates(srcA, activeCohortKey, pass, extraH);
+      const resB = computeRates(srcB, activeCohortKey, pass, extraH);
+
+      if(!resA || !resB) {
+        showToast("Configura ambos orígenes para copiar", "error");
+        return;
+      }
+
+      const text = `=== REPORTE DE CHARTER DE YATE ===
+Duración: ${activeCohortKey} Horas
+Pasajeros: ${pass} pax
+Horas Extras contratadas: ${extraH} h
+
+[A] ${resA.label} (${resA.type.toUpperCase()})
+- Costo Total Cliente: $${resA.total.toLocaleString()}
+- Comisión: ${resA.commissionRate * 100}% ($${resA.commissionAmount.toLocaleString()})
+- Neto Operador: $${(resA.total - resA.commissionAmount).toLocaleString()}
+
+[B] ${resB.label} (${resB.type.toUpperCase()})
+- Costo Total Cliente: $${resB.total.toLocaleString()}
+- Comisión: ${resB.commissionRate * 100}% ($${resB.commissionAmount.toLocaleString()})
+- Neto Operador: $${(resB.total - resB.commissionAmount).toLocaleString()}
+
+Diferencial: $${Math.abs(resA.total - resB.total).toLocaleString()}
+Generado en Yacht Prices Portal.`;
+
+      const dummy = document.createElement("textarea");
+      document.body.appendChild(dummy);
+      dummy.value = text;
+      dummy.select();
+      document.execCommand("copy");
+      document.body.removeChild(dummy);
+
+      showToast("Reporte copiado al portapapeles");
+    });
+
+    // Toast de notificaciones de estilo Apple
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-message');
+      const iconBox = document.getElementById('toast-icon-box');
+
+      toastMsg.innerText = message;
+
+      if(type === 'success') {
+        iconBox.innerHTML = '<i data-lucide="check-circle-2" class="w-5 h-5"></i>';
+        iconBox.className = "toast__icon";
+        iconBox.style.color = '#30D158';
+      } else {
+        iconBox.innerHTML = '<i data-lucide="alert-triangle" class="w-5 h-5"></i>';
+        iconBox.className = "toast__icon";
+        iconBox.style.color = '#FF453A';
+      }
+
+      lucide.createIcons();
+
+      // Animación iOS Slide-In using BEM
+      toast.classList.add('toast--visible');
+
+      setTimeout(() => {
+        toast.classList.remove('toast--visible');
+      }, 3500);
+    }
+
+    // Base de datos de preajustes (plantillas)
+    const IMPORT_PRESETS = {
+      "hacienda_real": {
+        "2": { "charter-price": 1850, "extra-hour": 500, "extra-passenger": 87, "base-passengers": 14 },
+        "3": { "charter-price": 2770, "extra-hour": 500, "extra-passenger": 97, "base-passengers": 14 },
+        "4": { "charter-price": 3693, "extra-hour": 500, "extra-passenger": 110, "base-passengers": 14 },
+        "5": { "charter-price": 4616, "extra-hour": 500, "extra-passenger": 148, "base-passengers": 14 },
+        "6": { "charter-price": 5010, "extra-hour": 500, "extra-passenger": 169, "base-passengers": 14 },
+        "7": { "charter-price": 5405, "extra-hour": 500, "extra-passenger": 189, "base-passengers": 14 },
+        "8": { "charter-price": 5800, "extra-hour": 500, "extra-passenger": 210, "base-passengers": 14 }
+      },
+      "direct_base": {
+        "2": { "charter-price": 1600, "extra-hour": 500, "extra-passenger": 75, "base-passengers": 10 },
+        "3": { "charter-price": 2200, "extra-hour": 500, "extra-passenger": 75, "base-passengers": 10 },
+        "4": { "charter-price": 2800, "extra-hour": 500, "extra-passenger": 75, "base-passengers": 10 },
+        "5": { "charter-price": 3400, "extra-hour": 500, "extra-passenger": 75, "base-passengers": 10 },
+        "6": { "charter-price": 4000, "extra-hour": 500, "extra-passenger": 75, "base-passengers": 10 },
+        "7": { "charter-price": 4500, "extra-hour": 500, "extra-passenger": 75, "base-passengers": 10 },
+        "8": { "charter-price": 5000, "extra-hour": 500, "extra-passenger": 75, "base-passengers": 10 }
+      }
+    };
+
+    function openImportModal() {
+      const form = document.getElementById('import-form');
+      form.reset();
+
+      // Valores iniciales por defecto
+      document.getElementById('import-source-key').value = '';
+      document.getElementById('import-source-label').value = '';
+      document.getElementById('import-preset-selector').value = 'hacienda_real';
+      document.getElementById('import-price-modifier').value = '0';
+      document.getElementById('import-commission').value = '35';
+      document.getElementById('import-source-type').value = 'hotel';
+
+      updateImportPresetView();
+      syncCommissionFromSlider('import-commission', 'import-commission-input', true);
+      updateImportPreview();
+
+      // Mostrar modal
+      const sheet = document.getElementById('import-sheet');
+      sheet.classList.remove('invisible', 'pointer-events-none');
+      void sheet.offsetWidth;
+      document.getElementById('import-sheet-backdrop').classList.add('opacity-100');
+      document.getElementById('import-sheet-panel').classList.add('open');
+      
+      lucide.createIcons();
+    }
+
+    function closeImportModal() {
+      document.getElementById('import-sheet-backdrop').classList.remove('opacity-100');
+      document.getElementById('import-sheet-panel').classList.remove('open');
+      setTimeout(() => {
+        const sheet = document.getElementById('import-sheet');
+        sheet.classList.add('invisible', 'pointer-events-none');
+      }, 400);
+    }
+
+    // Commission sync is now handled by syncCommissionFromSlider / syncCommissionFromInput
+    // (kept for backward compatibility in case any old calls remain)
+
+    function updateImportPresetView() {
+      const preset = document.getElementById('import-preset-selector').value;
+      const jsonContainer = document.getElementById('import-json-container');
+      const sourceKeyField = document.getElementById('import-source-key');
+      const sourceLabelField = document.getElementById('import-source-label');
+      const categoryField = document.getElementById('import-source-type');
+      const commissionField = document.getElementById('import-commission');
+
+      if (preset === 'json_custom') {
+        jsonContainer.classList.remove('hidden');
+        document.getElementById('import-json-data').value = JSON.stringify(IMPORT_PRESETS.hacienda_real, null, 2);
+      } else {
+        jsonContainer.classList.add('hidden');
+        if (preset === 'hacienda_real') {
+          sourceKeyField.value = 'hacienda_vip';
+          sourceLabelField.value = 'Hacienda Encantada VIP';
+          categoryField.value = 'hotel';
+          commissionField.value = '35';
+        } else if (preset === 'direct_base') {
+          sourceKeyField.value = 'directo_premium';
+          sourceLabelField.value = 'Directo Premium';
+          categoryField.value = 'direct';
+          commissionField.value = '0';
+        }
+      }
+      syncCommissionFromSlider('import-commission', 'import-commission-input', true);
+      updateImportPreview();
+    }
+
+    function getPresetData() {
+      const preset = document.getElementById('import-preset-selector').value;
+      if (preset === 'json_custom') {
+        try {
+          const raw = document.getElementById('import-json-data').value.trim();
+          return JSON.parse(raw);
+        } catch(e) {
+          return null;
+        }
+      }
+      return IMPORT_PRESETS[preset] || null;
+    }
+
+    function updateImportPreview() {
+      const tbody = document.getElementById('import-preview-tbody');
+      tbody.innerHTML = '';
+
+      const presetData = getPresetData();
+      if (!presetData) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" style="padding:1rem; text-align:center; color:#ef4444; font-weight:700;">
+              Formato JSON inválido. Verifique la estructura.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      const modifier = parseFloat(document.getElementById('import-price-modifier').value) || 0;
+      const commissionVal = parseInt(document.getElementById('import-commission-input').value) || 0;
+
+      Object.keys(presetData).forEach(hour => {
+        const item = presetData[hour];
+        if (!item) return;
+
+        const basePrice = parseFloat(item['charter-price']) || 0;
+        const extraPassenger = parseFloat(item['extra-passenger']) || 0;
+        const basePassengers = parseInt(item['base-passengers']) || 14;
+
+        // Aplicar modificador
+        const finalBase = Math.round(basePrice * (1 + modifier));
+        const finalExtra = Math.round(extraPassenger * (1 + modifier));
+
+        tbody.innerHTML += `
+          <tr style="border-bottom:1px solid rgba(0,0,0,0.02);">
+            <td style="padding:0.625rem; font-weight:600; color:#000;">${hour} Horas</td>
+            <td style="padding:0.625rem; text-align:right; color:#059669; font-weight:700;">$${finalBase.toLocaleString('es-MX')} USD</td>
+            <td style="padding:0.625rem; text-align:center; font-weight:500;">${basePassengers} Pax</td>
+            <td style="padding:0.625rem; text-align:right; font-weight:500;">$${finalExtra.toLocaleString('es-MX')} USD</td>
+            <td style="padding:0.625rem; text-align:right; color:var(--color-accent-blue); font-weight:700;">${commissionVal}%</td>
+          </tr>
+        `;
+      });
+    }
+
+    function handleImportSubmit(event) {
+      event.preventDefault();
+
+      const keyInput = document.getElementById('import-source-key');
+      const key = keyInput.value.trim().toLowerCase().replace(/\s+/g, '_');
+
+      if (!key) {
+        showToast("ID de convenio inválido", "error");
+        return;
+      }
+
+      const label = document.getElementById('import-source-label').value.trim();
+      const type = document.getElementById('import-source-type').value;
+      const modifier = parseFloat(document.getElementById('import-price-modifier').value) || 0;
+      const commission = (parseInt(document.getElementById('import-commission-input').value) || 0) / 100;
+
+      const presetData = getPresetData();
+      if (!presetData) {
+        showToast("No se pudo leer la plantilla de origen", "error");
+        return;
+      }
+
+      // Validar si ya existe en alguna de las duraciones
+      let alreadyExists = false;
+      Object.keys(pricingData).forEach(cohort => {
+        if (pricingData[cohort]?.sources && pricingData[cohort].sources[key]) {
+          alreadyExists = true;
+        }
+      });
+
+      if (alreadyExists) {
+        showToast("Ya existe un origen o convenio con este ID", "error");
+        return;
+      }
+
+      // Aplicar importación a todas las duraciones
+      Object.keys(presetData).forEach(cohort => {
+        if (!pricingData[cohort]) {
+          pricingData[cohort] = {
+            "label": `${cohort} horas`,
+            "label-short": `${cohort}hrs`,
+            "sources": {}
+          };
+        }
+
+        const baseItem = presetData[cohort];
+        const basePrice = Math.round((parseFloat(baseItem['charter-price']) || 0) * (1 + modifier));
+        const extraPassenger = Math.round((parseFloat(baseItem['extra-passenger']) || 0) * (1 + modifier));
+        const extraHour = parseFloat(baseItem['extra-hour']) || 500;
+        const basePassengers = parseInt(baseItem['base-passengers']) || 14;
+
+        pricingData[cohort].sources[key] = {
+          label,
+          type,
+          "charter-price": basePrice,
+          "extra-hour": extraHour,
+          "extra-passenger": extraPassenger,
+          "base-passengers": basePassengers,
+          commission
+        };
+      });
+
+      saveStorage();
+      renderRatesList();
+      closeImportModal();
+      showToast(`Convenio "${label}" importado con éxito.`);
+      
+      // Si estamos en simulación, refrescar selectores
+      updateComparisonSelectors();
+      calculateAll();
+    }
+
+    // Listeners del simulador
+    [simSourceA, simSourceB].forEach(sel => {
+      sel.addEventListener('change', calculateAll);
+    });
+
+    // Commission input blur clamping (respect FORM_CONFIG)
+    function setupCommissionInput(inputId, sliderId, updatePreview = false) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+
+      input.addEventListener('blur', () => {
+        const cfg = FORM_CONFIG.commission;
+        let v = parseInt(input.value) || 0;
+        v = Math.max(cfg.min, Math.min(cfg.max, v));
+        input.value = v;
+
+        // snap slider
+        const slider = document.getElementById(sliderId);
+        if (slider) {
+          const step = cfg.step || 5;
+          slider.value = Math.round(v / step) * step;
+        }
+
+        if (updatePreview && typeof updateImportPreview === 'function') {
+          updateImportPreview();
+        }
+      });
+    }
+
+    setupCommissionInput('form-commission-input', 'form-commission');
+    setupCommissionInput('import-commission-input', 'import-commission', true);
+
+    // Iniciar
+    window.onload = function() {
+      initApp();
+    };
+  </script>
+</body>
+</html>

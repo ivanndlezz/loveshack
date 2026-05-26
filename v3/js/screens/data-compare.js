@@ -26,15 +26,25 @@ const DataCompareScreen = {
               <h1 class="compare-title">Data Compare</h1>
               <p class="compare-subtitle">Comparativa de fuentes de datos</p>
             </div>
-            <button class="compare-refresh-btn" id="compare-refresh-btn" aria-label="Refresh data">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                <path d="M21 2v6h-6"/>
-                <path d="M3 12a9 9 0 0 1 15-6.7L21 8"/>
-                <path d="M3 22v-6h6"/>
-                <path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
-              </svg>
-              Refresh
-            </button>
+            <div class="compare-header-actions" style="display: flex; gap: 8px; align-items: center;">
+              <button class="compare-refresh-btn" id="compare-airtable-btn" aria-label="Import Airtable to JSON">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                Airtable a JSON
+              </button>
+              <button class="compare-refresh-btn" id="compare-refresh-btn" aria-label="Refresh data">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <path d="M21 2v6h-6"/>
+                  <path d="M3 12a9 9 0 0 1 15-6.7L21 8"/>
+                  <path d="M3 22v-6h6"/>
+                  <path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
+                </svg>
+                Refresh
+              </button>
+            </div>
           </div>
 
           <!-- Source Legend -->
@@ -90,6 +100,42 @@ const DataCompareScreen = {
         </div>
       </div>
     `;
+
+    document.getElementById('compare-airtable-btn')?.addEventListener('click', async () => {
+      const btn = document.getElementById('compare-airtable-btn');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="spinning">
+            <path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/>
+            <path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
+          </svg>
+          Cargando…
+        `;
+      }
+      try {
+        if (window.SyncManager) {
+          await window.SyncManager.importAirtableToJSON();
+        } else {
+          window.Toast?.error("SyncManager no cargado");
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Airtable a JSON
+          `;
+        }
+        await this.refresh();
+      }
+    });
 
     document.getElementById('compare-refresh-btn')?.addEventListener('click', async () => {
       await this.refresh();

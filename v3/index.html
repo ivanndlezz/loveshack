@@ -40,7 +40,9 @@
     <link rel="stylesheet" href="css/screens/clients.css" />
     <link rel="stylesheet" href="css/screens/sources.css" />
     <link rel="stylesheet" href="css/screens/data-compare.css" />
+    <link rel="stylesheet" href="css/screens/settings.css" />
     <link rel="stylesheet" href="css/screens/menu.css" />
+    <link rel="stylesheet" href="css/screens/yacht-pricing.css" />
     <link rel="stylesheet" href="css/voucher.css" />
     <link rel="stylesheet" href="css/datetime-picker.css" />
     <link
@@ -184,6 +186,7 @@
               <svg class="icon"><use href="#icon-reload" /></svg>
               Reload
             </button>
+            <!-- Settings → unified tab: Preferencias -->
             <button class="menu-item" id="menu-settings" aria-label="Settings">
               <svg class="icon"><use href="#icon-gear" /></svg>
               Settings
@@ -192,6 +195,14 @@
               <svg class="icon"><use href="#icon-chart" /></svg>
               Resumen
             </button>
+            <!-- Sync/Data → unified tab: Sincronizar -->
+            <button class="menu-item" id="menu-sync" aria-label="Sync & Data">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+              </svg>
+              Sync & Data
+            </button>
+            <!-- Compare → unified tab: Comparador -->
             <button class="menu-item" id="menu-compare" aria-label="Compare Data">
               <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M18 20V10M12 20V4M6 20v-6"/>
@@ -199,6 +210,14 @@
                 <circle cx="6" cy="11" r="2.5"/>
               </svg>
               Compare
+            </button>
+            <button class="menu-item" id="menu-yacht-pricing" aria-label="Comparador Yates">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 3v18h18"/>
+                <path d="M7 13l3-3 3 3 4-4"/>
+                <circle cx="17" cy="9" r="1.5"/>
+              </svg>
+              Yates
             </button>
             <button
               class="menu-item toggle-theme"
@@ -632,6 +651,7 @@
     <script src="js/screens/settings.js"></script>
     <script src="js/screens/voucher.js"></script>
     <script src="js/screens/data-compare.js"></script>
+    <script src="js/screens/yacht-pricing.js"></script>
 
     <!-- App Orchestrator (must be last) -->
     <script src="js/app.js"></script>
@@ -751,7 +771,7 @@
       document.getElementById("menu-settings").addEventListener("click", () => {
         island.dataset.sheetState = "closed";
         updateMenuIcon();
-        window.App.navigate("#/settings");
+        window.App.navigate("#/settings"); // → Preferencias tab
       });
 
       document.getElementById("menu-stats").addEventListener("click", () => {
@@ -760,10 +780,22 @@
         window.App.navigate("#/filter");
       });
 
+      document.getElementById("menu-sync").addEventListener("click", () => {
+        island.dataset.sheetState = "closed";
+        updateMenuIcon();
+        window.App.navigate("#/data"); // → Sincronizar tab
+      });
+
       document.getElementById("menu-compare").addEventListener("click", () => {
         island.dataset.sheetState = "closed";
         updateMenuIcon();
-        window.App.navigate("#/compare");
+        window.App.navigate("#/compare"); // → Comparador tab
+      });
+
+      document.getElementById("menu-yacht-pricing").addEventListener("click", () => {
+        island.dataset.sheetState = "closed";
+        updateMenuIcon();
+        window.App.navigate("#/yacht-pricing");
       });
     </script>
   </body>

@@ -272,6 +272,18 @@
   gap: var(--space-2);
 }
 
+.yacht-app{
+  max-width: none;
+}
+
+.app-main:has(.yacht-app){
+max-width: none;
+}
+
+.app-shell:has(.yacht-app) .app-header{
+  display: none
+}
+
 /* ---- Desktop centering ---- */
 @media (min-width: 768px) {
   .bottom-nav {
@@ -285,3 +297,4 @@
     right: calc(50% - var(--max-content-width) / 2 + var(--space-5));
   }
 }
+

@@ -100,7 +100,7 @@
 
 /* ---- Stagger children ---- */
 .stagger-children > * {
-  opacity: 0;
+  
   animation: fadeInUp 0.3s var(--ease-default) forwards;
 }
 .stagger-children > *:nth-child(1) { animation-delay: 0.03s; }

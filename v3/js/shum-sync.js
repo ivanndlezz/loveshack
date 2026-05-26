@@ -322,6 +322,192 @@ const SyncManager = {
     }
   },
 
+  async fetchAllReservationsFromAirtable() {
+    if (!this.isInitialized) await this.init();
+    let allRecords = [];
+    let offset = null;
+    let pages = 0;
+    const maxPages = 20; // safety limit, up to 2000 records
+
+    do {
+      const params = {
+        baseId: this.config.api.baseId,
+        table: this.config.api.tableName,
+      };
+      if (offset) {
+        params.offset = offset;
+      }
+      
+      const result = await this.shumRequest('list', params);
+      const records = result && result.records ? result.records : [];
+      allRecords = allRecords.concat(records);
+      
+      offset = result && result.offset ? result.offset : null;
+      pages++;
+    } while (offset && pages < maxPages);
+
+    return allRecords;
+  },
+
+  mapAirtableToReservation(rec) {
+    const fields = rec.fields || {};
+    const id = rec.id;
+    const uuid = fields.UUID || window.Storage.generateUUID();
+
+    // Map/normalize status
+    let status = fields.status || "draft";
+    if (window.Storage.mapLegacyStatus) {
+      status = window.Storage.mapLegacyStatus(status);
+    }
+
+    // Determine booking source
+    let source = fields.source || "direct";
+    if (window.Storage.mapLegacySource) {
+      source = window.Storage.mapLegacySource(source);
+    }
+
+    // Register or get client
+    let clientId = "CLI-UNKNOWN";
+    if (window.Storage.getOrRegisterClient) {
+      clientId = window.Storage.getOrRegisterClient({
+        customerName: fields.name || "",
+        customerEmail: fields.email || "",
+        customerPhone: fields.phone || ""
+      });
+    }
+
+    const duration = Number(fields.DURATION_hours) || 3;
+    const passengers = Number(fields.pax) || 14;
+    const pricingType = fields.pricing_TYPE || "regular";
+    const manualHourlyRate = fields.manual_HOURLY_rate ? Number(fields.manual_HOURLY_rate) : null;
+    const hourlyRate = manualHourlyRate || (pricingType === "snack" ? 450 : 600);
+    const baseTripCost = duration * hourlyRate;
+    const extraPassengers = Math.max(0, passengers - 14);
+    const manualPaxRate = fields.manual_PAX_rate ? Number(fields.manual_PAX_rate) : null;
+    const extraPassengerCharge = manualPaxRate || (pricingType === "snack" ? 75 : 100);
+    const estimatedSubtotal = baseTripCost + (extraPassengers * extraPassengerCharge);
+
+    const businessPrice = Number(fields.BUSINESS_price) || estimatedSubtotal;
+    const customerPrice = Number(fields.CUSTOMER_price) || businessPrice;
+    const extrasAmount = Number(fields.EXTRAS_amount) || 0;
+
+    return {
+      id: uuid,
+      clientId: clientId,
+      status: status,
+      currentStep: status === 'draft' ? 1 : 3,
+      createdAt: fields.CREATED_at || new Date().toISOString(),
+      updatedAt: fields.UPDATED_at || new Date().toISOString(),
+      sync_status: 'synced',
+      airtable_id: id,
+      data: {
+        step1_pricing: {
+          pricingType: pricingType,
+          durationHours: duration,
+          passengers: passengers,
+          extraPassengers: extraPassengers,
+          hourlyRate: hourlyRate,
+          baseTripCost: baseTripCost,
+          extraPassengerCharge: extraPassengerCharge,
+          estimatedSubtotal: estimatedSubtotal,
+        },
+        step2_details: {
+          tourType: fields.TOUR_type || "",
+          tripDate: fields.trip_DATE || "",
+          startTime: fields.START_time || "",
+          endTime: fields.END_time || (fields.START_time ? window.Storage.addHours(fields.START_time, duration) : ""),
+          customerName: fields.name || "",
+          customerPhone: fields.phone || "",
+          customerEmail: fields.email || "",
+          notes: fields.notes || "",
+        },
+        step3_adjustments: {
+          bookingSource: source,
+          repriceType: fields.DISCOUNT_type || "",
+          repriceDiscount: Number(fields.DISCOUNT_value) || 0,
+          extrasAmount: extrasAmount,
+          fishingLicenses: Number(fields.fishing_LICENSES) || 0,
+          finalBusinessPrice: businessPrice,
+          finalCustomerPrice: customerPrice,
+          feeAmount: Number(fields.fee) || 0,
+          deposit: Number(fields.deposit) || 0,
+          balance: Number(fields.balance) || 0,
+          paymentMethod: fields.PAYMENT_method || "",
+          manualHourlyRate: fields.manual_HOURLY_rate ? String(fields.manual_HOURLY_rate) : "",
+          manualExtraPaxRate: fields.manual_PAX_rate ? String(fields.manual_PAX_rate) : "",
+        }
+      }
+    };
+  },
+
+  async importAirtableToJSON() {
+    if (!this.isInitialized) await this.init();
+    
+    const progressToast = window.Toast.info(
+      `Obteniendo reservaciones de Airtable...`,
+      -1
+    );
+
+    try {
+      const records = await this.fetchAllReservationsFromAirtable();
+      if (!records || records.length === 0) {
+        progressToast.querySelector(".toast-close")?.click();
+        window.Toast.warning("No se encontraron reservaciones en Airtable.");
+        return;
+      }
+
+      // Update toast
+      const msgSpan = progressToast.querySelector("span:nth-of-type(1)") || progressToast.querySelector("span");
+      if (msgSpan) {
+        msgSpan.textContent = `Procesando ${records.length} reservaciones...`;
+      }
+
+      const mappedReservations = records.map(rec => this.mapAirtableToReservation(rec));
+
+      // Overwrite/Save to local JSON file via save server
+      const savedToLocalServer = await window.Storage.saveToJSON(mappedReservations);
+
+      // Overwrite LocalStorage
+      window.Storage.saveAll(mappedReservations);
+
+      progressToast.querySelector(".toast-close")?.click();
+
+      if (savedToLocalServer) {
+        window.Toast.success(
+          `¡Éxito! Se importaron ${mappedReservations.length} reservaciones y se actualizó reservations.json.`,
+          4000
+        );
+      } else {
+        window.Toast.warning(
+          "Servidor local no disponible. Descargando reservations.json de forma manual...",
+          4000
+        );
+        // Trigger manual download fallback
+        const jsonString = JSON.stringify(mappedReservations, null, 2);
+        const blob = new Blob([jsonString], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "reservations.json";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      // Dispatch event to refresh comparison view if open
+      document.dispatchEvent(new CustomEvent("sync-complete"));
+
+    } catch (error) {
+      console.error("Airtable to JSON Sync Error:", error);
+      progressToast.querySelector(".toast-close")?.click();
+      window.Toast.error(
+        "Error al importar de Airtable a local. Revisa la consola.",
+        4000
+      );
+    }
+  },
+
   async deleteReservationFromAirtable(reservationId) {
     if (!this.isInitialized) await this.init();
 
