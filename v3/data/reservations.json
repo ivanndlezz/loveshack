@@ -1708,7 +1708,7 @@
         "extraPassengers": 2,
         "hourlyRate": 650,
         "baseTripCost": 2600,
-        "extraPassengerCharge": 100,
+        "extraPassengerCharge": 200,
         "estimatedSubtotal": 2800
       },
       "step2_details": {

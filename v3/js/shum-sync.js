@@ -384,8 +384,9 @@ const SyncManager = {
     const baseTripCost = duration * hourlyRate;
     const extraPassengers = Math.max(0, passengers - 14);
     const manualPaxRate = fields.manual_PAX_rate ? Number(fields.manual_PAX_rate) : null;
-    const extraPassengerCharge = manualPaxRate || (pricingType === "snack" ? 75 : 100);
-    const estimatedSubtotal = baseTripCost + (extraPassengers * extraPassengerCharge);
+    const extraPassengerRate = manualPaxRate || (pricingType === "snack" ? 75 : 100);
+    const extraPassengerCharge = extraPassengers * extraPassengerRate;
+    const estimatedSubtotal = baseTripCost + extraPassengerCharge;
 
     const businessPrice = Number(fields.BUSINESS_price) || estimatedSubtotal;
     const customerPrice = Number(fields.CUSTOMER_price) || businessPrice;

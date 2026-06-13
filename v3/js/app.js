@@ -363,6 +363,14 @@
         </a>
         ${isViewOnly ? '<span class="header-title" style="font-size: var(--font-md);">Reservation</span>' : window.StepperBar.render(step, id, flowMode)}
         <div style="display: flex; align-items: center; background: var(--color-surface-alt); border: 1px solid var(--color-border); border-radius: 20px; height: 32px; overflow: hidden; margin-right: -8px;">
+          <button onclick="window.App.navigate('#/voucher/${id}')" style="background: transparent; border: none; color: var(--color-accent); height: 100%; padding: 0 8px; display: flex; align-items: center; cursor: pointer;" title="Print Voucher">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 6 2 18 2 18 9"></polyline>
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+              <rect x="6" y="14" width="12" height="8"></rect>
+            </svg>
+          </button>
+          <div style="width: 1px; height: 20px; background: var(--color-border);"></div>
           <button onclick="${saveExitAction}; window.App.navigate('#/dashboard')" style="background: transparent; border: none; color: var(--color-accent); font-size: 13px; font-weight: 500; height: 100%; padding: 0 12px; display: flex; align-items: center; gap: 4px; cursor: pointer;">
             Save
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

@@ -42,15 +42,72 @@ const VoucherScreen = {
     const totalPax = adults + kids + infants;
 
     // Pricing components (Focus on Business Revenue)
-    const rate = parseFloat(s1.hourlyRate) || 0;
-    const basePrice = parseFloat(s1.baseTripCost || (rate * duration));
-    const extraPaxCost = parseFloat(s1.extraPassengerCharge || 0);
-    const adjustment = parseFloat(s3.priceAdjustment || 0);
-    const extrasAmount = parseFloat(s3.extrasAmount || 0);
-    
-    // "Business Receives" matches Step 3 logic
-    const businessReceives = basePrice + extraPaxCost + adjustment + extrasAmount;
-    
+    let rate = parseFloat(s1.hourlyRate) || 0;
+    let basePrice = parseFloat(s1.baseTripCost || (rate * duration));
+    let extraPaxCost = parseFloat(s1.extraPassengerCharge || 0);
+    let extrasAmount = parseFloat(s3.extrasAmount || 0);
+    let adjustment = parseFloat(s3.priceAdjustment || 0);
+    let businessReceives = basePrice + extraPaxCost + adjustment + extrasAmount;
+
+    // Recalculate using PricingCalculator if available for absolute accuracy and consistency
+    if (window.PricingCalculator && window.PRICING_RULES) {
+      const calculator = new window.PricingCalculator(window.PRICING_RULES);
+      const result = calculator.calculate({
+        trip: {
+          tourType: s2.tourType || "",
+          duration: s1.durationHours,
+          adults: s1.passengers,
+        },
+        pricingType: s1.pricingType || "regular",
+        source: s3.bookingSource || s1.source || "direct",
+        manualHourlyRate: s3.manualHourlyRate ? parseFloat(s3.manualHourlyRate) : null,
+        manualExtraPaxRate: s3.manualExtraPaxRate ? parseFloat(s3.manualExtraPaxRate) : null,
+        extras: {
+          fishingLicenses: parseInt(s3.fishingLicenses) || 0,
+          amount: parseFloat(s3.extrasAmount) || 0,
+        },
+        reprice: {
+          type: s3.repriceType || "",
+          discount: parseFloat(s3.repriceDiscount) || 0,
+        },
+      });
+
+      if (result) {
+        rate = result.basePricing.hourlyRate;
+        basePrice = result.basePricing.baseTripCost;
+        extraPaxCost = result.basePricing.extraPassengerCharge;
+        extrasAmount = result.summary.extras;
+        adjustment = -result.summary.discount;
+        businessReceives = result.summary.businessPrice;
+      }
+    } else {
+      // Fallback: correct extraPassengerCharge if stored as the per-passenger rate instead of total charge
+      const extraPassengerRate = parseFloat(s3.manualExtraPaxRate || (s1.pricingType === 'snack' ? 75 : 100));
+      if (extraPaxCount > 0) {
+        extraPaxCost = extraPaxCount * extraPassengerRate;
+      } else {
+        extraPaxCost = 0;
+      }
+
+      if (s3.manualHourlyRate) {
+        rate = parseFloat(s3.manualHourlyRate);
+        basePrice = rate * duration;
+      }
+
+      if (s3.repriceType && s3.repriceDiscount) {
+        const subtotal = basePrice + extraPaxCost + extrasAmount;
+        if (s3.repriceType === '%') {
+          adjustment = -(subtotal * (parseFloat(s3.repriceDiscount) / 100));
+        } else if (s3.repriceType === '#') {
+          adjustment = -Math.min(parseFloat(s3.repriceDiscount), subtotal);
+        } else if (s3.repriceType === '$' || s3.repriceType === 'coupon') {
+          adjustment = parseFloat(s3.repriceDiscount) - subtotal;
+        }
+      }
+
+      businessReceives = basePrice + extraPaxCost + adjustment + extrasAmount;
+    }
+
     const deposit = parseFloat(s3.deposit) || 0;
     const balance = businessReceives - deposit;
 
@@ -65,6 +122,27 @@ const VoucherScreen = {
     document.title = `${guestName} - Reserva: ${businessFolio}`;
 
     container.innerHTML = `
+      <style>
+        .voucher-editable-field {
+          border-bottom: 1px dashed rgba(187, 167, 100, 0.4);
+          background-color: rgba(187, 167, 100, 0.05);
+          padding: 1px 4px;
+          border-radius: 2px;
+          transition: background-color 0.2s, border-bottom 0.2s;
+        }
+        .voucher-editable-field:focus {
+          outline: none;
+          background-color: rgba(187, 167, 100, 0.15);
+          border-bottom: 1px solid rgba(187, 167, 100, 1);
+        }
+        @media print {
+          .voucher-editable-field {
+            border-bottom: none !important;
+            background-color: transparent !important;
+            padding: 0 !important;
+          }
+        }
+      </style>
       <div class="voucher-screen">
         <div class="voucher-page">
           <!-- HEADER -->
@@ -284,9 +362,14 @@ const VoucherScreen = {
           <i class="ti ti-arrow-left"></i> Back
         </button>
         <div style="font-weight: 700; font-size: 16px;">Voucher Preview</div>
-        <button class="btn btn-primary" onclick="window.print()" style="padding: 8px 16px;">
-          <i class="ti ti-printer"></i> Print Voucher
-        </button>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn ${this.isEditMode ? 'btn-success' : 'btn-secondary'} toggle-edit-btn" onclick="VoucherScreen.toggleEditMode()" style="padding: 8px 12px;">
+            <i class="ti ${this.isEditMode ? 'ti-edit-off' : 'ti-edit'}"></i> ${this.isEditMode ? 'Disable Edit' : 'Enable Manual Edit'}
+          </button>
+          <button class="btn btn-primary" onclick="window.print()" style="padding: 8px 16px;">
+            <i class="ti ti-printer"></i> Print Voucher
+          </button>
+        </div>
       </div>
     `;
   },
@@ -380,7 +463,59 @@ const VoucherScreen = {
     return div.innerHTML;
   },
 
+  toggleEditMode() {
+    this.isEditMode = !this.isEditMode;
+    
+    // Select all target elements we want to make editable
+    const selectors = [
+      '.v-tour-name',
+      '.v-res-number',
+      '.v-address-bar',
+      '.v-info-grid .v-value',
+      '.v-res-details .v-value',
+      '.v-passengers-row .v-value',
+      '.v-pax-cell',
+      '.v-hotel-row',
+      '.v-notice-box div',
+      '.v-notice-box span',
+      '.v-pricing-breakdown span',
+      '.v-payment-row span',
+      '.v-bottom-cell',
+      '.v-payment-method strong',
+      '.v-footer'
+    ];
+
+    const elements = this.container.querySelectorAll(selectors.join(', '));
+    
+    elements.forEach(el => {
+      if (this.isEditMode) {
+        el.setAttribute('contenteditable', 'true');
+        el.classList.add('voucher-editable-field');
+      } else {
+        el.removeAttribute('contenteditable');
+        el.classList.remove('voucher-editable-field');
+      }
+    });
+
+    // Update button text / state in header
+    const editBtn = document.querySelector('.toggle-edit-btn');
+    if (editBtn) {
+      if (this.isEditMode) {
+        editBtn.classList.remove('btn-secondary');
+        editBtn.classList.add('btn-success');
+        editBtn.innerHTML = '<i class="ti ti-edit-off"></i> Disable Edit';
+        window.Toast?.success('Manual editing enabled. Click any text to modify.');
+      } else {
+        editBtn.classList.remove('btn-success');
+        editBtn.classList.add('btn-secondary');
+        editBtn.innerHTML = '<i class="ti ti-edit"></i> Enable Manual Edit';
+        window.Toast?.info('Manual editing disabled.');
+      }
+    }
+  },
+
   destroy() {
+    this.isEditMode = false;
     // Restore title
     document.title = this._originalTitle;
     
