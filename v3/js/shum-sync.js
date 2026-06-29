@@ -6,6 +6,7 @@
 const SyncManager = {
   config: null,
   isInitialized: false,
+  tokenPromptPromise: null,
 
   async init() {
     if (this.isInitialized) return;
@@ -29,15 +30,56 @@ const SyncManager = {
     }
 
     try {
+      const payload = JSON.stringify({ action, ...params });
       const response = await fetch(this.config.api.shumEndpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, ...params }),
+        headers: this.getProxyHeaders(),
+        body: payload,
       });
+
+      if (response.status === 401) {
+        const token = await this.promptForToken();
+        if (!token) {
+          throw new Error("Unauthorized request (401)");
+        }
+
+        const retryResponse = await fetch(this.config.api.shumEndpoint, {
+          method: "POST",
+          headers: this.getProxyHeaders(),
+          body: payload,
+        });
+
+        if (retryResponse.status === 401) {
+          localStorage.removeItem("kv-shum-import-token");
+          throw new Error("Unauthorized request (401). Token invalid or expired.");
+        }
+
+        const retryResult = await retryResponse.json();
+        if (!retryResult.success) {
+          throw new Error(retryResult.message || "API request failed after token retry");
+        }
+
+        return retryResult.data;
+      }
 
       const result = await response.json();
 
       if (!result.success) {
+        if (/unauthorized/i.test(result.message || "")) {
+          const token = await this.promptForToken();
+          if (token) {
+            const retryResponse = await fetch(this.config.api.shumEndpoint, {
+              method: "POST",
+              headers: this.getProxyHeaders(),
+              body: payload,
+            });
+            const retryResult = await retryResponse.json();
+            if (!retryResult.success) {
+              throw new Error(retryResult.message || "API request failed after token retry");
+            }
+            return retryResult.data;
+          }
+        }
         throw new Error(result.message || 'API request failed');
       }
 
@@ -46,6 +88,97 @@ const SyncManager = {
       console.error("SHUM API Error:", error);
       throw error;
     }
+  },
+
+  getProxyHeaders() {
+    const headers = { "Content-Type": "application/json" };
+    const token = window.Config?.SHUM_PROXY_TOKEN
+      || localStorage.getItem("kv-shum-import-token")
+      || sessionStorage.getItem("kv-shum-import-token")
+      || "";
+
+    if (token) {
+      headers["X-KV-Import-Token"] = token;
+    }
+
+    return headers;
+  },
+
+  promptForToken() {
+    if (this.tokenPromptPromise) {
+      return this.tokenPromptPromise;
+    }
+
+    const existingModal = document.getElementById("kv-token-modal");
+    if (existingModal) {
+      existingModal.querySelector("#kv-token-input")?.focus();
+      return Promise.resolve(null);
+    }
+
+    this.tokenPromptPromise = new Promise((resolve) => {
+      const overlay = document.createElement("div");
+      overlay.id = "kv-token-modal";
+      overlay.className = "kv-token-modal";
+      overlay.setAttribute("role", "dialog");
+      overlay.setAttribute("aria-modal", "true");
+      overlay.setAttribute("aria-labelledby", "kv-token-title");
+
+      overlay.innerHTML = `
+        <div class="kv-token-modal__content">
+          <h3 id="kv-token-title" class="kv-token-modal__title">Token requerido</h3>
+          <p class="kv-token-modal__desc">
+            La acción requiere un token de autenticación. Ingresa el valor de <code class="kv-token-modal__code">kv_import_token</code> de tu configuración.
+          </p>
+          <input id="kv-token-input" class="kv-token-modal__input" type="password" placeholder="Token de acceso" autocomplete="off" />
+          <div class="kv-token-modal__actions">
+            <button id="kv-token-cancel" class="kv-token-modal__btn kv-token-modal__btn--cancel" type="button">Cancelar</button>
+            <button id="kv-token-save" class="kv-token-modal__btn kv-token-modal__btn--save" type="button">Guardar</button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(overlay);
+
+      const input = overlay.querySelector("#kv-token-input");
+      const saveBtn = overlay.querySelector("#kv-token-save");
+      const cancelBtn = overlay.querySelector("#kv-token-cancel");
+
+      const cleanup = () => {
+        overlay.remove();
+        this.tokenPromptPromise = null;
+      };
+
+      const save = () => {
+        const value = input.value.trim();
+        if (!value) {
+          input.focus();
+          return;
+        }
+
+        localStorage.setItem("kv-shum-import-token", value);
+        cleanup();
+        resolve(value);
+      };
+
+      const cancel = () => {
+        cleanup();
+        resolve(null);
+      };
+
+      saveBtn.addEventListener("click", save);
+      cancelBtn.addEventListener("click", cancel);
+      overlay.addEventListener("click", (event) => {
+        if (event.target === overlay) cancel();
+      });
+      input.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") save();
+        if (event.key === "Escape") cancel();
+      });
+
+      requestAnimationFrame(() => input.focus());
+    });
+
+    return this.tokenPromptPromise;
   },
 
   /**

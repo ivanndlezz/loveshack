@@ -1,0 +1,1669 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Listado de Convenios</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Custom CSS embedded for clean UI */
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+      body {
+        font-family:
+          "Inter",
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background-color: #f8fafc;
+        color: #0f172a;
+        margin: 0;
+        overflow-x: hidden;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Scrollbar styling for Google Sheet feel */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #f1f5f9;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+      }
+
+      /* Sticky Header */
+      .app-header {
+        position: sticky;
+        top: 0;
+        z-index: 40;
+        background: white;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 12px 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+      }
+
+      @media (min-width: 768px) {
+        .app-header {
+          flex-direction: row;
+          justify-content: space-between;
+          align-items: center;
+        }
+      }
+
+      /* Mini Dashboard */
+      .mini-dashboard {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .stat-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 12px;
+        border-radius: 9999px;
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+        border: 1px solid;
+      }
+      .stat-pill--blue {
+        background: #eff6ff;
+        color: #1d4ed8;
+        border-color: #bfdbfe;
+      }
+      .stat-pill--green {
+        background: #f0fdf4;
+        color: #15803d;
+        border-color: #bbf7d0;
+      }
+      .stat-pill--purple {
+        background: #faf5ff;
+        color: #7e22ce;
+        border-color: #e9d5ff;
+      }
+
+      /* View Switcher */
+      .filters__view-switch {
+        display: inline-flex;
+        background: #f1f5f9;
+        border-radius: 8px;
+        padding: 4px;
+        border: 1px solid #e2e8f0;
+      }
+      .filters__view-btn {
+        background: transparent;
+        border: none;
+        border-radius: 6px;
+        padding: 6px 10px;
+        color: #64748b;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+      }
+      .filters__view-btn svg {
+        width: 18px;
+        height: 18px;
+      }
+      .filters__view-btn:hover {
+        color: #0f172a;
+      }
+      .filters__view-btn--active {
+        background: #ffffff;
+        color: #0f172a;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Main Container */
+      .main-content {
+        flex: 1;
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* --- TABLE VIEW (Google Sheets style) --- */
+      .view-container.is-list-view .data-grid {
+        display: none;
+      }
+      .view-container.is-list-view .table-wrapper {
+        display: block;
+      }
+
+      .table-wrapper {
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background: #fff;
+      }
+      .data-table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 13px;
+        min-width: 1200px; /* Force scroll */
+      }
+      .data-table th,
+      .data-table td {
+        border: 1px solid #e2e8f0;
+        padding: 8px 12px;
+        text-align: left;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 250px;
+      }
+      .data-table th {
+        background-color: #f8fafc;
+        font-weight: 600;
+        color: #334155;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        user-select: none;
+        box-shadow: inset 0 -1px 0 #cbd5e1;
+      }
+      /* Row number column */
+      .data-table th:first-child,
+      .data-table td:first-child {
+        width: 40px;
+        text-align: center;
+        background-color: #f8fafc;
+        color: #94a3b8;
+        position: sticky;
+        left: 0;
+        z-index: 11;
+      }
+      .data-table th:first-child {
+        z-index: 12;
+      }
+
+      .data-table tbody tr {
+        transition: background-color 0.1s;
+      }
+      .data-table tbody tr:hover {
+        background-color: #f1f5f9;
+        cursor: pointer;
+      }
+      .cell-badge {
+        display: inline-block;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        background: #f1f5f9;
+        color: #475569;
+      }
+
+      /* --- GRID VIEW (Cards style) --- */
+      .view-container.is-grid-view .table-wrapper {
+        display: none;
+      }
+      .view-container.is-grid-view .data-grid {
+        display: grid;
+      }
+
+      .data-grid {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 16px;
+        padding: 24px;
+        background: #f8fafc;
+        overflow-y: auto;
+        height: 100%;
+        align-content: start;
+      }
+      .card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        transition: all 0.2s ease;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        transform: translateY(-2px);
+        border-color: #cbd5e1;
+      }
+      .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        border-bottom: 1px solid #f1f5f9;
+        padding-bottom: 12px;
+      }
+      .card-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #0f172a;
+        line-height: 1.2;
+      }
+      .card-subtitle {
+        font-size: 12px;
+        color: #64748b;
+        margin-top: 4px;
+      }
+      .card-body {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex: 1;
+      }
+      .card-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+      }
+      .card-label {
+        color: #64748b;
+        font-weight: 500;
+      }
+      .card-value {
+        color: #0f172a;
+        font-weight: 600;
+        text-align: right;
+      }
+      .card-notes {
+        font-size: 12px;
+        color: #94a3b8;
+        background: #f8fafc;
+        padding: 8px;
+        border-radius: 6px;
+        margin-top: auto;
+        border: 1px dashed #cbd5e1;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      /* --- SIDE DRAWER --- */
+      .pf-sheet-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.4);
+        backdrop-filter: blur(2px);
+        z-index: 100;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+      }
+      .pf-sheet-overlay.active {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .pf-sheet {
+        position: fixed;
+        top: 0;
+        right: -480px; /* Hidden state */
+        width: 100%;
+        max-width: 480px;
+        height: 100vh;
+        background: #fff;
+        box-shadow: -10px 0 30px rgba(0, 0, 0, 0.15);
+        transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 101;
+        display: flex;
+        flex-direction: column;
+      }
+      .pf-sheet.active {
+        right: 0;
+      }
+      .pf-sheet-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #f8fafc;
+      }
+      .pf-sheet-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #0f172a;
+      }
+      .pf-sheet-close {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        color: #64748b;
+        padding: 4px;
+        border-radius: 4px;
+      }
+      .pf-sheet-close:hover {
+        background: #e2e8f0;
+        color: #0f172a;
+      }
+      .pf-sheet-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 24px;
+      }
+      .form-group {
+        margin-bottom: 16px;
+      }
+      .form-label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748b;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .form-input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        font-size: 14px;
+        color: #0f172a;
+        background: #f8fafc;
+        outline: none;
+        transition: all 0.2s;
+      }
+      .form-input:focus {
+        border-color: #0f172a;
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.05);
+      }
+
+      /* --- Tarifas Form (from user prompt) --- */
+      .tier-form-grid {
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #fff;
+      }
+      .tier-row-hdr {
+        display: flex;
+        background: #f8fafc;
+        padding: 8px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748b;
+        border-bottom: 1px solid #e2e8f0;
+        text-transform: uppercase;
+      }
+      .tier-row-hdr span:nth-child(1),
+      .tier-form-row span:nth-child(1) {
+        width: 60px;
+        flex-shrink: 0;
+      }
+      .tier-row-hdr span:nth-child(2),
+      .tier-row-hdr span:nth-child(3) {
+        flex: 1;
+        text-align: center;
+      }
+
+      .tier-form-row {
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        border-bottom: 1px solid #f1f5f9;
+      }
+      .tier-form-row:last-child {
+        border-bottom: none;
+      }
+      .tier-form-row span {
+        font-size: 14px;
+        font-weight: 600;
+        color: #334155;
+      }
+      .tier-finp {
+        flex: 1;
+        min-width: 0;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 6px 8px;
+        font-size: 14px;
+        margin: 0 4px;
+        text-align: right;
+        outline: none;
+        transition: border 0.2s;
+        font-family: monospace;
+      }
+      .tier-finp:focus {
+        border-color: #0f172a;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- App Header -->
+    <header class="app-header">
+      <div>
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight">
+          Base de Datos Convenios
+        </h1>
+        <p class="text-sm text-slate-500">Listado Interactivo 2026</p>
+      </div>
+
+      <div class="flex items-center gap-6">
+        <!-- Mini Dashboard -->
+        <div class="mini-dashboard" id="dashboard-stats">
+          <!-- Stats will be injected here -->
+        </div>
+
+        <!-- Botón Edición Masiva -->
+        <button
+          id="btn-open-batch"
+          class="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-semibold hover:bg-slate-800 transition-colors shadow-sm"
+          title="Actualizar datos operativos en todos los convenios"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+            ></path>
+            <path
+              d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+            ></path>
+          </svg>
+          Edición Masiva
+        </button>
+
+        <!-- View Switcher -->
+        <div class="filters__view-switch">
+          <button
+            class="filters__view-btn filters__view-btn--active"
+            id="view-grid"
+            title="Vista de Cuadrícula"
+            aria-label="Cambiar a vista de cuadrícula"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect width="7" height="7" x="3" y="3" rx="1"></rect>
+              <rect width="7" height="7" x="14" y="3" rx="1"></rect>
+              <rect width="7" height="7" x="14" y="14" rx="1"></rect>
+              <rect width="7" height="7" x="3" y="14" rx="1"></rect>
+            </svg>
+          </button>
+          <button
+            class="filters__view-btn"
+            id="view-list"
+            title="Vista de Lista"
+            aria-label="Cambiar a vista de lista"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M3 5h.01"></path>
+              <path d="M3 12h.01"></path>
+              <path d="M3 19h.01"></path>
+              <path d="M8 5h13"></path>
+              <path d="M8 12h13"></path>
+              <path d="M8 19h13"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div
+        id="view-container"
+        class="view-container is-grid-view h-full w-full"
+      >
+        <!-- Grid View (Cards Style) -->
+        <div class="data-grid" id="data-grid">
+          <!-- Cards injected via JS -->
+        </div>
+
+        <!-- Table View (Google Sheets Style) -->
+        <div class="table-wrapper">
+          <table class="data-table" id="data-table">
+            <thead>
+              <tr>
+                <th></th>
+                <!-- Row numbers -->
+                <th>Empresa</th>
+                <th>Razón Social</th>
+                <th>Representante</th>
+                <th>Comisión</th>
+                <th>Crédito</th>
+                <th>Vigencia Fin</th>
+                <th>Menú Variante</th>
+                <th>Carnada (Pzas)</th>
+                <th>Mal Tiempo Dev.</th>
+                <th>2do Contacto LS</th>
+                <th>Notas</th>
+              </tr>
+            </thead>
+            <tbody id="table-body">
+              <!-- Table rows injected via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <!-- Side Drawer (Detail/Edit View) -->
+    <div class="pf-sheet-overlay" id="sheet-overlay"></div>
+    <aside class="pf-sheet" id="detail-sheet">
+      <div class="pf-sheet-header">
+        <h2 class="pf-sheet-title" id="sheet-empresa-name">
+          Detalle de Convenio
+        </h2>
+        <button class="pf-sheet-close" id="sheet-close" aria-label="Cerrar">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="pf-sheet-body">
+        <div class="form-group">
+          <label class="form-label">Razón Social</label>
+          <input type="text" class="form-input" id="inp-razon" readonly />
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="form-group">
+            <label class="form-label">Comisión</label>
+            <input
+              type="text"
+              class="form-input text-center font-semibold text-blue-700 bg-blue-50"
+              id="inp-comision"
+              readonly
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Días Crédito</label>
+            <input
+              type="text"
+              class="form-input text-center font-semibold text-green-700 bg-green-50"
+              id="inp-credito"
+              readonly
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Menú Variante</label>
+          <input type="text" class="form-input" id="inp-menu" readonly />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Representante</label>
+          <input type="text" class="form-input" id="inp-rep" readonly />
+        </div>
+
+        <!-- Tarifas Form (From Prompt & Screenshot) -->
+        <div class="fgrp mt-6 mb-8">
+          <label class="form-label">Tarifas por duración</label>
+          <div class="tier-form-grid">
+            <div class="tier-row-hdr">
+              <span>Tier</span><span>Base (USD)</span><span>Pax extra</span>
+            </div>
+            <div class="tier-form-row">
+              <span>2 h</span>
+              <input
+                type="number"
+                class="tier-finp"
+                id="t2b"
+                min="0"
+                step="1"
+                value="1600"
+              />
+              <input
+                type="number"
+                class="tier-finp"
+                id="t2e"
+                min="0"
+                step="1"
+                value="69"
+              />
+            </div>
+            <div class="tier-form-row">
+              <span>3 h</span>
+              <input
+                type="number"
+                class="tier-finp"
+                id="t3b"
+                min="0"
+                step="1"
+                value="2300"
+              />
+              <input
+                type="number"
+                class="tier-finp"
+                id="t3e"
+                min="0"
+                step="1"
+                value="98"
+              />
+            </div>
+            <div class="tier-form-row">
+              <span>4 h</span>
+              <input
+                type="number"
+                class="tier-finp"
+                id="t4b"
+                min="0"
+                step="1"
+                value="2700"
+              />
+              <input
+                type="number"
+                class="tier-finp"
+                id="t4e"
+                min="0"
+                step="1"
+                value="125"
+              />
+            </div>
+            <div class="tier-form-row">
+              <span>5 h</span>
+              <input
+                type="number"
+                class="tier-finp"
+                id="t5b"
+                min="0"
+                step="1"
+                value="3500"
+              />
+              <input
+                type="number"
+                class="tier-finp"
+                id="t5e"
+                min="0"
+                step="1"
+                value="148"
+              />
+            </div>
+            <div class="tier-form-row">
+              <span>8 h</span>
+              <input
+                type="number"
+                class="tier-finp"
+                id="t8b"
+                min="0"
+                step="1"
+                value="5600"
+              />
+              <input
+                type="number"
+                class="tier-finp"
+                id="t8e"
+                min="0"
+                step="1"
+                value="210"
+              />
+            </div>
+          </div>
+          <p class="text-xs text-slate-400 mt-2">
+            * Valores estáticos de demostración basados en la imagen.
+          </p>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Notas</label>
+          <textarea
+            class="form-input"
+            id="inp-notas"
+            rows="4"
+            readonly
+            style="resize: vertical"
+          ></textarea>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Side Drawer (Batch Override / Edición Masiva) -->
+    <div class="pf-sheet-overlay" id="batch-overlay"></div>
+    <aside class="pf-sheet" id="batch-sheet">
+      <div class="pf-sheet-header">
+        <h2 class="pf-sheet-title">Edición Masiva Operativa</h2>
+        <button class="pf-sheet-close" id="batch-close" aria-label="Cerrar">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="pf-sheet-body">
+        <p class="text-sm text-slate-500 mb-6">
+          Selecciona los campos operativos que deseas sobrescribir para
+          <strong>todos</strong> los convenios listados.
+        </p>
+
+        <!-- Contacto Override -->
+        <div
+          class="form-group p-4 border border-slate-200 rounded-lg bg-slate-50 mb-4 transition-colors"
+          id="box-batch-contacto"
+        >
+          <label class="flex items-center gap-2 mb-3 cursor-pointer">
+            <input
+              type="checkbox"
+              id="chk-batch-contacto"
+              class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+            />
+            <span class="font-semibold text-slate-800 text-sm"
+              >Actualizar 2do Contacto LS</span
+            >
+          </label>
+          <input
+            type="text"
+            id="inp-batch-contacto"
+            class="form-input opacity-50 pointer-events-none"
+            placeholder="Ej. Eduardo Ivan Gonzalez"
+          />
+        </div>
+
+        <!-- Menu Override -->
+        <div
+          class="form-group p-4 border border-slate-200 rounded-lg bg-slate-50 mb-4 transition-colors"
+          id="box-batch-menu"
+        >
+          <label class="flex items-center gap-2 mb-3 cursor-pointer">
+            <input
+              type="checkbox"
+              id="chk-batch-menu"
+              class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+            />
+            <span class="font-semibold text-slate-800 text-sm"
+              >Actualizar Variante de Menú</span
+            >
+          </label>
+          <select
+            id="inp-batch-menu"
+            class="form-input opacity-50 pointer-events-none"
+          >
+            <option value="Brochetas">Brochetas</option>
+            <option value="Buffet Mexicano (Fajitas)">
+              Buffet Mexicano (Fajitas)
+            </option>
+            <option value="Buffet Mexicano (Tacos)">
+              Buffet Mexicano (Tacos)
+            </option>
+          </select>
+        </div>
+
+        <!-- Carnada Override -->
+        <div
+          class="form-group p-4 border border-slate-200 rounded-lg bg-slate-50 mb-6 transition-colors"
+          id="box-batch-carnada"
+        >
+          <label class="flex items-center gap-2 mb-3 cursor-pointer">
+            <input
+              type="checkbox"
+              id="chk-batch-carnada"
+              class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+            />
+            <span class="font-semibold text-slate-800 text-sm"
+              >Actualizar Carnada (Piezas)</span
+            >
+          </label>
+          <input
+            type="number"
+            id="inp-batch-carnada"
+            class="form-input opacity-50 pointer-events-none"
+            placeholder="Ej. 10"
+          />
+        </div>
+
+        <button
+          id="btn-apply-batch"
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex justify-center items-center gap-2"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M5 12l5 5L20 7"></path>
+          </svg>
+          Aplicar a todos
+        </button>
+      </div>
+    </aside>
+
+    <script>
+      // --- DATA ---
+      const conveniosData = [
+        {
+          EMPRESA: "AMSTAR",
+          CLIENTE_RAZON_SOCIAL: "AMSTAR OPERACIONES DMC S DE RL DE CV",
+          CLIENTE_REPRESENTANTE: "C. CHRISTOPHER JUSTICE",
+          CLIENTE_DOMICILIO: "",
+          VIGENCIA_INICIO: "1 de enero de 2026",
+          VIGENCIA_FIN: "31 de diciembre de 2026",
+          FECHA_FIRMA: "1 de diciembre de 2025",
+          COMISION_PORCENTAJE: "35%",
+          DIAS_CREDITO: "21",
+          MENU_VARIANTE: "Buffet Mexicano (Fajitas)",
+          CARNADA_PIEZAS: "5",
+          CANCELACION_MAL_TIEMPO_DEVOLUCION: "85%",
+          SEGUNDO_CONTACTO_LOVESHACK: "Luis Daniel Ríos López",
+          NOTAS:
+            "Tabla de precios con comisión al 45% en encabezado (inconsistencia); texto dice 35%",
+        },
+        {
+          EMPRESA: "AMY LOS CABOS",
+          CLIENTE_RAZON_SOCIAL: "AGENCIA MEXICANA DE INCENTIVOS SA DE CV",
+          CLIENTE_REPRESENTANTE: "C. ALEJANDRO JOVANNI ARAMBURO DIAZ",
+          CLIENTE_DOMICILIO:
+            "Oceánico Indico Manzana 8 Lote 48 Colonia Miramar, C.P. 23456",
+          VIGENCIA_INICIO: "1 de enero de 2026",
+          VIGENCIA_FIN: "31 de diciembre de 2026",
+          FECHA_FIRMA: "1 de diciembre de 2025",
+          COMISION_PORCENTAJE: "35%",
+          DIAS_CREDITO: "21",
+          MENU_VARIANTE: "Brochetas",
+          CARNADA_PIEZAS: "10",
+          CANCELACION_MAL_TIEMPO_DEVOLUCION: "85%",
+          SEGUNDO_CONTACTO_LOVESHACK: "Luis Daniel Ríos López",
+          NOTAS: "",
+        },
+        {
+          EMPRESA: "CABO VILLAS",
+          CLIENTE_RAZON_SOCIAL: "NOCTURNE CABO VILLAS LLC",
+          CLIENTE_REPRESENTANTE: "C. MORGAN THOMAS",
+          CLIENTE_DOMICILIO:
+            "Oceánico Indico Manzana 8 Lote 48 Colonia Miramar, C.P. 23456",
+          VIGENCIA_INICIO: "1 de enero de 2026",
+          VIGENCIA_FIN: "31 de diciembre de 2026",
+          FECHA_FIRMA: "1 de diciembre de 2025",
+          COMISION_PORCENTAJE: "20%",
+          DIAS_CREDITO: "8",
+          MENU_VARIANTE: "Brochetas",
+          CARNADA_PIEZAS: "10",
+          CANCELACION_MAL_TIEMPO_DEVOLUCION: "85%",
+          SEGUNDO_CONTACTO_LOVESHACK: "Luis Daniel Ríos López",
+          NOTAS: "Comisión más baja del portafolio; crédito solo 8 días",
+        },
+        {
+          EMPRESA: "MEXICO INCENTIVES",
+          CLIENTE_RAZON_SOCIAL:
+            "GRUPO TURISTICO DE DESTINOS DAPS, S.A. DE C.V.",
+          CLIENTE_REPRESENTANTE: "PAULINA AIDEE LORENZANA VALLE",
+          CLIENTE_DOMICILIO: "",
+          VIGENCIA_INICIO: "1 de enero de 2024",
+          VIGENCIA_FIN: "31 de diciembre de 2024",
+          FECHA_FIRMA: "15 de diciembre de 2023",
+          COMISION_PORCENTAJE: "45%",
+          DIAS_CREDITO: "21",
+          MENU_VARIANTE: "Buffet Mexicano (Fajitas)",
+          CARNADA_PIEZAS: "5",
+          CANCELACION_MAL_TIEMPO_DEVOLUCION: "N/A (políticas en Anexo 12)",
+          SEGUNDO_CONTACTO_LOVESHACK: "Andrés López",
+          NOTAS:
+            "Convenio 2024 - vencido. Segundo contacto diferente: Andrés López",
+        },
+        {
+          EMPRESA: "ENVATOURS",
+          CLIENTE_RAZON_SOCIAL: "ENVA TOURS S DE RL DE CV",
+          CLIENTE_REPRESENTANTE: "(pendiente de completar)",
+          CLIENTE_DOMICILIO:
+            "Blvd Marina No. Ext 17, Int. S/N Colonia 4 de marzo Cabo San Lucas, BCS, CP. 23472",
+          VIGENCIA_INICIO: "1 de enero de 2026",
+          VIGENCIA_FIN: "31 de diciembre de 2026",
+          FECHA_FIRMA: "1 de diciembre de 2025",
+          COMISION_PORCENTAJE: "35%",
+          DIAS_CREDITO: "21",
+          MENU_VARIANTE: "Brochetas",
+          CARNADA_PIEZAS: "10",
+          CANCELACION_MAL_TIEMPO_DEVOLUCION: "85%",
+          SEGUNDO_CONTACTO_LOVESHACK: "Luis Daniel Ríos López",
+          NOTAS: "Representante del cliente no completado en el documento",
+        },
+        {
+          EMPRESA: "EPIC",
+          CLIENTE_RAZON_SOCIAL: "EPIC LOS CABOS SA DE CV",
+          CLIENTE_REPRESENTANTE: "C. JUAN CARLOS DEL RIO AVILA",
+          CLIENTE_DOMICILIO:
+            "Calle Retorno De Las Cactáceas Manzana II Lote 44, Magisterial, San Jose Del Cabo, BCS",
+          VIGENCIA_INICIO: "1 de enero de 2026",
+          VIGENCIA_FIN: "31 de diciembre de 2026",
+          FECHA_FIRMA: "1 de diciembre de 2025",
+          COMISION_PORCENTAJE: "35%",
+          DIAS_CREDITO: "21",
+          MENU_VARIANTE: "Brochetas",
+          CARNADA_PIEZAS: "10",
+          CANCELACION_MAL_TIEMPO_DEVOLUCION: "85%",
+          SEGUNDO_CONTACTO_LOVESHACK: "Luis Daniel Ríos López",
+          NOTAS: "",
+        },
+        {
+          EMPRESA: "ESPERANZA TOURS",
+          CLIENTE_RAZON_SOCIAL: "SERVICIOS TURISTICOS ZETNAT SA DE CV",
+          CLIENTE_REPRESENTANTE: "C. LIDIA AYALA TAPIA",
+          CLIENTE_DOMICILIO:
+            "Carretera Transpeninsular KM. 4, Ret 1 El Tezal No. Interior L-7 Colonia El Tezal, Cabo San Lucas, BCS, C.P. 23454",
+          VIGENCIA_INICIO: "1 de enero de 2026",
+          VIGENCIA_FIN: "31 de diciembre de 2026",
+          FECHA_FIRMA: "1 de diciembre de 2025",
+          COMISION_PORCENTAJE: "35%",
+          DIAS_CREDITO: "21",
+          MENU_VARIANTE: "Brochetas",
+          CARNADA_PIEZAS: "10",
+          CANCELACION_MAL_TIEMPO_DEVOLUCION: "85%",
+          SEGUNDO_CONTACTO_LOVESHACK: "Luis Daniel Ríos López",
+          NOTAS: "",
+        },
+        {
+          EMPRESA: "GARZA BLANCA",
+          CLIENTE_RAZON_SOCIAL: "PROMOTORES NICHUPTE, SA DE CV",
+          CLIENTE_REPRESENTANTE: "C. PABLO AYALA DELGADO",
+          CLIENTE_DOMICILIO: "",
+          VIGENCIA_INICIO: "1 de enero de 2026",
+          VIGENCIA_FIN: "31 de diciembre de 2026",
+          FECHA_FIRMA: "29 de diciembre de 2025",
+          COMISION_PORCENTAJE: "45%",
+          DIAS_CREDITO: "21",
+          MENU_VARIANTE: "Brochetas",
+          CARNADA_PIEZAS: "10",
+          CANCELACION_MAL_TIEMPO_DEVOLUCION: "85%",
+          SEGUNDO_CONTACTO_LOVESHACK: "Luis Daniel Ríos López",
+          NOTAS:
+            "Comisión 45% - entre las más altas. Fecha de firma: 29 dic 2025",
+        },
+        {
+          EMPRESA: "GRAND VELAS",
+          CLIENTE_RAZON_SOCIAL:
+            "AVENTURAS Y EXPEDICIONES DE LOS CABOS SA DE CV",
+          CLIENTE_REPRESENTANTE: "C. FELIPE ENRIQUE FILIBERTO DIEZ CAÑEDO RUIZ",
+          CLIENTE_DOMICILIO: "",
+          VIGENCIA_INICIO: "1 de enero de 2026",
+          VIGENCIA_FIN: "31 de diciembre de 2026",
+          FECHA_FIRMA: "1 de diciembre de 2025",
+          COMISION_PORCENTAJE: "35%",
+          DIAS_CREDITO: "21",
+          MENU_VARIANTE: "Brochetas",
+          CARNADA_PIEZAS: "10",
+          CANCELACION_MAL_TIEMPO_DEVOLUCION: "85%",
+          SEGUNDO_CONTACTO_LOVESHACK: "Luis Daniel Ríos López",
+          NOTAS: "",
+        },
+        {
+          EMPRESA: "GRAY LINE",
+          CLIENTE_RAZON_SOCIAL: "TOUR OPERADORA DEL PACIFICO S DE RL DE CV",
+          CLIENTE_REPRESENTANTE: "C. MOISES HUERTA DUEÑAS",
+          CLIENTE_DOMICILIO: "",
+          VIGENCIA_INICIO: "1 de enero de 2026",
+          VIGENCIA_FIN: "31 de diciembre de 2026",
+          FECHA_FIRMA: "1 de diciembre de 2025",
+          COMISION_PORCENTAJE: "35%",
+          DIAS_CREDITO: "21",
+          MENU_VARIANTE: "Brochetas",
+          CARNADA_PIEZAS: "10",
+          CANCELACION_MAL_TIEMPO_DEVOLUCION: "85%",
+          SEGUNDO_CONTACTO_LOVESHACK: "Luis Daniel Ríos López",
+          NOTAS:
+            "Tabla muestra encabezado COMISION (45%) pero texto dice 35% - posible inconsistencia",
+        },
+        {
+          EMPRESA: "GRUPO DAPS",
+          CLIENTE_RAZON_SOCIAL: "GRUPO TURISTICO DE DESTINOS DAPS SA DE CV",
+          CLIENTE_REPRESENTANTE: "C. PAULINA AIDEE LORENZANA VALLE",
+          CLIENTE_DOMICILIO: "",
+          VIGENCIA_INICIO: "1 de enero de 2026",
+          VIGENCIA_FIN: "31 de diciembre de 2026",
+          FECHA_FIRMA: "1 de diciembre de 2025",
+          COMISION_PORCENTAJE: "35%",
+          DIAS_CREDITO: "21",
+          MENU_VARIANTE: "Brochetas",
+          CARNADA_PIEZAS: "10",
+          CANCELACION_MAL_TIEMPO_DEVOLUCION:
+            "Sin cláusula de cancelación completa",
+          SEGUNDO_CONTACTO_LOVESHACK: "Luis Daniel Ríos López",
+          NOTAS:
+            "Tabla encabezado dice COMISION (45%) pero texto dice 35%. Falta Cláusula Vigésima Tercera",
+        },
+        {
+          EMPRESA: "HACIENDA ENCANTADA",
+          CLIENTE_RAZON_SOCIAL: "COMERCIALIZADORA VISTA BALLENA SA DE CV",
+          CLIENTE_REPRESENTANTE: "C.P. CARMELO ZUÑIGA BIBIANO",
+          CLIENTE_DOMICILIO:
+            "Blvd Paseo Marina, No. Ext. Lote 7ª, Col. Centro, C.P. 23450, Cabo San Lucas, BCS",
+          VIGENCIA_INICIO: "1 de enero de 2026",
+          VIGENCIA_FIN: "31 de diciembre de 2026",
+          FECHA_FIRMA: "1 de diciembre de 2025",
+          COMISION_PORCENTAJE: "35%",
+          DIAS_CREDITO: "21",
+          MENU_VARIANTE: "Brochetas",
+          CARNADA_PIEZAS: "10",
+          CANCELACION_MAL_TIEMPO_DEVOLUCION: "85%",
+          SEGUNDO_CONTACTO_LOVESHACK: "Eduardo Iván González Domínguez",
+          NOTAS: "Segundo contacto es Eduardo González, no Luis Daniel Ríos",
+        },
+        {
+          EMPRESA: "HOTEL BRETHLES",
+          CLIENTE_RAZON_SOCIAL: "TRAVEL PARTNER MEXICO SA DE CV",
+          CLIENTE_REPRESENTANTE: "C. CESAR VELA",
+          CLIENTE_DOMICILIO: "",
+          VIGENCIA_INICIO: "1 de enero de 2026",
+          VIGENCIA_FIN: "31 de diciembre de 2026",
+          FECHA_FIRMA: "1 de diciembre de 2025",
+          COMISION_PORCENTAJE: "35%",
+          DIAS_CREDITO: "21",
+          MENU_VARIANTE: "Brochetas",
+          CARNADA_PIEZAS: "10",
+          CANCELACION_MAL_TIEMPO_DEVOLUCION: "85%",
+          SEGUNDO_CONTACTO_LOVESHACK: "Luis Daniel Ríos López",
+          NOTAS: "",
+        },
+        {
+          EMPRESA: "HOTEL CORAZON",
+          CLIENTE_RAZON_SOCIAL: "(pendiente de completar)",
+          CLIENTE_REPRESENTANTE: "C. ILDA LEDESMA MARTINEZ",
+          CLIENTE_DOMICILIO:
+            "Oceánico Indico Manzana 8 Lote 48 Colonia Miramar, C.P. 23456",
+          VIGENCIA_INICIO: "1 de enero de 2026",
+          VIGENCIA_FIN: "31 de diciembre de 2026",
+          FECHA_FIRMA: "1 de diciembre de 2025",
+          COMISION_PORCENTAJE: "35%",
+          DIAS_CREDITO: "21",
+          MENU_VARIANTE: "Brochetas",
+          CARNADA_PIEZAS: "10",
+          CANCELACION_MAL_TIEMPO_DEVOLUCION: "85%",
+          SEGUNDO_CONTACTO_LOVESHACK: "Luis Daniel Ríos López",
+          NOTAS: "Razón social del cliente no completada en el documento",
+        },
+        {
+          EMPRESA: "LATITUD DMC",
+          CLIENTE_RAZON_SOCIAL: "(pendiente de completar)",
+          CLIENTE_REPRESENTANTE: "(pendiente de completar)",
+          CLIENTE_DOMICILIO:
+            "Oceánico Indico Manzana 8 Lote 48 Colonia Miramar, C.P. 23456",
+          VIGENCIA_INICIO: "1 de enero de 2026",
+          VIGENCIA_FIN: "31 de diciembre de 2026",
+          FECHA_FIRMA: "1 de diciembre de 2025",
+          COMISION_PORCENTAJE: "25%",
+          DIAS_CREDITO: "21",
+          MENU_VARIANTE: "Brochetas",
+          CARNADA_PIEZAS: "10",
+          CANCELACION_MAL_TIEMPO_DEVOLUCION: "85%",
+          SEGUNDO_CONTACTO_LOVESHACK: "Luis Daniel Ríos López",
+          NOTAS:
+            "Datos del cliente en blanco. Comisión 25% - única en el portafolio",
+        },
+        {
+          EMPRESA: "LE BLANC",
+          CLIENTE_RAZON_SOCIAL: "(pendiente de completar)",
+          CLIENTE_REPRESENTANTE: "(pendiente de completar)",
+          CLIENTE_DOMICILIO: "",
+          VIGENCIA_INICIO: "1 de enero de 2026",
+          VIGENCIA_FIN: "31 de diciembre de 2026",
+          FECHA_FIRMA: "1 de diciembre de 2025",
+          COMISION_PORCENTAJE: "35%",
+          DIAS_CREDITO: "30",
+          MENU_VARIANTE: "Brochetas",
+          CARNADA_PIEZAS: "10",
+          CANCELACION_MAL_TIEMPO_DEVOLUCION: "85%",
+          SEGUNDO_CONTACTO_LOVESHACK: "Luis Daniel Ríos López",
+          NOTAS:
+            "Datos del cliente en blanco. Crédito 30 días - el más largo del portafolio",
+        },
+        {
+          EMPRESA: "MARITUR",
+          CLIENTE_RAZON_SOCIAL: "MARITUR TRAVEL PLANNERS SA DE CV",
+          CLIENTE_REPRESENTANTE: "C. JOSE RODRIGUEZ",
+          CLIENTE_DOMICILIO:
+            "Carretera Transpeninsular KM. 4, Ret 1 El Tezal No. Interior L-7 Colonia El Tezal, Cabo San Lucas, BCS, C.P. 23454",
+          VIGENCIA_INICIO: "1 de enero de 2026",
+          VIGENCIA_FIN: "31 de diciembre de 2026",
+          FECHA_FIRMA: "1 de diciembre de 2025",
+          COMISION_PORCENTAJE: "35%",
+          DIAS_CREDITO: "21",
+          MENU_VARIANTE: "Brochetas",
+          CARNADA_PIEZAS: "10",
+          CANCELACION_MAL_TIEMPO_DEVOLUCION: "85%",
+          SEGUNDO_CONTACTO_LOVESHACK: "Luis Daniel Ríos López",
+          NOTAS: "",
+        },
+        {
+          EMPRESA: "MAYALAND",
+          CLIENTE_RAZON_SOCIAL: "MAYALAND TOURS SA DE CV",
+          CLIENTE_REPRESENTANTE: "C. WILMA DEL CARMEN HERRADA DODERO",
+          CLIENTE_DOMICILIO:
+            "En km 78 Carretera Mérida Campeche Hotel Hacienda Uxmal Interior 72, Santa Elena Yucatán, C.P. 97890",
+          VIGENCIA_INICIO: "1 de enero de 2026",
+          VIGENCIA_FIN: "31 de diciembre de 2026",
+          FECHA_FIRMA: "1 de diciembre de 2025",
+          COMISION_PORCENTAJE: "35%",
+          DIAS_CREDITO: "21",
+          MENU_VARIANTE: "Brochetas",
+          CARNADA_PIEZAS: "10",
+          CANCELACION_MAL_TIEMPO_DEVOLUCION:
+            "Sin cláusula de cancelación completa",
+          SEGUNDO_CONTACTO_LOVESHACK: "Luis Daniel Ríos López",
+          NOTAS:
+            "Cliente ubicado en Yucatán. Falta Cláusula Vigésima Tercera de cancelación",
+        },
+        {
+          EMPRESA: "MEXICO PLANNERS",
+          CLIENTE_RAZON_SOCIAL: "MEXICO PLANNERS DMC SA DE CV",
+          CLIENTE_REPRESENTANTE: "C. OCTAVIO CRUZ ROMERO",
+          CLIENTE_DOMICILIO:
+            "Av. Floresta No Ext. 10904, Col. Las Veredas, C.P. 23435, San Jose Del Cabo, BCS",
+          VIGENCIA_INICIO: "1 de enero de 2026",
+          VIGENCIA_FIN: "31 de diciembre de 2026",
+          FECHA_FIRMA: "1 de diciembre de 2026",
+          COMISION_PORCENTAJE: "35%",
+          DIAS_CREDITO: "21",
+          MENU_VARIANTE: "Brochetas",
+          CARNADA_PIEZAS: "10",
+          CANCELACION_MAL_TIEMPO_DEVOLUCION: "100%",
+          SEGUNDO_CONTACTO_LOVESHACK: "Eduardo Ivan Gonzalez Dominguez",
+          NOTAS:
+            "Fecha de firma dice 2026 (posible error). Mal tiempo: 100% devolución. Segundo contacto Eduardo González. Incluye costo de licencia de pesca ($22 USD)",
+        },
+        {
+          EMPRESA: "OLIMPUS",
+          CLIENTE_RAZON_SOCIAL: "TURIX TRAVEL SERVICES",
+          CLIENTE_REPRESENTANTE: "C. LUIS ALVARO ESTRADA Y ZAMUDIO",
+          CLIENTE_DOMICILIO: "",
+          VIGENCIA_INICIO: "1 de enero de 2026",
+          VIGENCIA_FIN: "31 de diciembre de 2026",
+          FECHA_FIRMA: "1 de diciembre de 2025",
+          COMISION_PORCENTAJE: "35%",
+          DIAS_CREDITO: "21",
+          MENU_VARIANTE: "Brochetas",
+          CARNADA_PIEZAS: "10",
+          CANCELACION_MAL_TIEMPO_DEVOLUCION:
+            "Sin cláusula de cancelación completa",
+          SEGUNDO_CONTACTO_LOVESHACK: "Luis Daniel Ríos López",
+          NOTAS: "Falta Cláusula Vigésima Tercera de cancelación",
+        },
+        {
+          EMPRESA: "OMAR HEREDIA",
+          CLIENTE_RAZON_SOCIAL: "SERVICIOS Y EVENTOS DE LOS CABOS SA DE CV",
+          CLIENTE_REPRESENTANTE: "C. OMAR HEREDIA",
+          CLIENTE_DOMICILIO: "",
+          VIGENCIA_INICIO: "1 de enero de 2026",
+          VIGENCIA_FIN: "31 de diciembre de 2026",
+          FECHA_FIRMA: "1 de diciembre de 2025",
+          COMISION_PORCENTAJE: "35%",
+          DIAS_CREDITO: "21",
+          MENU_VARIANTE: "Brochetas",
+          CARNADA_PIEZAS: "10",
+          CANCELACION_MAL_TIEMPO_DEVOLUCION: "85%",
+          SEGUNDO_CONTACTO_LOVESHACK: "Luis Daniel Ríos López",
+          NOTAS: "Tabla encabezado dice COMISION (45%) pero texto dice 35%",
+        },
+        {
+          EMPRESA: "OTIUM",
+          CLIENTE_RAZON_SOCIAL: "MEXOT GROUP S DE RL DE CV",
+          CLIENTE_REPRESENTANTE: "C. ARMANDO AGUIRRE ORTA",
+          CLIENTE_DOMICILIO:
+            "Blvd Paseo De La Marina, No Ext. Lote 7A, Col. Centro, C.P. 23450, Cabo San Lucas, BCS",
+          VIGENCIA_INICIO: "1 de enero de 2026",
+          VIGENCIA_FIN: "31 de diciembre de 2026",
+          FECHA_FIRMA: "1 de diciembre de 2025",
+          COMISION_PORCENTAJE: "35%",
+          DIAS_CREDITO: "21",
+          MENU_VARIANTE: "Brochetas",
+          CARNADA_PIEZAS: "10",
+          CANCELACION_MAL_TIEMPO_DEVOLUCION: "85%",
+          SEGUNDO_CONTACTO_LOVESHACK: "Luis Daniel Ríos López",
+          NOTAS: "",
+        },
+        {
+          EMPRESA: "PLAYA GRANDE",
+          CLIENTE_RAZON_SOCIAL: "PLAYA GRANDE DE CABO SAN LUCAS SA DE CV",
+          CLIENTE_REPRESENTANTE: "C. EDGAR FELIPE HERMOSILLO JIMENEZ",
+          CLIENTE_DOMICILIO: "",
+          VIGENCIA_INICIO: "1 de enero de 2026",
+          VIGENCIA_FIN: "31 de diciembre de 2026",
+          FECHA_FIRMA: "1 de diciembre de 2025",
+          COMISION_PORCENTAJE: "35%",
+          DIAS_CREDITO: "21",
+          MENU_VARIANTE: "Brochetas",
+          CARNADA_PIEZAS: "10",
+          CANCELACION_MAL_TIEMPO_DEVOLUCION: "85%",
+          SEGUNDO_CONTACTO_LOVESHACK: "Luis Daniel Ríos López",
+          NOTAS: "",
+        },
+        {
+          EMPRESA: "SEEK AND GO",
+          CLIENTE_RAZON_SOCIAL: "SEEK AND GO SA DE CV",
+          CLIENTE_REPRESENTANTE: "C. PAOLA RADONDE CERVANTES",
+          CLIENTE_DOMICILIO: "",
+          VIGENCIA_INICIO: "1 de enero de 2026",
+          VIGENCIA_FIN: "31 de diciembre de 2026",
+          FECHA_FIRMA: "1 de diciembre de 2025",
+          COMISION_PORCENTAJE: "35%",
+          DIAS_CREDITO: "21",
+          MENU_VARIANTE: "Brochetas",
+          CARNADA_PIEZAS: "10",
+          CANCELACION_MAL_TIEMPO_DEVOLUCION: "85%",
+          SEGUNDO_CONTACTO_LOVESHACK: "Luis Daniel Ríos López",
+          NOTAS: "Tabla encabezado dice COMISION (45%) pero texto dice 35%",
+        },
+        {
+          EMPRESA: "TERRAMAR",
+          CLIENTE_RAZON_SOCIAL: "MERCATOR ENTERPRISES, INC.",
+          CLIENTE_REPRESENTANTE: "C. FRANCISCO MUÑETON GALAVIZ",
+          CLIENTE_DOMICILIO: "",
+          VIGENCIA_INICIO: "1 de enero de 2026",
+          VIGENCIA_FIN: "31 de diciembre de 2026",
+          FECHA_FIRMA: "1 de diciembre de 2025",
+          COMISION_PORCENTAJE: "35%",
+          DIAS_CREDITO: "21",
+          MENU_VARIANTE: "Buffet Mexicano (Tacos)",
+          CARNADA_PIEZAS: "10",
+          CANCELACION_MAL_TIEMPO_DEVOLUCION: "Sin cláusula de mal tiempo",
+          SEGUNDO_CONTACTO_LOVESHACK: "Ivan Gonzalez",
+          NOTAS:
+            "Menú: tacos (variante buffet). Sin cláusula de mal tiempo en cancelación",
+        },
+        {
+          EMPRESA: "TRAFIC TOURS",
+          CLIENTE_RAZON_SOCIAL: "TRAFICTOURS DE MEXICO, SA DE CV",
+          CLIENTE_REPRESENTANTE: "C. ALEJANDRO CASTRO SANCHEZ",
+          CLIENTE_DOMICILIO: "",
+          VIGENCIA_INICIO: "1 de enero de 2026",
+          VIGENCIA_FIN: "31 de diciembre de 2026",
+          FECHA_FIRMA: "1 de diciembre de 2025",
+          COMISION_PORCENTAJE: "35%",
+          DIAS_CREDITO: "21",
+          MENU_VARIANTE: "Brochetas",
+          CARNADA_PIEZAS: "10",
+          CANCELACION_MAL_TIEMPO_DEVOLUCION: "85%",
+          SEGUNDO_CONTACTO_LOVESHACK: "Luis Daniel Ríos López",
+          NOTAS: "",
+        },
+        {
+          EMPRESA: "TROPICAL INCENTIVES",
+          CLIENTE_RAZON_SOCIAL: "ASOCIACION TURISTICA DE LA BAJA, SA DE CV",
+          CLIENTE_REPRESENTANTE: "C. ALANNA ESTEFANIA SALDAÑA AGUIRRE",
+          CLIENTE_DOMICILIO:
+            "carretera federal libre transpeninsular san Jose-san lucas km. 31.5 mza 6 lote 2 Col. Magisterial, C.P. 23440, Cabo San Jose del Cabo, BCS",
+          VIGENCIA_INICIO: "1 de enero de 2026",
+          VIGENCIA_FIN: "31 de diciembre de 2026",
+          FECHA_FIRMA: "1 de diciembre de 2025",
+          COMISION_PORCENTAJE: "35%",
+          DIAS_CREDITO: "21",
+          MENU_VARIANTE: "Buffet Mexicano (Tacos)",
+          CARNADA_PIEZAS: "10",
+          CANCELACION_MAL_TIEMPO_DEVOLUCION: "Sin cláusula de mal tiempo",
+          SEGUNDO_CONTACTO_LOVESHACK: "Eduardo Ivan Gonzalez Dominguez",
+          NOTAS:
+            "Menú: tacos (variante buffet). Sin cláusula de mal tiempo. Segundo contacto Eduardo González",
+        },
+        {
+          EMPRESA: "VACACION LAND",
+          CLIENTE_RAZON_SOCIAL: "VACATIONLAND",
+          CLIENTE_REPRESENTANTE: "LORENA TAGLE",
+          CLIENTE_DOMICILIO:
+            "Oceánico Indico Manzana 8 Lote 48 Colonia Miramar, C.P. 23456",
+          VIGENCIA_INICIO: "1 de enero de 2026",
+          VIGENCIA_FIN: "31 de diciembre de 2026",
+          FECHA_FIRMA: "1 de diciembre de 2025",
+          COMISION_PORCENTAJE: "35%",
+          DIAS_CREDITO: "21",
+          MENU_VARIANTE: "Brochetas",
+          CARNADA_PIEZAS: "10",
+          CANCELACION_MAL_TIEMPO_DEVOLUCION: "85%",
+          SEGUNDO_CONTACTO_LOVESHACK: "Luis Daniel Ríos López",
+          NOTAS: "",
+        },
+        {
+          EMPRESA: "VIAJES EL ARCO",
+          CLIENTE_RAZON_SOCIAL: "VIAJES EL ARCO",
+          CLIENTE_REPRESENTANTE: "C. CLAUDIA PAOLA OZUNA HERNANDEZ",
+          CLIENTE_DOMICILIO: "",
+          VIGENCIA_INICIO: "1 de enero de 2026",
+          VIGENCIA_FIN: "31 de diciembre de 2026",
+          FECHA_FIRMA: "1 de diciembre de 2025",
+          COMISION_PORCENTAJE: "35%",
+          DIAS_CREDITO: "21",
+          MENU_VARIANTE: "Buffet Mexicano (Fajitas)",
+          CARNADA_PIEZAS: "5",
+          CANCELACION_MAL_TIEMPO_DEVOLUCION: "85%",
+          SEGUNDO_CONTACTO_LOVESHACK: "Luis Daniel Ríos López",
+          NOTAS: "Tabla encabezado dice COMISION (45%) pero texto dice 35%",
+        },
+      ];
+
+      // --- RENDER DASHBOARD ---
+      function renderDashboard() {
+        const container = document.getElementById("dashboard-stats");
+
+        // Calc stats
+        const total = conveniosData.length;
+        let sumComision = 0;
+        let sumCredito = 0;
+        let countComision = 0;
+        let countCredito = 0;
+
+        conveniosData.forEach((c) => {
+          let comVal = parseFloat(c.COMISION_PORCENTAJE.replace("%", ""));
+          if (!isNaN(comVal)) {
+            sumComision += comVal;
+            countComision++;
+          }
+
+          let credVal = parseInt(c.DIAS_CREDITO);
+          if (!isNaN(credVal)) {
+            sumCredito += credVal;
+            countCredito++;
+          }
+        });
+
+        const avgComision =
+          countComision > 0
+            ? (sumComision / countComision).toFixed(1) + "%"
+            : "N/A";
+        const avgCredito =
+          countCredito > 0
+            ? Math.round(sumCredito / countCredito) + " días"
+            : "N/A";
+
+        container.innerHTML = `
+                <div class="stat-pill stat-pill--blue">Total: ${total}</div>
+                <div class="stat-pill stat-pill--green">Comisión Promedio: ${avgComision}</div>
+                <div class="stat-pill stat-pill--purple">Crédito Promedio: ${avgCredito}</div>
+            `;
+      }
+
+      // --- RENDER TABLE ---
+      function renderTable() {
+        const tbody = document.getElementById("table-body");
+        tbody.innerHTML = "";
+
+        conveniosData.forEach((item, index) => {
+          const tr = document.createElement("tr");
+          tr.onclick = () => openDetails(item);
+
+          // Add warning class for missing data or notes
+          let empresaClass = item.EMPRESA.includes("pendiente")
+            ? "text-red-500 font-bold"
+            : "font-semibold text-slate-800";
+
+          tr.innerHTML = `
+                    <td class="text-xs">${index + 1}</td>
+                    <td class="${empresaClass}">${item.EMPRESA}</td>
+                    <td title="${item.CLIENTE_RAZON_SOCIAL}">${item.CLIENTE_RAZON_SOCIAL.length > 25 ? item.CLIENTE_RAZON_SOCIAL.substring(0, 25) + "..." : item.CLIENTE_RAZON_SOCIAL}</td>
+                    <td title="${item.CLIENTE_REPRESENTANTE}">${item.CLIENTE_REPRESENTANTE}</td>
+                    <td><span class="cell-badge bg-blue-100 text-blue-800">${item.COMISION_PORCENTAJE}</span></td>
+                    <td><span class="cell-badge bg-green-100 text-green-800">${item.DIAS_CREDITO}</span></td>
+                    <td class="${item.VIGENCIA_FIN.includes("2024") ? "text-red-500 font-semibold" : ""}">${item.VIGENCIA_FIN}</td>
+                    <td>${item.MENU_VARIANTE}</td>
+                    <td class="text-center">${item.CARNADA_PIEZAS}</td>
+                    <td>${item.CANCELACION_MAL_TIEMPO_DEVOLUCION}</td>
+                    <td>${item.SEGUNDO_CONTACTO_LOVESHACK}</td>
+                    <td class="text-xs text-slate-500" title="${item.NOTAS}">${item.NOTAS ? (item.NOTAS.length > 30 ? item.NOTAS.substring(0, 30) + "..." : item.NOTAS) : "-"}</td>
+                `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      // --- RENDER GRID ---
+      function renderGrid() {
+        const container = document.getElementById("data-grid");
+        container.innerHTML = "";
+
+        conveniosData.forEach((item) => {
+          const card = document.createElement("div");
+          card.className = "card";
+          card.onclick = () => openDetails(item);
+
+          card.innerHTML = `
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">${item.EMPRESA}</div>
+                            <div class="card-subtitle" title="${item.CLIENTE_RAZON_SOCIAL}">${item.CLIENTE_RAZON_SOCIAL.substring(0, 35)}${item.CLIENTE_RAZON_SOCIAL.length > 35 ? "..." : ""}</div>
+                        </div>
+                        <span class="cell-badge ${item.VIGENCIA_FIN.includes("2024") ? "bg-red-100 text-red-800 border border-red-200" : "bg-slate-100 text-slate-700 border border-slate-200"}">${item.VIGENCIA_FIN.split(" ").pop()}</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-row">
+                            <span class="card-label">Comisión</span>
+                            <span class="card-value text-blue-600">${item.COMISION_PORCENTAJE}</span>
+                        </div>
+                        <div class="card-row">
+                            <span class="card-label">Crédito</span>
+                            <span class="card-value text-green-600">${item.DIAS_CREDITO} días</span>
+                        </div>
+                        <div class="card-row">
+                            <span class="card-label">Menú</span>
+                            <span class="card-value font-normal">${item.MENU_VARIANTE.split(" ")[0]}</span>
+                        </div>
+                        ${item.NOTAS ? `<div class="card-notes" title="${item.NOTAS}">${item.NOTAS}</div>` : ""}
+                    </div>
+                `;
+          container.appendChild(card);
+        });
+      }
+
+      // --- VIEW SWITCH LOGIC ---
+      const btnList = document.getElementById("view-list");
+      const btnGrid = document.getElementById("view-grid");
+      const viewContainer = document.getElementById("view-container");
+
+      btnList.addEventListener("click", () => {
+        btnList.classList.add("filters__view-btn--active");
+        btnGrid.classList.remove("filters__view-btn--active");
+        viewContainer.classList.remove("is-grid-view");
+        viewContainer.classList.add("is-list-view");
+      });
+
+      btnGrid.addEventListener("click", () => {
+        btnGrid.classList.add("filters__view-btn--active");
+        btnList.classList.remove("filters__view-btn--active");
+        viewContainer.classList.remove("is-list-view");
+        viewContainer.classList.add("is-grid-view");
+      });
+
+      // --- DETAILS DRAWER LOGIC ---
+      const overlay = document.getElementById("sheet-overlay");
+      const drawer = document.getElementById("detail-sheet");
+      const btnClose = document.getElementById("sheet-close");
+
+      function openDetails(item) {
+        document.getElementById("sheet-empresa-name").textContent =
+          item.EMPRESA;
+        document.getElementById("inp-razon").value =
+          item.CLIENTE_RAZON_SOCIAL || "No especificado";
+        document.getElementById("inp-comision").value =
+          item.COMISION_PORCENTAJE;
+        document.getElementById("inp-credito").value =
+          item.DIAS_CREDITO + " días";
+        document.getElementById("inp-menu").value = item.MENU_VARIANTE;
+        document.getElementById("inp-rep").value =
+          item.CLIENTE_REPRESENTANTE || "No especificado";
+        document.getElementById("inp-notas").value =
+          item.NOTAS || "Sin notas adicionales.";
+
+        overlay.classList.add("active");
+        drawer.classList.add("active");
+      }
+
+      function closeDetails() {
+        overlay.classList.remove("active");
+        drawer.classList.remove("active");
+      }
+
+      btnClose.addEventListener("click", closeDetails);
+      overlay.addEventListener("click", closeDetails);
+
+      // --- BATCH OVERRIDE LOGIC ---
+      const batchOverlay = document.getElementById("batch-overlay");
+      const batchDrawer = document.getElementById("batch-sheet");
+      const btnOpenBatch = document.getElementById("btn-open-batch");
+      const btnCloseBatch = document.getElementById("batch-close");
+
+      // Toggles inputs based on checkboxes
+      const setupBatchToggle = (chkId, inpId, boxId) => {
+        const chk = document.getElementById(chkId);
+        const inp = document.getElementById(inpId);
+        const box = document.getElementById(boxId);
+        chk.addEventListener("change", (e) => {
+          const active = e.target.checked;
+          inp.classList.toggle("opacity-50", !active);
+          inp.classList.toggle("pointer-events-none", !active);
+          box.classList.toggle("bg-white", active);
+          box.classList.toggle("bg-slate-50", !active);
+          box.classList.toggle("border-blue-300", active);
+          box.classList.toggle("border-slate-200", !active);
+          if (active) inp.focus();
+        });
+      };
+
+      setupBatchToggle(
+        "chk-batch-contacto",
+        "inp-batch-contacto",
+        "box-batch-contacto",
+      );
+      setupBatchToggle("chk-batch-menu", "inp-batch-menu", "box-batch-menu");
+      setupBatchToggle(
+        "chk-batch-carnada",
+        "inp-batch-carnada",
+        "box-batch-carnada",
+      );
+
+      function openBatchDetails() {
+        batchOverlay.classList.add("active");
+        batchDrawer.classList.add("active");
+      }
+
+      function closeBatchDetails() {
+        batchOverlay.classList.remove("active");
+        batchDrawer.classList.remove("active");
+      }
+
+      btnOpenBatch.addEventListener("click", openBatchDetails);
+      btnCloseBatch.addEventListener("click", closeBatchDetails);
+      batchOverlay.addEventListener("click", closeBatchDetails);
+
+      // Apply Batch Changes
+      document
+        .getElementById("btn-apply-batch")
+        .addEventListener("click", () => {
+          const doContacto =
+            document.getElementById("chk-batch-contacto").checked;
+          const valContacto = document
+            .getElementById("inp-batch-contacto")
+            .value.trim();
+          const doMenu = document.getElementById("chk-batch-menu").checked;
+          const valMenu = document.getElementById("inp-batch-menu").value;
+          const doCarnada =
+            document.getElementById("chk-batch-carnada").checked;
+          const valCarnada = document
+            .getElementById("inp-batch-carnada")
+            .value.trim();
+
+          if (!doContacto && !doMenu && !doCarnada) {
+            alert("Por favor selecciona al menos un campo para actualizar.");
+            return;
+          }
+
+          if (doContacto && valContacto === "") {
+            alert(
+              "El campo de Contacto no puede estar vacío si está seleccionado.",
+            );
+            return;
+          }
+
+          let updatedCount = 0;
+
+          // Apply changes to data array
+          conveniosData.forEach((item) => {
+            let changed = false;
+            if (doContacto) {
+              item.SEGUNDO_CONTACTO_LOVESHACK = valContacto;
+              changed = true;
+            }
+            if (doMenu) {
+              item.MENU_VARIANTE = valMenu;
+              changed = true;
+            }
+            if (doCarnada && valCarnada !== "") {
+              item.CARNADA_PIEZAS = valCarnada;
+              changed = true;
+            }
+            if (changed) updatedCount++;
+          });
+
+          // Re-render UI
+          renderTable();
+          renderGrid();
+          closeBatchDetails();
+
+          // Small timeout to allow drawer animation
+          setTimeout(() => {
+            alert(
+              `¡Éxito! Se actualizaron ${updatedCount} convenios con los nuevos valores operativos.`,
+            );
+          }, 300);
+        });
+
+      // --- INIT ---
+      renderDashboard();
+      renderTable();
+      renderGrid();
+    </script>
+  </body>
+</html>
