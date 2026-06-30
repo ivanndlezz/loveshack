@@ -1,11 +1,11 @@
 [
   {
     "id": "res_1777581370274_zihk80prn",
-    "clientId": "CLI-001",
+    "clientId": "CLI-015",
     "status": "reservado",
     "currentStep": 3,
     "createdAt": "2026-04-30T20:36:10.274Z",
-    "updatedAt": "2026-06-07T19:21:59.378Z",
+    "updatedAt": "2026-06-13T19:35:56.567Z",
     "sync_status": "synced",
     "airtable_id": "rec0DciW2ozkZufwl",
     "data": {
@@ -16,7 +16,7 @@
         "extraPassengers": 0,
         "hourlyRate": 600,
         "baseTripCost": 1800,
-        "extraPassengerCharge": 100,
+        "extraPassengerCharge": 0,
         "estimatedSubtotal": 1800
       },
       "step2_details": {
@@ -48,7 +48,7 @@
   },
   {
     "id": "res_1773343897032_mbix0k3mw",
-    "clientId": "CLI-002",
+    "clientId": "CLI-016",
     "status": "completado",
     "currentStep": 3,
     "createdAt": "2026-03-12T19:31:37.032Z",
@@ -63,7 +63,7 @@
         "extraPassengers": 39,
         "hourlyRate": 450,
         "baseTripCost": 1350,
-        "extraPassengerCharge": 75,
+        "extraPassengerCharge": 2925,
         "estimatedSubtotal": 4275
       },
       "step2_details": {
@@ -94,12 +94,59 @@
     }
   },
   {
+    "id": "0cd48f15-5adb-492e-b8d1-f44bd3231e69",
+    "clientId": "CLI-017",
+    "status": "reservado",
+    "currentStep": 3,
+    "createdAt": "2026-06-25T00:16:40.376Z",
+    "updatedAt": "2026-06-25T17:00:23.571Z",
+    "sync_status": "synced",
+    "airtable_id": "rec2PBLrpsPPPcBbu",
+    "data": {
+      "step1_pricing": {
+        "pricingType": "regular",
+        "durationHours": 3,
+        "passengers": 20,
+        "extraPassengers": 6,
+        "hourlyRate": 600,
+        "baseTripCost": 1800,
+        "extraPassengerCharge": 600,
+        "estimatedSubtotal": 2400
+      },
+      "step2_details": {
+        "tourType": "Snorkeling Tour",
+        "tripDate": "2026-06-24",
+        "startTime": "11:00",
+        "endTime": "14:00",
+        "customerName": "Alexis D'Amico",
+        "customerPhone": "",
+        "customerEmail": "",
+        "notes": ""
+      },
+      "step3_adjustments": {
+        "bookingSource": "get-my-boat",
+        "repriceType": "",
+        "repriceDiscount": 0,
+        "extrasAmount": 0,
+        "fishingLicenses": 0,
+        "finalBusinessPrice": 2100,
+        "finalCustomerPrice": 2372.8813559322034,
+        "feeAmount": 272.8813559322034,
+        "deposit": 0,
+        "balance": 2372.8813559322034,
+        "paymentMethod": "cash",
+        "manualHourlyRate": "",
+        "manualExtraPaxRate": ""
+      }
+    }
+  },
+  {
     "id": "res_1774630377712_ofn7u07ts",
-    "clientId": "CLI-003",
+    "clientId": "CLI-018",
     "status": "completado",
     "currentStep": 3,
     "createdAt": "2026-03-27T16:52:57.712Z",
-    "updatedAt": "2026-06-07T19:28:03.367Z",
+    "updatedAt": "2026-06-30T00:02:57.175Z",
     "sync_status": "synced",
     "airtable_id": "rec5bdyeTL9IpKDz1",
     "data": {
@@ -142,11 +189,11 @@
   },
   {
     "id": "res_1776450379985_t2498p7a9",
-    "clientId": "CLI-004",
+    "clientId": "CLI-019",
     "status": "completado",
     "currentStep": 3,
     "createdAt": "2026-04-17T18:26:19.985Z",
-    "updatedAt": "2026-06-07T19:28:03.368Z",
+    "updatedAt": "2026-06-30T00:02:57.175Z",
     "sync_status": "synced",
     "airtable_id": "rec9CwF8bctWEK8wU",
     "data": {
@@ -157,7 +204,7 @@
         "extraPassengers": 6,
         "hourlyRate": 600,
         "baseTripCost": 3000,
-        "extraPassengerCharge": 100,
+        "extraPassengerCharge": 600,
         "estimatedSubtotal": 3600
       },
       "step2_details": {
@@ -189,11 +236,11 @@
   },
   {
     "id": "res_1775681744032_zaiav9xwg",
-    "clientId": "CLI-005",
+    "clientId": "CLI-020",
     "status": "completado",
     "currentStep": 3,
     "createdAt": "2026-04-08T20:55:44.033Z",
-    "updatedAt": "2026-06-07T19:28:03.368Z",
+    "updatedAt": "2026-06-30T00:02:57.175Z",
     "sync_status": "synced",
     "airtable_id": "recAGnLqR5rJJvh3A",
     "data": {
@@ -204,7 +251,7 @@
         "extraPassengers": 0,
         "hourlyRate": 600,
         "baseTripCost": 1800,
-        "extraPassengerCharge": 100,
+        "extraPassengerCharge": 0,
         "estimatedSubtotal": 1800
       },
       "step2_details": {
@@ -236,11 +283,11 @@
   },
   {
     "id": "res_1773949142999_fba3my8tf",
-    "clientId": "CLI-006",
+    "clientId": "CLI-021",
     "status": "completado",
     "currentStep": 3,
     "createdAt": "2026-03-19T19:39:03.000Z",
-    "updatedAt": "2026-06-07T19:28:03.368Z",
+    "updatedAt": "2026-06-30T00:02:57.175Z",
     "sync_status": "synced",
     "airtable_id": "recAe3NK414yTtldh",
     "data": {
@@ -251,7 +298,7 @@
         "extraPassengers": 11,
         "hourlyRate": 600,
         "baseTripCost": 2400,
-        "extraPassengerCharge": 100,
+        "extraPassengerCharge": 1100,
         "estimatedSubtotal": 3500
       },
       "step2_details": {
@@ -283,7 +330,7 @@
   },
   {
     "id": "efa2d7d7-7384-45fc-a613-bc2b3eee9153",
-    "clientId": "CLI-007",
+    "clientId": "CLI-022",
     "status": "reservado",
     "currentStep": 3,
     "createdAt": "2026-05-20T22:59:33.038Z",
@@ -298,7 +345,7 @@
         "extraPassengers": 0,
         "hourlyRate": 600,
         "baseTripCost": 2400,
-        "extraPassengerCharge": 100,
+        "extraPassengerCharge": 0,
         "estimatedSubtotal": 2400
       },
       "step2_details": {
@@ -330,11 +377,11 @@
   },
   {
     "id": "3235a3f7-724d-4b8c-8a57-e58080b496d2",
-    "clientId": "CLI-032",
+    "clientId": "CLI-023",
     "status": "reservado",
     "currentStep": 3,
     "createdAt": "2026-06-05T20:07:08.637Z",
-    "updatedAt": "2026-06-05T21:40:36.122Z",
+    "updatedAt": "2026-06-07T19:58:22.708Z",
     "sync_status": "synced",
     "airtable_id": "recCMaFdZUFNY391k",
     "data": {
@@ -345,7 +392,7 @@
         "extraPassengers": 0,
         "hourlyRate": 442.5,
         "baseTripCost": 1770,
-        "extraPassengerCharge": 100,
+        "extraPassengerCharge": 0,
         "estimatedSubtotal": 1770
       },
       "step2_details": {
@@ -377,7 +424,7 @@
   },
   {
     "id": "res_1775950843008_ehhximpe4",
-    "clientId": "CLI-008",
+    "clientId": "CLI-024",
     "status": "completado",
     "currentStep": 3,
     "createdAt": "2026-04-11T23:40:43.009Z",
@@ -392,7 +439,7 @@
         "extraPassengers": 0,
         "hourlyRate": 600,
         "baseTripCost": 1800,
-        "extraPassengerCharge": 100,
+        "extraPassengerCharge": 0,
         "estimatedSubtotal": 1800
       },
       "step2_details": {
@@ -424,7 +471,7 @@
   },
   {
     "id": "res_1777593977928_wfig88hyd",
-    "clientId": "CLI-009",
+    "clientId": "CLI-025",
     "status": "reservado",
     "currentStep": 3,
     "createdAt": "2026-05-01T00:06:17.929Z",
@@ -439,7 +486,7 @@
         "extraPassengers": 16,
         "hourlyRate": 450,
         "baseTripCost": 1350,
-        "extraPassengerCharge": 75,
+        "extraPassengerCharge": 1200,
         "estimatedSubtotal": 2550
       },
       "step2_details": {
@@ -471,7 +518,7 @@
   },
   {
     "id": "res_1774895940775_kcbhsk5px",
-    "clientId": "CLI-010",
+    "clientId": "CLI-026",
     "status": "completado",
     "currentStep": 3,
     "createdAt": "2026-03-30T18:39:00.775Z",
@@ -486,7 +533,7 @@
         "extraPassengers": 10,
         "hourlyRate": 600,
         "baseTripCost": 2400,
-        "extraPassengerCharge": 100,
+        "extraPassengerCharge": 1000,
         "estimatedSubtotal": 3400
       },
       "step2_details": {
@@ -518,7 +565,7 @@
   },
   {
     "id": "res_1773343480002_humza",
-    "clientId": "CLI-011",
+    "clientId": "CLI-027",
     "status": "completado",
     "currentStep": 3,
     "createdAt": "2026-03-12T12:24:40.000Z",
@@ -533,7 +580,7 @@
         "extraPassengers": 2,
         "hourlyRate": 450,
         "baseTripCost": 1350,
-        "extraPassengerCharge": 75,
+        "extraPassengerCharge": 150,
         "estimatedSubtotal": 1500
       },
       "step2_details": {
@@ -565,7 +612,7 @@
   },
   {
     "id": "res_1773343480003_kristin",
-    "clientId": "CLI-012",
+    "clientId": "CLI-028",
     "status": "completado",
     "currentStep": 3,
     "createdAt": "2026-03-12T12:24:40.000Z",
@@ -580,7 +627,7 @@
         "extraPassengers": 5,
         "hourlyRate": 600,
         "baseTripCost": 1800,
-        "extraPassengerCharge": 100,
+        "extraPassengerCharge": 500,
         "estimatedSubtotal": 2300
       },
       "step2_details": {
@@ -612,11 +659,11 @@
   },
   {
     "id": "res_1773958617534_afqjii9u8",
-    "clientId": "CLI-013",
+    "clientId": "CLI-029",
     "status": "completado",
     "currentStep": 3,
     "createdAt": "2026-03-19T22:16:57.534Z",
-    "updatedAt": "2026-06-07T19:28:03.369Z",
+    "updatedAt": "2026-06-30T00:02:57.175Z",
     "sync_status": "synced",
     "airtable_id": "recLc6j4MpTBqKXua",
     "data": {
@@ -627,7 +674,7 @@
         "extraPassengers": 2,
         "hourlyRate": 600,
         "baseTripCost": 1800,
-        "extraPassengerCharge": 100,
+        "extraPassengerCharge": 200,
         "estimatedSubtotal": 2000
       },
       "step2_details": {
@@ -658,8 +705,55 @@
     }
   },
   {
+    "id": "1dc0435c-8874-45e3-bee7-a529b9cdcc89",
+    "clientId": "CLI-030",
+    "status": "reservado",
+    "currentStep": 3,
+    "createdAt": "2026-06-18T22:44:03.914Z",
+    "updatedAt": "2026-06-18T23:35:49.491Z",
+    "sync_status": "synced",
+    "airtable_id": "recM8y1o0jo71iJ3t",
+    "data": {
+      "step1_pricing": {
+        "pricingType": "regular",
+        "durationHours": 2,
+        "passengers": 17,
+        "extraPassengers": 3,
+        "hourlyRate": 575,
+        "baseTripCost": 1150,
+        "extraPassengerCharge": 0.798,
+        "estimatedSubtotal": 1150.798
+      },
+      "step2_details": {
+        "tourType": "Bay Trip",
+        "tripDate": "2026-06-18",
+        "startTime": "13:00",
+        "endTime": "15:00",
+        "customerName": "Carrie Ahlstrom",
+        "customerPhone": "",
+        "customerEmail": "",
+        "notes": ""
+      },
+      "step3_adjustments": {
+        "bookingSource": "get-my-boat",
+        "repriceType": "",
+        "repriceDiscount": 0,
+        "extrasAmount": 0,
+        "fishingLicenses": 0,
+        "finalBusinessPrice": 1150.798,
+        "finalCustomerPrice": 1300.3367231638417,
+        "feeAmount": 149.53872316384172,
+        "deposit": 0,
+        "balance": 1300.3367231638417,
+        "paymentMethod": "cash",
+        "manualHourlyRate": "575",
+        "manualExtraPaxRate": "0.266"
+      }
+    }
+  },
+  {
     "id": "res_1773958923421_vjwikz8gk",
-    "clientId": "CLI-013",
+    "clientId": "CLI-029",
     "status": "completado",
     "currentStep": 3,
     "createdAt": "2026-03-19T22:22:03.421Z",
@@ -674,7 +768,7 @@
         "extraPassengers": 0,
         "hourlyRate": 450,
         "baseTripCost": 1350,
-        "extraPassengerCharge": 75,
+        "extraPassengerCharge": 0,
         "estimatedSubtotal": 1350
       },
       "step2_details": {
@@ -706,7 +800,7 @@
   },
   {
     "id": "5ee7342c-34eb-4ee5-8996-0c436d4eb6fd",
-    "clientId": "CLI-014",
+    "clientId": "CLI-031",
     "status": "draft",
     "currentStep": 1,
     "createdAt": "2026-05-19T02:19:45.532Z",
@@ -721,7 +815,7 @@
         "extraPassengers": 0,
         "hourlyRate": 600,
         "baseTripCost": 2400,
-        "extraPassengerCharge": 100,
+        "extraPassengerCharge": 0,
         "estimatedSubtotal": 2400
       },
       "step2_details": {
@@ -753,7 +847,7 @@
   },
   {
     "id": "res_1774978104318_69wnv3l16",
-    "clientId": "CLI-015",
+    "clientId": "CLI-032",
     "status": "completado",
     "currentStep": 3,
     "createdAt": "2026-03-31T17:28:24.318Z",
@@ -768,7 +862,7 @@
         "extraPassengers": 19,
         "hourlyRate": 600,
         "baseTripCost": 2400,
-        "extraPassengerCharge": 100,
+        "extraPassengerCharge": 1900,
         "estimatedSubtotal": 4300
       },
       "step2_details": {
@@ -800,7 +894,7 @@
   },
   {
     "id": "res_1773343480001_heather",
-    "clientId": "CLI-016",
+    "clientId": "CLI-033",
     "status": "completado",
     "currentStep": 3,
     "createdAt": "2026-03-12T12:24:40.000Z",
@@ -815,7 +909,7 @@
         "extraPassengers": 31,
         "hourlyRate": 600,
         "baseTripCost": 3000,
-        "extraPassengerCharge": 100,
+        "extraPassengerCharge": 3100,
         "estimatedSubtotal": 6100
       },
       "step2_details": {
@@ -847,7 +941,7 @@
   },
   {
     "id": "res_1773942222462_af0u24zru",
-    "clientId": "CLI-017",
+    "clientId": "CLI-034",
     "status": "completado",
     "currentStep": 3,
     "createdAt": "2026-03-19T17:43:42.462Z",
@@ -862,7 +956,7 @@
         "extraPassengers": 0,
         "hourlyRate": 450,
         "baseTripCost": 3600,
-        "extraPassengerCharge": 75,
+        "extraPassengerCharge": 0,
         "estimatedSubtotal": 3600
       },
       "step2_details": {
@@ -894,7 +988,7 @@
   },
   {
     "id": "res_1774731347285_w7ql48og1",
-    "clientId": "CLI-018",
+    "clientId": "CLI-035",
     "status": "completado",
     "currentStep": 3,
     "createdAt": "2026-03-28T20:55:47.286Z",
@@ -909,7 +1003,7 @@
         "extraPassengers": 26,
         "hourlyRate": 450,
         "baseTripCost": 1350,
-        "extraPassengerCharge": 75,
+        "extraPassengerCharge": 1950,
         "estimatedSubtotal": 3300
       },
       "step2_details": {
@@ -941,7 +1035,7 @@
   },
   {
     "id": "res_1773875988231_4z7b1vtly",
-    "clientId": "CLI-019",
+    "clientId": "CLI-036",
     "status": "completado",
     "currentStep": 3,
     "createdAt": "2026-03-18T23:19:48.231Z",
@@ -956,7 +1050,7 @@
         "extraPassengers": 0,
         "hourlyRate": 600,
         "baseTripCost": 1200,
-        "extraPassengerCharge": 100,
+        "extraPassengerCharge": 0,
         "estimatedSubtotal": 1200
       },
       "step2_details": {
@@ -988,11 +1082,11 @@
   },
   {
     "id": "6f74e460-73b0-4896-813a-b3456d3d26ba",
-    "clientId": "CLI-033",
+    "clientId": "CLI-037",
     "status": "reservado",
     "currentStep": 3,
     "createdAt": "2026-06-06T20:42:33.635Z",
-    "updatedAt": "2026-06-06T20:47:26.199Z",
+    "updatedAt": "2026-06-07T20:14:29.464Z",
     "sync_status": "synced",
     "airtable_id": "recZWJ0afGnewR8S7",
     "data": {
@@ -1003,7 +1097,7 @@
         "extraPassengers": 0,
         "hourlyRate": 531.266,
         "baseTripCost": 1593.7979999999998,
-        "extraPassengerCharge": 100,
+        "extraPassengerCharge": 0,
         "estimatedSubtotal": 1593.7979999999998
       },
       "step2_details": {
@@ -1035,7 +1129,7 @@
   },
   {
     "id": "511ab0f1-e586-49b8-92c6-c2ed02148356",
-    "clientId": "CLI-020",
+    "clientId": "CLI-038",
     "status": "reservado",
     "currentStep": 3,
     "createdAt": "2026-05-20T23:05:46.477Z",
@@ -1050,7 +1144,7 @@
         "extraPassengers": 3,
         "hourlyRate": 600,
         "baseTripCost": 1200,
-        "extraPassengerCharge": 100,
+        "extraPassengerCharge": 300,
         "estimatedSubtotal": 1500
       },
       "step2_details": {
@@ -1082,7 +1176,7 @@
   },
   {
     "id": "res_1773343480004_stephen",
-    "clientId": "CLI-021",
+    "clientId": "CLI-039",
     "status": "completado",
     "currentStep": 3,
     "createdAt": "2026-03-12T12:24:40.000Z",
@@ -1097,7 +1191,7 @@
         "extraPassengers": 6,
         "hourlyRate": 450,
         "baseTripCost": 900,
-        "extraPassengerCharge": 75,
+        "extraPassengerCharge": 450,
         "estimatedSubtotal": 1350
       },
       "step2_details": {
@@ -1129,11 +1223,11 @@
   },
   {
     "id": "res_1775323941624_mr7sk2xln",
-    "clientId": "CLI-022",
+    "clientId": "CLI-040",
     "status": "completado",
     "currentStep": 3,
     "createdAt": "2026-04-04T17:32:21.625Z",
-    "updatedAt": "2026-06-07T19:28:03.369Z",
+    "updatedAt": "2026-06-30T00:02:57.176Z",
     "sync_status": "synced",
     "airtable_id": "recf8D1GreC98qttZ",
     "data": {
@@ -1144,7 +1238,7 @@
         "extraPassengers": 0,
         "hourlyRate": 600,
         "baseTripCost": 1800,
-        "extraPassengerCharge": 100,
+        "extraPassengerCharge": 0,
         "estimatedSubtotal": 1800
       },
       "step2_details": {
@@ -1175,12 +1269,59 @@
     }
   },
   {
+    "id": "72965002-af5d-4a4c-baea-23873f32bd6e",
+    "clientId": "CLI-014",
+    "status": "reservado",
+    "currentStep": 3,
+    "createdAt": "2026-06-29T23:47:38.967Z",
+    "updatedAt": "2026-06-30T00:02:31.927Z",
+    "sync_status": "synced",
+    "airtable_id": "recfXEgMMFdubKa6K",
+    "data": {
+      "step1_pricing": {
+        "pricingType": "regular",
+        "durationHours": 4,
+        "passengers": 4,
+        "extraPassengers": 0,
+        "hourlyRate": 600,
+        "baseTripCost": 2400,
+        "extraPassengerCharge": 0,
+        "estimatedSubtotal": 2400
+      },
+      "step2_details": {
+        "tourType": "Sunset Cruise",
+        "tripDate": "2026-06-30",
+        "startTime": "15:30",
+        "endTime": "19:30",
+        "customerName": "Aileen Kavanagh",
+        "customerPhone": "",
+        "customerEmail": "",
+        "notes": "+1hr added [3hrs -> 4hrs]"
+      },
+      "step3_adjustments": {
+        "bookingSource": "direct",
+        "repriceType": "",
+        "repriceDiscount": 0,
+        "extrasAmount": 0,
+        "fishingLicenses": 0,
+        "finalBusinessPrice": 2400,
+        "finalCustomerPrice": 2400,
+        "feeAmount": 0,
+        "deposit": 900,
+        "balance": 1500,
+        "paymentMethod": "cash",
+        "manualHourlyRate": "",
+        "manualExtraPaxRate": ""
+      }
+    }
+  },
+  {
     "id": "res_1773944652811_4z1ha3zfb",
-    "clientId": "CLI-023",
+    "clientId": "CLI-041",
     "status": "reservado",
     "currentStep": 3,
     "createdAt": "2026-03-19T18:24:12.812Z",
-    "updatedAt": "2026-05-16T23:04:27.691Z",
+    "updatedAt": "2026-06-23T02:18:16.432Z",
     "sync_status": "synced",
     "airtable_id": "rechGNAwpFXsRy1jv",
     "data": {
@@ -1191,7 +1332,7 @@
         "extraPassengers": 0,
         "hourlyRate": 600,
         "baseTripCost": 3000,
-        "extraPassengerCharge": 100,
+        "extraPassengerCharge": 0,
         "estimatedSubtotal": 3000
       },
       "step2_details": {
@@ -1210,12 +1351,12 @@
         "repriceDiscount": 0,
         "extrasAmount": 98.11999999999989,
         "fishingLicenses": 0,
-        "finalBusinessPrice": 3000,
-        "finalCustomerPrice": 3098.12,
-        "feeAmount": 0,
+        "finalBusinessPrice": 3098.12,
+        "finalCustomerPrice": 3644.8470588235296,
+        "feeAmount": 546.7270588235297,
         "deposit": 0,
-        "balance": 3098.12,
-        "paymentMethod": "",
+        "balance": 3644.8470588235296,
+        "paymentMethod": "cash",
         "manualHourlyRate": "",
         "manualExtraPaxRate": ""
       }
@@ -1223,11 +1364,11 @@
   },
   {
     "id": "c598441d-21d9-4f14-880d-92d95f762da6",
-    "clientId": "CLI-034",
+    "clientId": "CLI-042",
     "status": "reservado",
     "currentStep": 3,
     "createdAt": "2026-06-02T16:05:51.099Z",
-    "updatedAt": "2026-06-02T16:18:27.950Z",
+    "updatedAt": "2026-06-07T20:10:57.951Z",
     "sync_status": "synced",
     "airtable_id": "reci02iXBZthNDgto",
     "data": {
@@ -1238,7 +1379,7 @@
         "extraPassengers": 0,
         "hourlyRate": 600,
         "baseTripCost": 4800,
-        "extraPassengerCharge": 100,
+        "extraPassengerCharge": 0,
         "estimatedSubtotal": 4800
       },
       "step2_details": {
@@ -1270,11 +1411,11 @@
   },
   {
     "id": "res_1774720781051_2i4sd9srk",
-    "clientId": "CLI-024",
+    "clientId": "CLI-043",
     "status": "completado",
     "currentStep": 3,
     "createdAt": "2026-03-28T17:59:41.052Z",
-    "updatedAt": "2026-06-07T19:28:03.369Z",
+    "updatedAt": "2026-06-30T00:02:57.176Z",
     "sync_status": "synced",
     "airtable_id": "reciYY5G23YjeQCFy",
     "data": {
@@ -1317,7 +1458,7 @@
   },
   {
     "id": "res_1773356055139_u5199ukto",
-    "clientId": "CLI-025",
+    "clientId": "CLI-044",
     "status": "reservado",
     "currentStep": 3,
     "createdAt": "2026-03-12T22:54:15.139Z",
@@ -1332,7 +1473,7 @@
         "extraPassengers": 0,
         "hourlyRate": 600,
         "baseTripCost": 4800,
-        "extraPassengerCharge": 100,
+        "extraPassengerCharge": 0,
         "estimatedSubtotal": 4800
       },
       "step2_details": {
@@ -1364,7 +1505,7 @@
   },
   {
     "id": "5626ff09-8886-4f72-9985-d7a8d87804e9",
-    "clientId": "CLI-026",
+    "clientId": "CLI-045",
     "status": "reservado",
     "currentStep": 3,
     "createdAt": "2026-05-19T23:39:59.609Z",
@@ -1379,7 +1520,7 @@
         "extraPassengers": 21,
         "hourlyRate": 600,
         "baseTripCost": 1200,
-        "extraPassengerCharge": 100,
+        "extraPassengerCharge": 2100,
         "estimatedSubtotal": 3300
       },
       "step2_details": {
@@ -1411,11 +1552,11 @@
   },
   {
     "id": "682cc14c-e6d5-4d3b-a870-f7a780f430df",
-    "clientId": "CLI-035",
+    "clientId": "CLI-046",
     "status": "reservado",
     "currentStep": 3,
     "createdAt": "2026-06-07T18:43:20.915Z",
-    "updatedAt": "2026-06-07T18:50:00.444Z",
+    "updatedAt": "2026-06-07T20:14:36.990Z",
     "sync_status": "synced",
     "airtable_id": "recncKgWAPdO4fboz",
     "data": {
@@ -1426,7 +1567,7 @@
         "extraPassengers": 0,
         "hourlyRate": 450,
         "baseTripCost": 900,
-        "extraPassengerCharge": 75,
+        "extraPassengerCharge": 0,
         "estimatedSubtotal": 900
       },
       "step2_details": {
@@ -1458,7 +1599,7 @@
   },
   {
     "id": "res_1773355947551_cryjj5xvz",
-    "clientId": "CLI-027",
+    "clientId": "CLI-047",
     "status": "completado",
     "currentStep": 3,
     "createdAt": "2026-03-12T22:52:27.551Z",
@@ -1504,12 +1645,59 @@
     }
   },
   {
+    "id": "74619527-36f2-4a4f-bdf0-205396ee9c87",
+    "clientId": "CLI-048",
+    "status": "reservado",
+    "currentStep": 3,
+    "createdAt": "2026-06-24T18:25:35.064Z",
+    "updatedAt": "2026-06-28T20:30:01.880Z",
+    "sync_status": "synced",
+    "airtable_id": "recpd45ZUY8zOwXjn",
+    "data": {
+      "step1_pricing": {
+        "pricingType": "regular",
+        "durationHours": 4,
+        "passengers": 8,
+        "extraPassengers": 0,
+        "hourlyRate": 600,
+        "baseTripCost": 2400,
+        "extraPassengerCharge": 0,
+        "estimatedSubtotal": 2400
+      },
+      "step2_details": {
+        "tourType": "Sunset Cruise",
+        "tripDate": "2026-06-28",
+        "startTime": "16:00",
+        "endTime": "20:00",
+        "customerName": "Jordan Howden",
+        "customerPhone": "",
+        "customerEmail": "",
+        "notes": ""
+      },
+      "step3_adjustments": {
+        "bookingSource": "direct",
+        "repriceType": "",
+        "repriceDiscount": 0,
+        "extrasAmount": 120,
+        "fishingLicenses": 0,
+        "finalBusinessPrice": 2520,
+        "finalCustomerPrice": 2520,
+        "feeAmount": 0,
+        "deposit": 1200,
+        "balance": 1320,
+        "paymentMethod": "cash",
+        "manualHourlyRate": "",
+        "manualExtraPaxRate": ""
+      }
+    }
+  },
+  {
     "id": "res_1775167561147_j4s1ktlvk",
-    "clientId": "CLI-028",
+    "clientId": "CLI-049",
     "status": "completado",
     "currentStep": 3,
     "createdAt": "2026-04-02T22:06:01.148Z",
-    "updatedAt": "2026-06-07T19:28:03.369Z",
+    "updatedAt": "2026-06-30T00:02:57.176Z",
     "sync_status": "synced",
     "airtable_id": "recpkjpmOlwf4PRhn",
     "data": {
@@ -1520,7 +1708,7 @@
         "extraPassengers": 0,
         "hourlyRate": 450,
         "baseTripCost": 1800,
-        "extraPassengerCharge": 75,
+        "extraPassengerCharge": 0,
         "estimatedSubtotal": 1800
       },
       "step2_details": {
@@ -1552,7 +1740,7 @@
   },
   {
     "id": "res_1773343480000_pablo",
-    "clientId": "CLI-029",
+    "clientId": "CLI-050",
     "status": "completado",
     "currentStep": 3,
     "createdAt": "2026-03-12T12:24:40.000Z",
@@ -1567,7 +1755,7 @@
         "extraPassengers": 6,
         "hourlyRate": 450,
         "baseTripCost": 1350,
-        "extraPassengerCharge": 75,
+        "extraPassengerCharge": 450,
         "estimatedSubtotal": 1800
       },
       "step2_details": {
@@ -1599,11 +1787,11 @@
   },
   {
     "id": "res_1775851442027_f1xsh79sd",
-    "clientId": "CLI-030",
+    "clientId": "CLI-051",
     "status": "completado",
     "currentStep": 3,
     "createdAt": "2026-04-10T20:04:02.027Z",
-    "updatedAt": "2026-06-07T19:28:03.369Z",
+    "updatedAt": "2026-06-30T00:02:57.176Z",
     "sync_status": "synced",
     "airtable_id": "rectu0qYkjK18WQ0e",
     "data": {
@@ -1614,7 +1802,7 @@
         "extraPassengers": 4,
         "hourlyRate": 600,
         "baseTripCost": 4800,
-        "extraPassengerCharge": 100,
+        "extraPassengerCharge": 400,
         "estimatedSubtotal": 5200
       },
       "step2_details": {
@@ -1646,7 +1834,7 @@
   },
   {
     "id": "res_1773858722562_1f635z4bb",
-    "clientId": "CLI-031",
+    "clientId": "CLI-052",
     "status": "completado",
     "currentStep": 3,
     "createdAt": "2026-03-18T18:32:02.562Z",
@@ -1661,7 +1849,7 @@
         "extraPassengers": 0,
         "hourlyRate": 450,
         "baseTripCost": 1800,
-        "extraPassengerCharge": 75,
+        "extraPassengerCharge": 0,
         "estimatedSubtotal": 1800
       },
       "step2_details": {
@@ -1693,11 +1881,11 @@
   },
   {
     "id": "85beec63-354f-4b0f-abc6-6dae8ddf6f90",
-    "clientId": "CLI-036",
+    "clientId": "CLI-053",
     "status": "reservado",
     "currentStep": 3,
     "createdAt": "2026-05-30T18:53:29.944Z",
-    "updatedAt": "2026-05-30T18:58:58.256Z",
+    "updatedAt": "2026-06-12T17:10:00.692Z",
     "sync_status": "synced",
     "airtable_id": "reczI1tMC2r3644QO",
     "data": {
@@ -1740,11 +1928,11 @@
   },
   {
     "id": "a6dcdf96-7cb5-47f2-b9cb-5c8b0da2c471",
-    "clientId": "CLI-037",
+    "clientId": "CLI-054",
     "status": "reservado",
     "currentStep": 3,
     "createdAt": "2026-05-29T16:38:27.474Z",
-    "updatedAt": "2026-05-29T19:43:57.813Z",
+    "updatedAt": "2026-06-23T02:17:56.230Z",
     "sync_status": "synced",
     "airtable_id": "recztos0Ud1Zb6QB1",
     "data": {
@@ -1755,7 +1943,7 @@
         "extraPassengers": 11,
         "hourlyRate": 600,
         "baseTripCost": 1800,
-        "extraPassengerCharge": 100,
+        "extraPassengerCharge": 1100,
         "estimatedSubtotal": 2900
       },
       "step2_details": {
