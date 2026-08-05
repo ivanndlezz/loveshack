@@ -83,11 +83,15 @@ function getAllReservations() {
     // Normalize each reservation to v3 format (handles legacy flat records)
     let normalized = raw.map(normalizeReservation);
 
-    // Auto-cleanup: remove drafts that are past their tripDate
+    // Auto-cleanup: remove stale drafts that are past their tripDate.
+    // Keep the draft currently open in the wizard; otherwise selecting/editing
+    // a past date can delete the reservation mid-autosave.
     const now = new Date();
+    const activeRouteId = window.location.hash.match(/^#\/(?:new|new-reservation)\/([^/]+)/)?.[1] || null;
     const originalLength = normalized.length;
     normalized = normalized.filter((r) => {
       if (r.status !== 'draft') return true;
+      if (r.id === activeRouteId) return true;
       const tripDate = r.data?.step2_details?.tripDate;
       if (!tripDate) return true; // Keep drafts without a date
       return new Date(tripDate + 'T23:59:59') >= now;

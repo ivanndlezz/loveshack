@@ -220,6 +220,10 @@ const Step2Screen = {
 
   autoSave() {
     const reservation = window.Storage.getReservation(this.reservationId);
+    if (!reservation) {
+      console.warn("[Step2] autoSave skipped: reservation not found", this.reservationId);
+      return null;
+    }
     const existingS2 = reservation?.data?.step2_details || {};
 
     const pickerValues = this.picker ? this.picker.getValue() : {};
@@ -235,16 +239,22 @@ const Step2Screen = {
       notes: document.getElementById("notes")?.value || "",
     };
 
-    window.Storage.updateReservation(this.reservationId, "step2_details", data);
+    const updated = window.Storage.updateReservation(this.reservationId, "step2_details", data);
+    if (!updated) {
+      console.warn("[Step2] autoSave failed: reservation could not be updated", this.reservationId);
+      return null;
+    }
     window.Storage.updateCurrentStep(this.reservationId, 2);
 
     // Refresh suggestions
-    const s1 = reservation.data.step1_pricing;
+    const s1 = updated.data.step1_pricing;
     this.updateSuggestions(
       s1.durationHours || 3,
       data.startTime,
       data.tourType,
     );
+
+    return updated;
   },
 
   escapeAttr(str) {
@@ -407,6 +417,10 @@ const Step2Screen = {
     this.closeTourSheet();
 
     const reservation = window.Storage.getReservation(this.reservationId);
+    if (!reservation) {
+      console.warn("[Step2] selectTour skipped: reservation not found", this.reservationId);
+      return;
+    }
     const s2 = reservation.data.step2_details || {};
     s2.tourType = tourId;
     window.Storage.updateReservation(this.reservationId, "step2_details", s2);
